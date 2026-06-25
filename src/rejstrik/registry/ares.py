@@ -36,3 +36,29 @@ def get_company(ico: str, client: httpx.Client | None = None) -> Company:
     finally:
         if owns:
             client.close()
+
+
+def search_by_name(name: str, limit: int = 10, client: httpx.Client | None = None) -> list[Company]:
+    owns = client is None
+    client = client or make_client()
+    try:
+        resp = client.post(
+            f"{BASE}/vyhledat",
+            json={"obchodniJmeno": name, "start": 0, "pocet": limit},
+        )
+        resp.raise_for_status()
+        items = resp.json().get("ekonomickeSubjekty") or []
+        return [parse_detail(item) for item in items]
+    finally:
+        if owns:
+            client.close()
+
+
+def find_company(query: str, client: httpx.Client | None = None) -> Company:
+    q = query.strip()
+    if q.isdigit() and len(q) <= 8:
+        return get_company(q, client=client)
+    results = search_by_name(q, limit=1, client=client)
+    if not results:
+        raise CompanyNotFound(query)
+    return results[0]
