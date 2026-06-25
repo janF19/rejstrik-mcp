@@ -41,7 +41,6 @@ List Sbírka listin documents for a company:
 $ rejstrik filings 00514152 --financial-only
 [FS] 2023  Účetní závěrka 2023  https://or.justice.cz/ias/ui/vypis-sl-31231.pdf
 [FS] 2022  Účetní závěrka 2022  https://or.justice.cz/ias/ui/vypis-sl-31232.pdf
-     2023  Rámcová smlouva        https://or.justice.cz/ias/ui/vypis-sl-31233.pdf
 ```
 
 The `[FS]` marker indicates a financial statement (ucetní závěrka, výroční zpráva, rozvaha, výkaz zisku, zpráva auditora). Use `--financial-only` to filter to financial statements only.

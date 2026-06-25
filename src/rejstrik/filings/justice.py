@@ -8,6 +8,7 @@ responses when the service resumes.
 
 from __future__ import annotations
 
+import logging
 import re
 
 import httpx
@@ -74,6 +75,11 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
             )
         )
 
+    if not filings and len(html) > 1024:
+        logging.warning(
+            "parse_deeds: no documents found — selectors may need updating for real justice.cz HTML"
+        )
+
     # Sort: financial statements first, then by year descending (None sorts last)
     filings.sort(key=lambda f: (not f.is_financial_statement, -(f.year or 0)))
     return filings
@@ -89,6 +95,7 @@ def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
       3. GET /ias/ui/vypis-sl-firma?subjektId={subject_id}
       4. Parse and return filings
     """
+    ico = ico.strip().zfill(8)
     own_client = client is None
     if own_client:
         client = make_client()
