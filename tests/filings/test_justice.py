@@ -5,6 +5,7 @@ IMPORTANT: These tests run against SYNTHETIC HTML fixtures because or.justice.cz
 was under maintenance on 2026-06-25. Selectors must be re-verified against real
 HTML when the service resumes.
 """
+
 from pathlib import Path
 
 import httpx
@@ -34,7 +35,9 @@ def test_parse_deeds_extracts_filings_with_absolute_urls():
 
     # All PDF URLs must be absolute https:// links
     for f in filings:
-        assert f.pdf_url.startswith("https://"), f"Expected absolute URL, got: {f.pdf_url}"
+        assert f.pdf_url.startswith("https://"), (
+            f"Expected absolute URL, got: {f.pdf_url}"
+        )
 
     # At least one filing must be classified as a financial statement
     assert any(f.is_financial_statement for f in filings)

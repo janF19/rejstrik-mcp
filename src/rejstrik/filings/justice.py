@@ -5,6 +5,7 @@ NOTE: Fixtures used in tests are synthetic (or.justice.cz was under maintenance
 on 2026-06-25). Selectors and HTML structure should be verified against real
 responses when the service resumes.
 """
+
 from __future__ import annotations
 
 import re
@@ -67,7 +68,11 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
         year = int(year_m.group(0)) if year_m else None
 
         is_fin = classify_financial(title)
-        filings.append(Filing(title=title, year=year, pdf_url=pdf_url, is_financial_statement=is_fin))
+        filings.append(
+            Filing(
+                title=title, year=year, pdf_url=pdf_url, is_financial_statement=is_fin
+            )
+        )
 
     # Sort: financial statements first, then by year descending (None sorts last)
     filings.sort(key=lambda f: (not f.is_financial_statement, -(f.year or 0)))

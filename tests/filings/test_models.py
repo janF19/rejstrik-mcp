@@ -3,7 +3,7 @@ from rejstrik.filings.models import Filing, classify_financial
 
 def test_classify_financial_matches_keywords():
     assert classify_financial("Účetní závěrka 2023") is True
-    assert classify_financial("VYROCNI ZPRAVA 2022") is True   # no diacritics, upper
+    assert classify_financial("VYROCNI ZPRAVA 2022") is True  # no diacritics, upper
     assert classify_financial("výkaz zisku a ztráty") is True
     assert classify_financial("Podpisový vzor jednatele") is False
 

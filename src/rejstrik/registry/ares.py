@@ -38,7 +38,9 @@ def get_company(ico: str, client: httpx.Client | None = None) -> Company:
             client.close()
 
 
-def search_by_name(name: str, limit: int = 10, client: httpx.Client | None = None) -> list[Company]:
+def search_by_name(
+    name: str, limit: int = 10, client: httpx.Client | None = None
+) -> list[Company]:
     owns = client is None
     client = client or make_client()
     try:

@@ -20,8 +20,17 @@ def test_find_prints_company():
 
 def test_filings_financial_only_filters():
     filings = [
-        Filing(title="Účetní závěrka 2023", year=2023, pdf_url="https://x/a.pdf", is_financial_statement=True),
-        Filing(title="Podpisový vzor", pdf_url="https://x/b.pdf", is_financial_statement=False),
+        Filing(
+            title="Účetní závěrka 2023",
+            year=2023,
+            pdf_url="https://x/a.pdf",
+            is_financial_statement=True,
+        ),
+        Filing(
+            title="Podpisový vzor",
+            pdf_url="https://x/b.pdf",
+            is_financial_statement=False,
+        ),
     ]
     with patch("rejstrik.cli.main.list_filings", return_value=filings):
         result = runner.invoke(app, ["filings", "00006947", "--financial-only"])

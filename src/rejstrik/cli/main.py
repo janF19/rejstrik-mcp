@@ -18,7 +18,9 @@ def find(query: str) -> None:
 
 
 @app.command()
-def filings(ico: str, financial_only: bool = typer.Option(False, "--financial-only")) -> None:
+def filings(
+    ico: str, financial_only: bool = typer.Option(False, "--financial-only")
+) -> None:
     """List Sbírka listin documents for a company."""
     items = list_filings(ico)
     if financial_only:
