@@ -14,7 +14,10 @@ class FakeLLM:
 
     def ask(self, source, question):
         self.calls.append((source, question))
-        return Answer(text="A pledge exists.", citations=[Citation(cited_text="zástavní právo", page=43)])
+        return Answer(
+            text="A pledge exists.",
+            citations=[Citation(cited_text="zástavní právo", page=43)],
+        )
 
 
 def test_ask_filing_delegates_and_returns_answer():

@@ -35,7 +35,9 @@ class DocumentLLM(Protocol):
 class AnthropicDocumentLLM:
     """Real implementation. Network-bound — covered by the manual smoke test, not CI."""
 
-    def __init__(self, client: anthropic.Anthropic | None = None, model: str | None = None) -> None:
+    def __init__(
+        self, client: anthropic.Anthropic | None = None, model: str | None = None
+    ) -> None:
         self._client = client or anthropic.Anthropic()
         self.model = model or resolve_model()
 
@@ -45,10 +47,15 @@ class AnthropicDocumentLLM:
             model=self.model,
             max_tokens=16000,
             output_format=schema,
-            messages=[{
-                "role": "user",
-                "content": [pdf_block(source), {"type": "text", "text": instructions}],
-            }],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        pdf_block(source),
+                        {"type": "text", "text": instructions},
+                    ],
+                }
+            ],
         )
         return resp.parsed_output
 
@@ -57,10 +64,14 @@ class AnthropicDocumentLLM:
         resp = self._client.messages.create(
             model=self.model,
             max_tokens=4096,
-            messages=[{
-                "role": "user",
-                "content": [pdf_block(source, citations=True, cache=True),
-                            {"type": "text", "text": question}],
-            }],
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        pdf_block(source, citations=True, cache=True),
+                        {"type": "text", "text": question},
+                    ],
+                }
+            ],
         )
         return parse_answer(resp.content)

@@ -33,6 +33,8 @@ def test_load_pdf_from_url():
 def test_load_pdf_from_filing_uses_pdf_url():
     url = "https://or.justice.cz/ias/content/download?id=xyz"
     respx.get(url).mock(return_value=httpx.Response(200, content=PDF_BYTES))
-    filing = Filing(title="Účetní závěrka 2023", year=2023, pdf_url=url, is_financial_statement=True)
+    filing = Filing(
+        title="Účetní závěrka 2023", year=2023, pdf_url=url, is_financial_statement=True
+    )
     src = load_pdf(filing)
     assert src.data == PDF_BYTES

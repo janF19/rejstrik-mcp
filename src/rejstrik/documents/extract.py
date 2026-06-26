@@ -12,6 +12,8 @@ EXTRACT_INSTRUCTIONS = (
 )
 
 
-def extract_financials(source: PdfSource, llm: DocumentLLM | None = None) -> FinancialStatement:
+def extract_financials(
+    source: PdfSource, llm: DocumentLLM | None = None
+) -> FinancialStatement:
     llm = llm or AnthropicDocumentLLM()
     return llm.extract(source, FinancialStatement, EXTRACT_INSTRUCTIONS)

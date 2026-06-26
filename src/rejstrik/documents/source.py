@@ -15,7 +15,9 @@ class PdfSource(BaseModel):
 
 
 def _make(data: bytes, filename: str) -> PdfSource:
-    return PdfSource(data=data, sha256=hashlib.sha256(data).hexdigest(), filename=filename)
+    return PdfSource(
+        data=data, sha256=hashlib.sha256(data).hexdigest(), filename=filename
+    )
 
 
 def load_pdf(ref: str | Filing, client: httpx.Client | None = None) -> PdfSource:

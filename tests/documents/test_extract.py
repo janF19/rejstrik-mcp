@@ -11,7 +11,10 @@ class FakeLLM:
 
     def extract(self, source, schema, instructions):
         self.calls.append((source, schema, instructions))
-        return schema(company_name="Fake s.r.o.", balance_sheet=[Figure(label="Total assets", value=1.0, source_page=3)])
+        return schema(
+            company_name="Fake s.r.o.",
+            balance_sheet=[Figure(label="Total assets", value=1.0, source_page=3)],
+        )
 
     def ask(self, source, question):
         raise NotImplementedError

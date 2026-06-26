@@ -10,6 +10,7 @@ def test_pdf_block_is_base64_document():
     assert block["source"]["type"] == "base64"
     assert block["source"]["media_type"] == "application/pdf"
     import base64
+
     assert block["source"]["data"] == base64.standard_b64encode(SRC.data).decode()
     assert "citations" not in block
     assert "cache_control" not in block

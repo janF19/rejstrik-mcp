@@ -16,7 +16,11 @@ def test_financial_statement_round_trip():
         balance_sheet=[Figure(label="Total assets", value=1000.0, source_page=12)],
         income_statement=[Figure(label="Revenue", value=500.0, source_page=14)],
         cash_flow=[],
-        notes=[NoteItem(topic="Related parties", summary="Loan to director", source_page=43)],
+        notes=[
+            NoteItem(
+                topic="Related parties", summary="Loan to director", source_page=43
+            )
+        ],
     )
     dumped = fs.model_dump()
     restored = FinancialStatement(**dumped)

@@ -4,7 +4,9 @@ from rejstrik.documents.answer import parse_answer, Answer, Citation
 
 
 def _citation(cited_text, page):
-    return SimpleNamespace(type="page_location", cited_text=cited_text, start_page_number=page)
+    return SimpleNamespace(
+        type="page_location", cited_text=cited_text, start_page_number=page
+    )
 
 
 def _text_block(text, citations=None):
@@ -12,7 +14,10 @@ def _text_block(text, citations=None):
 
 
 def test_parse_answer_concatenates_text():
-    content = [_text_block("Yes, there is a pledge "), _text_block("over the building.")]
+    content = [
+        _text_block("Yes, there is a pledge "),
+        _text_block("over the building."),
+    ]
     ans = parse_answer(content)
     assert isinstance(ans, Answer)
     assert ans.text == "Yes, there is a pledge over the building."
@@ -21,7 +26,9 @@ def test_parse_answer_concatenates_text():
 
 def test_parse_answer_collects_page_citations():
     content = [
-        _text_block("A pledge exists.", citations=[_citation("zástavní právo k budově", 43)]),
+        _text_block(
+            "A pledge exists.", citations=[_citation("zástavní právo k budově", 43)]
+        ),
     ]
     ans = parse_answer(content)
     assert ans.citations == [Citation(cited_text="zástavní právo k budově", page=43)]
