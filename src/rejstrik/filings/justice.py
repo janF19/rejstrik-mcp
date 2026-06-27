@@ -1,10 +1,4 @@
-"""
-Parser for or.justice.cz Sbírka listin (Czech commercial registry filings).
-
-NOTE: Fixtures used in tests are synthetic (or.justice.cz was under maintenance
-on 2026-06-25). Selectors and HTML structure should be verified against real
-responses when the service resumes.
-"""
+"""Client and legacy parsers for Sbírka listin commercial registry filings."""
 
 from __future__ import annotations
 
@@ -18,8 +12,9 @@ from rejstrik.core.http import make_client
 from rejstrik.filings.models import Filing, classify_financial
 
 _BASE_URL = "https://or.justice.cz"
-_SEARCH_URL = _BASE_URL + "/ias/ui/rejstrik-firma.vysledky"
-_DEEDS_URL = _BASE_URL + "/ias/ui/vypis-sl-firma"
+_NEW_BASE_URL = "https://verejnerejstriky.msp.gov.cz"
+_NEW_FILINGS_URL = _NEW_BASE_URL + "/api/sbirka-listin/subjekty/{ico}"
+_NEW_DOCUMENT_URL = _NEW_BASE_URL + "/dokumenty/sbirka-listin/{document_id}"
 
 _SUBJECT_ID_RE = re.compile(r"subjektId=(\d+)")
 _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
@@ -85,31 +80,58 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
     return filings
 
 
+def parse_filings_api(data: dict) -> list[Filing]:
+    """Parse the new verejnerejstriky.msp.gov.cz Sbirka listin JSON payload."""
+    items = data.get("vysledekdetail", {}).get("prehledlistin", [])
+    filings: list[Filing] = []
+
+    for item in items:
+        title = (item.get("typlistiny") or "").strip()
+        if not title:
+            continue
+
+        document_id = None
+        for detail in item.get("detail") or []:
+            digital = detail.get("obsah", {}).get("digitalnipodoba", {})
+            document_id = digital.get("documentid")
+            if document_id:
+                break
+
+        if not document_id:
+            continue
+
+        year_m = _YEAR_RE.search(title)
+        year = int(year_m.group(0)) if year_m else None
+        filings.append(
+            Filing(
+                title=title,
+                year=year,
+                pdf_url=_NEW_DOCUMENT_URL.format(document_id=document_id),
+                is_financial_statement=classify_financial(title),
+            )
+        )
+
+    filings.sort(key=lambda f: (not f.is_financial_statement, -(f.year or 0)))
+    return filings
+
+
 def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
     """
     Fetch and return all Sbírka listin filings for a given IČO.
 
-    Steps:
-      1. GET /ias/ui/rejstrik-firma.vysledky?ico={ico}
-      2. Extract subjektId from response
-      3. GET /ias/ui/vypis-sl-firma?subjektId={subject_id}
-      4. Parse and return filings
+    The public registry migrated from the old or.justice.cz HTML pages to the
+    verejnerejstriky.msp.gov.cz JSON API. The endpoint expects the numeric IČO
+    without leading zeroes.
     """
-    ico = ico.strip().zfill(8)
+    ico = ico.strip().zfill(8).lstrip("0") or "0"
     own_client = client is None
     if own_client:
         client = make_client()
 
     try:
-        resp = client.get(_SEARCH_URL, params={"ico": ico})
+        resp = client.get(_NEW_FILINGS_URL.format(ico=ico))
         resp.raise_for_status()
-        subject_id = parse_subject_id(resp.text)
-        if subject_id is None:
-            return []
-
-        resp2 = client.get(_DEEDS_URL, params={"subjektId": subject_id})
-        resp2.raise_for_status()
-        return parse_deeds(resp2.text)
+        return parse_filings_api(resp.json())
     finally:
         if own_client:
             client.close()

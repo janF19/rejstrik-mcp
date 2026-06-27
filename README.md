@@ -39,8 +39,8 @@ List Sbírka listin documents for a company:
 
 ```bash
 $ rejstrik filings 00514152 --financial-only
-[FS] 2023  Účetní závěrka 2023  https://or.justice.cz/ias/ui/vypis-sl-31231.pdf
-[FS] 2022  Účetní závěrka 2022  https://or.justice.cz/ias/ui/vypis-sl-31232.pdf
+[FS] 2024  účetní závěrka [2024], výroční zpráva [2024], zpráva auditora [2024]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/107465869
+[FS] 2023  účetní závěrka [2023], výroční zpráva [2023], zpráva auditora [2023]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/98779203
 ```
 
 The `[FS]` marker indicates a financial statement (ucetní závěrka, výroční zpráva, rozvaha, výkaz zisku, zpráva auditora). Use `--financial-only` to filter to financial statements only.
