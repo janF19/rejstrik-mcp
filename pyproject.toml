@@ -9,6 +9,7 @@ dependencies = [
     "typer>=0.12",
     "selectolax>=0.3.21",
     "anthropic>=0.92",
+    "mcp>=1.2",
 ]
 
 [project.optional-dependencies]
@@ -16,6 +17,7 @@ dev = ["pytest>=8", "respx>=0.21", "ruff>=0.5"]
 
 [project.scripts]
 rejstrik = "rejstrik.cli.main:app"
+rejstrik-mcp = "rejstrik.mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

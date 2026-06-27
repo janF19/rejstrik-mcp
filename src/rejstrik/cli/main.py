@@ -1,11 +1,14 @@
 import typer
 
-from rejstrik.registry.ares import find_company, CompanyNotFound
-from rejstrik.filings.justice import list_filings
-from rejstrik.documents.source import load_pdf
-from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.ask import ask_filing
-from rejstrik.documents.pick import pick_latest_financial_filing
+from rejstrik.documents.extract import extract_financials
+from rejstrik.filings.justice import list_filings
+from rejstrik.registry.ares import CompanyNotFound, find_company
+from rejstrik.service import (
+    NoStatementFound,
+    analyze_company_financials,
+    resolve_statement_source,
+)
 
 app = typer.Typer(help="Czech registry MCP that reads the documents — CLI")
 
@@ -39,13 +42,13 @@ def filings(
 
 
 def _load_latest_statement(ico: str):
-    """Resolve -> list -> pick -> download. Returns (company, PdfSource) or exits."""
-    company = find_company(ico)
-    filing = pick_latest_financial_filing(list_filings(company.ico))
-    if filing is None:
-        typer.echo("No financial statement found in Sbírka listin.", err=True)
+    """Resolve a company to its latest financial-statement PDF via the service layer."""
+    try:
+        company, _filing, source = resolve_statement_source(ico)
+    except NoStatementFound as exc:
+        typer.echo(str(exc), err=True)
         raise typer.Exit(1)
-    return company, load_pdf(filing)
+    return company, source
 
 
 @app.command()
@@ -71,3 +74,22 @@ def ask(ico: str, question: str) -> None:
         for c in answer.citations:
             page = f"(p.{c.page})" if c.page else ""
             typer.echo(f"  - {c.cited_text} {page}".rstrip())
+
+
+@app.command()
+def analyze(query: str) -> None:
+    """Full financial analysis for a company's latest statement."""
+    report = analyze_company_financials(query)
+    typer.echo(
+        f"{report.company_name}  ({report.period_year or '----'})  [{report.ico}]"
+    )
+    typer.echo("Ratios:")
+    for name, value in report.ratios.model_dump().items():
+        shown = f"{value:.3f}" if value is not None else "-"
+        typer.echo(f"  {name}: {shown}")
+    if report.red_flags:
+        typer.echo("Red flags:")
+        for flag in report.red_flags:
+            typer.echo(f"  [{flag.severity.upper()}] {flag.message}")
+    else:
+        typer.echo("No red flags detected.")

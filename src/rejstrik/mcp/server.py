@@ -1,0 +1,101 @@
+from mcp.server.fastmcp import FastMCP
+
+from rejstrik.analysis.report import CompanyFinancialReport
+from rejstrik.documents.answer import Answer
+from rejstrik.documents.ask import ask_filing as _ask_filing
+from rejstrik.documents.extract import extract_financials as _extract_financials
+from rejstrik.documents.schema import FinancialStatement
+from rejstrik.filings.justice import list_filings as _list_filings
+from rejstrik.filings.models import Filing
+from rejstrik.registry.ares import find_company as _find_company
+from rejstrik.registry.isir import (
+    InsolvencyStatus,
+    check_insolvency as _check_insolvency,
+)
+from rejstrik.registry.models import Company
+from rejstrik.registry.statutory import (
+    Officer,
+    get_statutory_bodies as _get_statutory_bodies,
+)
+from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
+from rejstrik.service import (
+    analyze_company_financials as _analyze_company_financials,
+    resolve_statement_source,
+)
+
+mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
+
+EXPOSED_TOOL_NAMES = [
+    "find_company",
+    "list_filings",
+    "extract_financials",
+    "ask_filing",
+    "analyze_company_financials",
+    "check_insolvency",
+    "get_statutory_bodies",
+    "check_vat",
+]
+
+
+@mcp.tool()
+def find_company(query: str) -> Company:
+    """Resolve a Czech company by name or IČO via the ARES registry."""
+    return _find_company(query)
+
+
+@mcp.tool()
+def list_filings(ico: str) -> list[Filing]:
+    """List a company's Sbírka listin documents."""
+    return _list_filings(ico)
+
+
+@mcp.tool()
+def extract_financials(ico: str) -> FinancialStatement:
+    """Extract structured financials from the latest statement PDF."""
+    _company, _filing, source = resolve_statement_source(ico)
+    return _extract_financials(source)
+
+
+@mcp.tool()
+def ask_filing(ico: str, question: str) -> Answer:
+    """Answer a question about the latest statement with page citations."""
+    _company, _filing, source = resolve_statement_source(ico)
+    return _ask_filing(source, question)
+
+
+@mcp.tool()
+def analyze_company_financials(query: str) -> CompanyFinancialReport:
+    """Full financial report for a company."""
+    return _analyze_company_financials(query)
+
+
+def _to_ico(value: str) -> str:
+    """Accept an IČO directly, otherwise resolve a name via ARES."""
+    candidate = value.strip()
+    return candidate.zfill(8) if candidate.isdigit() else _find_company(candidate).ico
+
+
+@mcp.tool()
+def check_insolvency(ico: str) -> InsolvencyStatus:
+    """Check the Czech insolvency register (ISIR) by IČO or company name."""
+    return _check_insolvency(_to_ico(ico))
+
+
+@mcp.tool()
+def get_statutory_bodies(ico: str) -> list[Officer]:
+    """List statutory body members from the ARES public-register extract."""
+    return _get_statutory_bodies(_to_ico(ico))
+
+
+@mcp.tool()
+def check_vat(ico: str) -> VatStatus:
+    """Report VAT registration and DIČ from the ARES detail record."""
+    return _check_vat(_to_ico(ico))
+
+
+def main() -> None:
+    mcp.run(transport="streamable-http")
+
+
+if __name__ == "__main__":
+    main()
