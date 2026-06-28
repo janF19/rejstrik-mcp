@@ -14,6 +14,7 @@ from rejstrik.filings.models import Filing
 from rejstrik.registry.ares import find_company
 from rejstrik.registry.isir import InsolvencyStatus, check_insolvency
 from rejstrik.registry.models import Company
+from rejstrik.registry.vat import VatStatus, check_vat
 
 
 class NoStatementFound(Exception):
@@ -38,16 +39,23 @@ def analyze_company_financials(
     *,
     llm: DocumentLLM | None = None,
     insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
+    vat_check: Callable[[str], VatStatus] | None = None,
 ) -> CompanyFinancialReport:
     insolvency_check = insolvency_check or check_insolvency
+    vat_check = vat_check or check_vat
     company, filing, source = resolve_statement_source(query)
     statement = extract_financials(source, llm=llm)
     normalized = normalize(statement)
     ratios = compute_ratios(normalized)
     status = insolvency_check(company.ico)
     insolvent = status.in_insolvency if status.checked else None
+    vat = vat_check(company.ico)
     red_flags = detect_red_flags(
-        normalized, ratios, statement.notes, insolvent=insolvent
+        normalized,
+        ratios,
+        statement.notes,
+        insolvent=insolvent,
+        unreliable_vat=vat.is_unreliable,
     )
     return CompanyFinancialReport(
         company_name=statement.company_name or company.name,

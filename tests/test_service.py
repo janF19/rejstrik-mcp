@@ -9,6 +9,7 @@ from rejstrik.documents.source import PdfSource
 from rejstrik.filings.models import Filing
 from rejstrik.registry.isir import InsolvencyStatus
 from rejstrik.registry.models import Company
+from rejstrik.registry.vat import VatStatus
 
 COMPANY = Company(ico="00006947", name="Budějovický Budvar")
 FILINGS = [
@@ -80,7 +81,10 @@ def test_analyze_company_financials_assembles_report_with_flags():
         patch.object(service, "extract_financials", return_value=STATEMENT),
         patch.object(service, "check_insolvency", return_value=insolvency),
     ):
-        report = service.analyze_company_financials("Test")
+        report = service.analyze_company_financials(
+            "Test",
+            vat_check=lambda ico: VatStatus(ico=ico, is_vat_payer=False),
+        )
     assert isinstance(report, CompanyFinancialReport)
     assert report.ico == "00006947"
     assert report.normalized.total_assets == 1000.0

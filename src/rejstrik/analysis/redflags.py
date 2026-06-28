@@ -22,6 +22,7 @@ def detect_red_flags(
     ratios: Ratios,
     notes: list[NoteItem],
     insolvent: bool | None = None,
+    unreliable_vat: bool | None = None,
 ) -> list[RedFlag]:
     flags: list[RedFlag] = []
 
@@ -86,6 +87,15 @@ def detect_red_flags(
                 code="insolvency",
                 severity="critical",
                 message="Company appears in the insolvency register (ISIR).",
+            )
+        )
+
+    if unreliable_vat is True:
+        flags.append(
+            RedFlag(
+                code="unreliable_vat",
+                severity="warning",
+                message="Registered as an unreliable VAT payer (nespolehlivy platce DPH).",
             )
         )
 

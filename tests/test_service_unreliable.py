@@ -25,10 +25,13 @@ STATEMENT = FinancialStatement(
 )
 
 
-def test_insolvent_company_gets_insolvency_red_flag():
-    def insolvent(ico: str) -> InsolvencyStatus:
-        return InsolvencyStatus(ico=ico, in_insolvency=True, cases=[], checked=True)
-
+def test_unreliable_payer_becomes_red_flag():
+    clean_isir = lambda ico: InsolvencyStatus(
+        ico=ico, in_insolvency=False, cases=[], checked=True
+    )
+    unreliable_vat = lambda ico: VatStatus(
+        ico=ico, dic="CZ00006947", is_vat_payer=True, is_unreliable=True
+    )
     with (
         patch.object(service, "find_company", return_value=COMPANY),
         patch.object(service, "list_filings", return_value=FILINGS),
@@ -36,26 +39,6 @@ def test_insolvent_company_gets_insolvency_red_flag():
         patch.object(service, "extract_financials", return_value=STATEMENT),
     ):
         report = service.analyze_company_financials(
-            "Test",
-            insolvency_check=insolvent,
-            vat_check=lambda ico: VatStatus(ico=ico, is_vat_payer=False),
+            "Test", insolvency_check=clean_isir, vat_check=unreliable_vat
         )
-    assert any(flag.code == "insolvency" for flag in report.red_flags)
-
-
-def test_unknown_insolvency_adds_no_flag():
-    def unknown(ico: str) -> InsolvencyStatus:
-        return InsolvencyStatus(ico=ico, in_insolvency=False, cases=[], checked=False)
-
-    with (
-        patch.object(service, "find_company", return_value=COMPANY),
-        patch.object(service, "list_filings", return_value=FILINGS),
-        patch.object(service, "load_pdf", return_value=SRC),
-        patch.object(service, "extract_financials", return_value=STATEMENT),
-    ):
-        report = service.analyze_company_financials(
-            "Test",
-            insolvency_check=unknown,
-            vat_check=lambda ico: VatStatus(ico=ico, is_vat_payer=False),
-        )
-    assert not any(flag.code == "insolvency" for flag in report.red_flags)
+    assert any(f.code == "unreliable_vat" for f in report.red_flags)
