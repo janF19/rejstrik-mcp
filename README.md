@@ -47,13 +47,15 @@ The `[FS]` marker indicates a financial statement (ucetní závěrka, výroční
 
 ## Document engine
 
-Requires an Anthropic API key. Claude reads the PDF natively (scanned pages included) and cites exact pages — no OCR pipeline.
+Requires an Anthropic or OpenAI API key. The model reads the PDF natively (scanned pages included); Anthropic-powered Q&A cites exact pages — no OCR pipeline.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
+# or
+export OPENAI_API_KEY=sk-...
 ```
 
-Defaults to `claude-opus-4-8`. Override with `REJSTRIK_MODEL` (e.g. `claude-haiku-4-5`) for lower cost at the expense of quality.
+Defaults to `claude-opus-4-8` for Anthropic and `gpt-4.1` for OpenAI. Override with `REJSTRIK_MODEL` for lower cost at the expense of quality.
 
 ### `rejstrik extract`
 
@@ -103,7 +105,7 @@ Red flags:
   [INFO] Related-party note: Transactions with related parties are disclosed in the notes.
 ```
 
-The analysis layer normalizes fuzzy Czech or English line labels into canonical fields, computes core ratios, checks ISIR for active insolvency proceedings, and scans note summaries for red flags such as going-concern language, related-party disclosures, low liquidity, high leverage, net losses, negative equity, and insolvency.
+The analysis layer normalizes fuzzy Czech or English line labels into canonical fields, computes core ratios, checks ISIR for active insolvency proceedings, checks ADIS for unreliable VAT-payer status, and scans note summaries for red flags such as going-concern language, related-party disclosures, low liquidity, high leverage, net losses, negative equity, insolvency, and unreliable VAT registration.
 
 ## MCP server
 
@@ -113,7 +115,7 @@ Run the stateless FastMCP server with Streamable HTTP transport:
 rejstrik-mcp
 ```
 
-The server exposes these eight tools:
+The server exposes these nine tools:
 
 - `find_company`
 - `list_filings`
@@ -123,10 +125,11 @@ The server exposes these eight tools:
 - `check_insolvency`
 - `get_statutory_bodies`
 - `check_vat`
+- `analyze_company_card`
 
 Point an MCP-capable client at the default `/mcp` endpoint served by FastMCP. The tools return structured Pydantic output, so agents can consume either raw extracted financial statements or the higher-level analysis report.
 
-`check_vat` reports VAT registration and DIČ from ARES. The ADIS unreliable-payer flag is a separate SOAP integration and is intentionally deferred.
+`check_vat` reports VAT registration and DIČ from ARES, enriched with the ADIS unreliable-payer flag when available. `analyze_company_card` returns the same financial report as a self-contained HTML card for MCP UI-capable hosts; use `analyze_company_financials` as the text/structured fallback.
 
 ## Architecture
 
@@ -134,11 +137,11 @@ Point an MCP-capable client at the default `/mcp` endpoint served by FastMCP. Th
 - **Document engine** (`rejstrik.documents`) — PDF resolver, financial schema, LLM protocol, extraction and Q&A orchestration
 - **CLI** (`rejstrik.cli.main`) – typer-based command interface for interactive use
 - **Analysis layer** (`rejstrik.analysis`, `rejstrik.service`) – normalization, ratios, red flags, trends, and one-call financial analysis
-- **MCP server** (`rejstrik.mcp.server`) – FastMCP server exposing the registry, document, and analysis tools
+- **MCP server** (`rejstrik.mcp.server`) – FastMCP server exposing the registry, document, analysis, and UI-card tools
 
 ## Attribution
 
-The insolvency (ISIR) and statutory-body registry clients are adapted from
+The insolvency (ISIR), VAT/unreliable-payer (ADIS), and statutory-body registry clients are adapted from
 [cz-agents-mcp](https://github.com/martinhavel/cz-agents-mcp) (MIT License,
 (c) Martin Havel). See `LICENSES/cz-agents-mcp-LICENSE`.
 

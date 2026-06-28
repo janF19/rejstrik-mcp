@@ -38,7 +38,9 @@ def render_report_card(report: CompanyFinancialReport) -> str:
             for flag in report.red_flags
         )
     else:
-        flags = "<div class='flag' style='background:#2f855a'>No red flags detected.</div>"
+        flags = (
+            "<div class='flag' style='background:#2f855a'>No red flags detected.</div>"
+        )
 
     return f"""<!doctype html>
 <html><head><meta charset="utf-8"><style>{_STYLE}</style></head>

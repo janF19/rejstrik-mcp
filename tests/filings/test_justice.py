@@ -17,7 +17,9 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "justice"
 SUBJECT_HTML = (FIXTURES / "subject_00006947.html").read_text(encoding="utf-8")
 DEEDS_HTML = (FIXTURES / "deeds_00006947.html").read_text(encoding="utf-8")
 
-_NEW_FILINGS_URL = "https://verejnerejstriky.msp.gov.cz/api/sbirka-listin/subjekty/514152"
+_NEW_FILINGS_URL = (
+    "https://verejnerejstriky.msp.gov.cz/api/sbirka-listin/subjekty/514152"
+)
 
 
 def test_parse_subject_id_found():

@@ -10,7 +10,9 @@ from rejstrik.registry.adis import (
 )
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "adis" / "reliable_00514152.xml"
-ENDPOINT = "https://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP"
+ENDPOINT = (
+    "https://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP"
+)
 
 
 def test_parse_unreliable_reliable_payer():

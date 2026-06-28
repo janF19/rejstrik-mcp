@@ -32,6 +32,8 @@ def test_check_vat_no_dic_skips_adis():
         "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/00000000"
     ).mock(return_value=httpx.Response(200, json={"ico": "00000000"}))
     called = []
-    status = check_vat("00000000", unreliable_check=lambda d, client=None: called.append(d))
+    status = check_vat(
+        "00000000", unreliable_check=lambda d, client=None: called.append(d)
+    )
     assert status.is_unreliable is None
     assert called == []

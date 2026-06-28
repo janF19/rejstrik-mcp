@@ -26,12 +26,14 @@ STATEMENT = FinancialStatement(
 
 
 def test_unreliable_payer_becomes_red_flag():
-    clean_isir = lambda ico: InsolvencyStatus(
-        ico=ico, in_insolvency=False, cases=[], checked=True
-    )
-    unreliable_vat = lambda ico: VatStatus(
-        ico=ico, dic="CZ00006947", is_vat_payer=True, is_unreliable=True
-    )
+    def clean_isir(ico: str) -> InsolvencyStatus:
+        return InsolvencyStatus(ico=ico, in_insolvency=False, cases=[], checked=True)
+
+    def unreliable_vat(ico: str) -> VatStatus:
+        return VatStatus(
+            ico=ico, dic="CZ00006947", is_vat_payer=True, is_unreliable=True
+        )
+
     with (
         patch.object(service, "find_company", return_value=COMPANY),
         patch.object(service, "list_filings", return_value=FILINGS),

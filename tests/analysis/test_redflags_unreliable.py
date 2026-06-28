@@ -9,7 +9,11 @@ def test_unreliable_vat_adds_warning():
 
 
 def test_reliable_or_unknown_vat_adds_no_flag():
-    reliable = detect_red_flags(NormalizedFinancials(), Ratios(), [], unreliable_vat=False)
-    unknown = detect_red_flags(NormalizedFinancials(), Ratios(), [], unreliable_vat=None)
+    reliable = detect_red_flags(
+        NormalizedFinancials(), Ratios(), [], unreliable_vat=False
+    )
+    unknown = detect_red_flags(
+        NormalizedFinancials(), Ratios(), [], unreliable_vat=None
+    )
     assert not any(f.code == "unreliable_vat" for f in reliable)
     assert not any(f.code == "unreliable_vat" for f in unknown)

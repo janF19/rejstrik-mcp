@@ -5,7 +5,9 @@ from pydantic import BaseModel
 
 from rejstrik.core.http import make_client
 
-ADIS_ENDPOINT = "https://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP"
+ADIS_ENDPOINT = (
+    "https://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP"
+)
 _NS = "http://adis.mfcr.cz/rozhraniCRPDPH/"
 _STATUS_MAP = {"NE": "reliable", "ANO": "unreliable", "NENALEZEN": "not_found"}
 
