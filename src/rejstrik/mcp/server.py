@@ -1,4 +1,5 @@
 from mcp.server.fastmcp import FastMCP
+from mcp_ui_server import UIResource, create_ui_resource
 
 from rejstrik.analysis.report import CompanyFinancialReport
 from rejstrik.documents.answer import Answer
@@ -18,6 +19,7 @@ from rejstrik.registry.statutory import (
     get_statutory_bodies as _get_statutory_bodies,
 )
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
+from rejstrik.mcp.card import render_report_card
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
     resolve_statement_source,
@@ -34,6 +36,7 @@ EXPOSED_TOOL_NAMES = [
     "check_insolvency",
     "get_statutory_bodies",
     "check_vat",
+    "analyze_company_card",
 ]
 
 
@@ -67,6 +70,24 @@ def ask_filing(ico: str, question: str) -> Answer:
 def analyze_company_financials(query: str) -> CompanyFinancialReport:
     """Full financial report for a company."""
     return _analyze_company_financials(query)
+
+
+@mcp.tool()
+def analyze_company_card(query: str) -> list[UIResource]:
+    """Full financial report rendered as an interactive HTML card."""
+    report = _analyze_company_financials(query)
+    return [
+        create_ui_resource(
+            {
+                "uri": "ui://rejstrik/report",
+                "content": {
+                    "type": "rawHtml",
+                    "htmlString": render_report_card(report),
+                },
+                "encoding": "text",
+            }
+        )
+    ]
 
 
 def _to_ico(value: str) -> str:

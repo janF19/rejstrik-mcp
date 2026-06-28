@@ -12,6 +12,7 @@ dependencies = [
     "openai>=2.30",
     "python-dotenv>=1.0",
     "mcp>=1.2",
+    "mcp-ui-server>=1.0",
 ]
 
 [project.optional-dependencies]
