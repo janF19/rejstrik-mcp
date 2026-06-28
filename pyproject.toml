@@ -9,6 +9,8 @@ dependencies = [
     "typer>=0.12",
     "selectolax>=0.3.21",
     "anthropic>=0.92",
+    "openai>=2.30",
+    "python-dotenv>=1.0",
     "mcp>=1.2",
 ]
 

@@ -1,4 +1,4 @@
-from rejstrik.documents.llm import AnthropicDocumentLLM, DocumentLLM
+from rejstrik.documents.llm import DocumentLLM, default_document_llm
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.documents.source import PdfSource
 
@@ -15,5 +15,5 @@ EXTRACT_INSTRUCTIONS = (
 def extract_financials(
     source: PdfSource, llm: DocumentLLM | None = None
 ) -> FinancialStatement:
-    llm = llm or AnthropicDocumentLLM()
+    llm = llm or default_document_llm()
     return llm.extract(source, FinancialStatement, EXTRACT_INSTRUCTIONS)

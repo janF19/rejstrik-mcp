@@ -2,10 +2,11 @@ import base64
 from typing import Protocol, TypeVar
 
 import anthropic
+from openai import OpenAI
 from pydantic import BaseModel
 
 from rejstrik.documents.answer import Answer, parse_answer
-from rejstrik.documents.config import resolve_model
+from rejstrik.documents.config import resolve_model, resolve_provider
 from rejstrik.documents.source import PdfSource
 
 T = TypeVar("T", bound=BaseModel)
@@ -75,3 +76,70 @@ class AnthropicDocumentLLM:
             ],
         )
         return parse_answer(resp.content)
+
+
+class OpenAIDocumentLLM:
+    """OpenAI implementation used when OPENAI_API_KEY is configured."""
+
+    def __init__(self, client: OpenAI | None = None, model: str | None = None) -> None:
+        self._client = client or OpenAI()
+        self.model = model or resolve_model("openai")
+
+    def extract(self, source: PdfSource, schema: type[T], instructions: str) -> T:
+        resp = self._client.responses.create(
+            model=self.model,
+            max_output_tokens=4096,
+            input=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_file",
+                            "filename": source.filename,
+                            "file_data": _openai_file_data(source),
+                        },
+                        {"type": "input_text", "text": instructions},
+                    ],
+                }
+            ],
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": schema.__name__,
+                    "schema": schema.model_json_schema(),
+                    "strict": False,
+                }
+            },
+        )
+        return schema.model_validate_json(resp.output_text)
+
+    def ask(self, source: PdfSource, question: str) -> Answer:
+        resp = self._client.responses.create(
+            model=self.model,
+            max_output_tokens=4096,
+            input=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_file",
+                            "filename": source.filename,
+                            "file_data": _openai_file_data(source),
+                        },
+                        {"type": "input_text", "text": question},
+                    ],
+                }
+            ],
+        )
+        return Answer(text=resp.output_text, citations=[])
+
+
+def _openai_file_data(source: PdfSource) -> str:
+    encoded = base64.standard_b64encode(source.data).decode()
+    return f"data:application/pdf;base64,{encoded}"
+
+
+def default_document_llm() -> DocumentLLM:
+    if resolve_provider() == "openai":
+        return OpenAIDocumentLLM()
+    return AnthropicDocumentLLM()
