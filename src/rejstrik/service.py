@@ -1,13 +1,16 @@
 import httpx
 from collections.abc import Callable
 
+from pydantic import BaseModel
+
 from rejstrik.analysis.normalize import normalize
 from rejstrik.analysis.ratios import compute_ratios
 from rejstrik.analysis.redflags import detect_red_flags
 from rejstrik.analysis.report import CompanyFinancialReport
+from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.llm import DocumentLLM
-from rejstrik.documents.pick import pick_latest_financial_filing
+from rejstrik.documents.pick import pick_financial_filing, pick_latest_financial_filing
 from rejstrik.documents.source import PdfSource, load_pdf
 from rejstrik.filings.justice import list_filings
 from rejstrik.filings.models import Filing
@@ -19,6 +22,56 @@ from rejstrik.registry.vat import VatStatus, check_vat
 
 class NoStatementFound(Exception):
     pass
+
+
+class FilingDocument(BaseModel):
+    ico: str
+    company_name: str
+    title: str
+    year: int | None = None
+    pdf_url: str
+    file_path: str
+    sha256: str
+    size_bytes: int
+
+
+def fetch_filing(
+    query: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    client: httpx.Client | None = None,
+) -> tuple[FilingDocument, PdfSource]:
+    company = find_company(query, client=client)
+    filings = list_filings(company.ico, client=client)
+    filing = pick_financial_filing(filings, year=year, filing_id=filing_id)
+    if filing is None:
+        years = sorted(
+            {f.year for f in filings if f.is_financial_statement and f.year},
+            reverse=True,
+        )
+        hint = (
+            f" Available years: {years}."
+            if years
+            else " No financial statements filed."
+        )
+        raise NoStatementFound(
+            f"No matching financial statement in Sbírka listin for {company.ico}.{hint}"
+        )
+    source = load_pdf(filing, client=client)
+    path = save_filing_pdf(source, company.ico, filing.year)
+    return (
+        FilingDocument(
+            ico=company.ico,
+            company_name=company.name,
+            title=filing.title,
+            year=filing.year,
+            pdf_url=filing.pdf_url,
+            file_path=str(path),
+            sha256=source.sha256,
+            size_bytes=len(source.data),
+        ),
+        source,
+    )
 
 
 def resolve_statement_source(
