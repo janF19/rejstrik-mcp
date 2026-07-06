@@ -1,4 +1,9 @@
+import base64
+import os
+from pathlib import Path
+
 from mcp.server.fastmcp import FastMCP
+from mcp.types import BlobResourceContents, EmbeddedResource, TextContent
 from mcp_ui_server import UIResource, create_ui_resource
 
 from rejstrik.analysis.report import CompanyFinancialReport
@@ -22,10 +27,13 @@ from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
 from rejstrik.mcp.card import render_report_card
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
+    fetch_filing as _fetch_filing,
     resolve_statement_source,
 )
 
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
+
+_MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "15000000"))
 
 EXPOSED_TOOL_NAMES = [
     "find_company",
@@ -37,6 +45,7 @@ EXPOSED_TOOL_NAMES = [
     "get_statutory_bodies",
     "check_vat",
     "analyze_company_card",
+    "get_filing",
 ]
 
 
@@ -88,6 +97,43 @@ def analyze_company_card(query: str) -> list[UIResource]:
             }
         )
     ]
+
+
+@mcp.tool(structured_output=False)
+def get_filing(
+    ico: str, year: int | None = None, filing_id: str | None = None
+) -> list[TextContent | EmbeddedResource]:
+    """Download a financial statement PDF from Sbírka listin (latest, or by
+    year / filing id from list_filings). Returns filing metadata with a local
+    file_path, plus the PDF itself as an embedded resource. Read the PDF with
+    your own capabilities, then pass extracted figures to analyze_financials —
+    no server-side API key needed."""
+    doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
+    parts: list[TextContent | EmbeddedResource] = [
+        TextContent(type="text", text=doc.model_dump_json(indent=2))
+    ]
+    if doc.size_bytes <= _MAX_EMBED_BYTES:
+        parts.append(
+            EmbeddedResource(
+                type="resource",
+                resource=BlobResourceContents(
+                    uri=Path(doc.file_path).as_uri(),
+                    mimeType="application/pdf",
+                    blob=base64.standard_b64encode(source.data).decode(),
+                ),
+            )
+        )
+    else:
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"PDF is {doc.size_bytes} bytes — too large to embed. "
+                    f"Read it from file_path: {doc.file_path}"
+                ),
+            )
+        )
+    return parts
 
 
 def _to_ico(value: str) -> str:

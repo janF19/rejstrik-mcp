@@ -14,6 +14,7 @@ def test_exposed_tool_names():
         "get_statutory_bodies",
         "check_vat",
         "analyze_company_card",
+        "get_filing",
     ]
 
 
