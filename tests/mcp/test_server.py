@@ -15,6 +15,8 @@ def test_exposed_tool_names():
         "check_vat",
         "analyze_company_card",
         "get_filing",
+        "analyze_financials",
+        "render_card",
     ]
 
 

@@ -27,6 +27,7 @@ from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
 from rejstrik.mcp.card import render_report_card
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
+    analyze_statements as _analyze_statements,
     fetch_filing as _fetch_filing,
     resolve_statement_source,
 )
@@ -46,6 +47,8 @@ EXPOSED_TOOL_NAMES = [
     "check_vat",
     "analyze_company_card",
     "get_filing",
+    "analyze_financials",
+    "render_card",
 ]
 
 
@@ -134,6 +137,35 @@ def get_filing(
             )
         )
     return parts
+
+
+@mcp.tool()
+def analyze_financials(
+    statements: list[FinancialStatement], ico: str | None = None
+) -> CompanyFinancialReport:
+    """Deterministic financial report from statements YOU extracted from the
+    get_filing PDF(s): normalize → ratios → red flags → trends (with 2+ years).
+    Amounts in Czech statements are usually thousands of CZK. Pass the ico to
+    enrich red flags with insolvency and unreliable-VAT-payer checks."""
+    return _analyze_statements(statements, ico=ico)
+
+
+@mcp.tool()
+def render_card(report: CompanyFinancialReport) -> list[UIResource]:
+    """Render a CompanyFinancialReport (from analyze_financials) as an
+    interactive HTML card for MCP UI hosts."""
+    return [
+        create_ui_resource(
+            {
+                "uri": "ui://rejstrik/report",
+                "content": {
+                    "type": "rawHtml",
+                    "htmlString": render_report_card(report),
+                },
+                "encoding": "text",
+            }
+        )
+    ]
 
 
 def _to_ico(value: str) -> str:

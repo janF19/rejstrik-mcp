@@ -22,7 +22,7 @@ REPORT = CompanyFinancialReport(
 
 def test_card_tool_in_exposed_names():
     assert "analyze_company_card" in server.EXPOSED_TOOL_NAMES
-    assert len(server.EXPOSED_TOOL_NAMES) == 10
+    assert len(server.EXPOSED_TOOL_NAMES) == 12
 
 
 def test_card_tool_registered():
