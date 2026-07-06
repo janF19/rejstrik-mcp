@@ -7,10 +7,12 @@ from rejstrik.analysis.normalize import normalize
 from rejstrik.analysis.ratios import compute_ratios
 from rejstrik.analysis.redflags import detect_red_flags
 from rejstrik.analysis.report import CompanyFinancialReport
+from rejstrik.analysis.trends import compute_trends
 from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.llm import DocumentLLM
 from rejstrik.documents.pick import pick_financial_filing, pick_latest_financial_filing
+from rejstrik.documents.schema import FinancialStatement
 from rejstrik.documents.source import PdfSource, load_pdf
 from rejstrik.filings.justice import list_filings
 from rejstrik.filings.models import Filing
@@ -121,4 +123,55 @@ def analyze_company_financials(
         red_flags=red_flags,
         trends=[],
         source_filing_title=filing.title,
+    )
+
+
+def analyze_statements(
+    statements: list[FinancialStatement],
+    *,
+    ico: str | None = None,
+    insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
+    vat_check: Callable[[str], VatStatus] | None = None,
+) -> CompanyFinancialReport:
+    """Deterministic report from host-extracted statements. No LLM calls."""
+    if not statements:
+        raise ValueError(
+            "statements must contain at least one FinancialStatement "
+            "(extract it from the PDF returned by get_filing)"
+        )
+    ordered = sorted(
+        statements, key=lambda s: (s.period_year is None, -(s.period_year or 0))
+    )
+    current = ordered[0]
+    normalized = normalize(current)
+    ratios = compute_ratios(normalized)
+    resolved_ico = ico or current.ico
+    insolvent = None
+    unreliable_vat = None
+    if resolved_ico:
+        insolvency_check = insolvency_check or check_insolvency
+        vat_check = vat_check or check_vat
+        status = insolvency_check(resolved_ico)
+        insolvent = status.in_insolvency if status.checked else None
+        unreliable_vat = vat_check(resolved_ico).is_unreliable
+    red_flags = detect_red_flags(
+        normalized,
+        ratios,
+        current.notes,
+        insolvent=insolvent,
+        unreliable_vat=unreliable_vat,
+    )
+    trends = (
+        compute_trends(normalized, normalize(ordered[1])) if len(ordered) > 1 else []
+    )
+    return CompanyFinancialReport(
+        company_name=current.company_name,
+        ico=resolved_ico,
+        period_year=current.period_year,
+        currency=current.currency,
+        statement=current,
+        normalized=normalized,
+        ratios=ratios,
+        red_flags=red_flags,
+        trends=trends,
     )
