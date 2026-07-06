@@ -1,59 +1,75 @@
 # rejstrik-mcp
 
-**The Czech registry MCP that reads the documents.**
+**Add the Czech business registry to your Claude in 30 seconds — no API key.
+It reads the actual filed PDFs with your own subscription.**
 
-Every other Czech registry tool tells you a company *exists*. `rejstrik-mcp`
-opens its annual report from the Sbirka listin (collection of deeds), pulls the
-numbers out of the PDF, flags buried risk signals, lets you interrogate the
-report in plain language, and keeps the registry/document/analysis layers usable
-from both CLI and MCP clients.
+```bash
+claude mcp add rejstrik -- uvx rejstrik-mcp
+```
 
-## Why this exists
+Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
+your agent resolves the company (ARES), pulls the filed statement PDF from
+the Sbírka listin, reads it itself, and gets deterministic ratios, red
+flags, and trends back from the server. No OCR pipeline, no server-side AI
+key, no scraping middleman.
 
-Open-source Czech-registry tooling, such as `cz-agents-mcp`, covers structured
-registry data well: ARES, CNB, sanctions, insolvency, VAT. None of it touches
-the documents: scanned/native PDF financial statements that hold the actual
-numbers and warnings. Reading those is the hard part agents cannot do today, and
-it is the most useful part for fact-checking a company. `rejstrik-mcp` is built
-around that gap.
+## Why this one
 
-## What it does
+|  | agent-native (MCP) | reads filed PDFs | free & open source | works without any API key |
+|---|---|---|---|---|
+| cz-agents-mcp and similar | ✅ | ❌ | ✅ | ✅ |
+| chytryrejstrik.cz | ❌ | partly (paid) | ❌ | — |
+| **rejstrik-mcp** | ✅ | ✅ | ✅ | ✅ |
+
+## Install
+
+**Claude Code:** `claude mcp add rejstrik -- uvx rejstrik-mcp`
+
+**Claude Desktop:** download `rejstrik-mcp.mcpb` from the latest GitHub
+release and double-click it (requires [uv](https://docs.astral.sh/uv/)) —
+or add to `claude_desktop_config.json`:
+
+```json
+{ "mcpServers": { "rejstrik": { "command": "uvx", "args": ["rejstrik-mcp"] } } }
+```
+
+**Codex** (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.rejstrik]
+command = "uvx"
+args = ["rejstrik-mcp"]
+```
+
+**Any HTTP host:** `uvx rejstrik-mcp --http` serves streamable HTTP on
+`http://127.0.0.1:8000/mcp`.
+
+## Two modes, one server
+
+**Keyless (default).** Your agent does the reading with your existing
+subscription; the server does everything deterministic:
 
 | Tool | What it does |
 |---|---|
-| `find_company` | Resolve a company by name or ICO (ARES) |
-| `list_filings` | List the company's Sbirka listin documents, financial statements first |
-| `extract_financials` | Deterministic structured extraction from the latest statement |
-| `ask_filing` | Free-form Q&A over the full report |
-| `analyze_company_financials` | One call: extract -> ratios -> red flags -> structured report |
-| `analyze_company_card` | The same report as an interactive HTML card for MCP UI hosts |
-| `check_insolvency` | Insolvency cross-check (ISIR) |
-| `get_statutory_bodies` | Directors / statutory bodies (ARES public register) |
-| `check_vat` | VAT registration plus unreliable-payer flag (ARES + ADIS) |
+| `find_company` | Resolve a company by name or IČO (ARES) |
+| `list_filings` | List Sbírka listin documents, financial statements first |
+| `get_filing` | Download a statement PDF (latest, by year, or by id) — returns local path + embedded PDF |
+| `analyze_financials` | Your extracted figures in → ratios, red flags, year-over-year trends out (no LLM) |
+| `render_card` | The report as an interactive HTML card (MCP UI hosts) |
+| `check_insolvency` | Insolvency register (ISIR) |
+| `get_statutory_bodies` | Directors / statutory bodies (ARES) |
+| `check_vat` | VAT registration + unreliable-payer flag (ARES + ADIS) |
 
-The two stars are `ask_filing` (interrogate the report) and
-`analyze_company_financials` (quantify and flag it). Use
-`analyze_company_card` when the MCP host supports UI resources; the structured
-analysis tool remains the fallback for text-only hosts.
+Use the built-in **`analyze-company`** prompt (shows up as a slash command
+in Claude) to run the whole loop — find → fetch PDFs → extract → analyze →
+card — including multi-year trends.
 
-## Quickstart
-
-```bash
-pip install -e ".[dev]"
-export OPENAI_API_KEY=sk-...          # supported for document extraction
-# or
-export ANTHROPIC_API_KEY=sk-ant-...   # supported for document extraction and cited Q&A
-
-# CLI
-rejstrik find "Budejovicky Budvar"
-rejstrik filings 00514152 --financial-only
-rejstrik analyze "Budejovicky Budvar"
-
-# MCP server (stateless streamable-http on /mcp)
-rejstrik-mcp
-```
-
-Point any MCP client at the server's `/mcp` endpoint to use all nine tools.
+**Keyed power mode (optional).** Set `ANTHROPIC_API_KEY` or
+`OPENAI_API_KEY` where the server runs and four more tools activate, doing
+the PDF reading server-side with schema-locked extraction and page
+citations: `extract_financials`, `ask_filing`,
+`analyze_company_financials`, `analyze_company_card`. Without a key they
+politely point you back to the keyless flow.
 
 ## How it works
 
@@ -102,6 +118,7 @@ Useful manual smoke tests:
 ```bash
 rejstrik analyze "Budejovicky Budvar"
 rejstrik-mcp
+python scripts/smoke.py            # live network required — run before releases, not in CI
 ```
 
 ## Attribution

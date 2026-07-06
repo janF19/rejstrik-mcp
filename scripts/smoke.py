@@ -1,0 +1,44 @@
+"""Manual live smoke test — network required, run before releases, not in CI.
+
+Usage: python scripts/smoke.py [company]
+"""
+
+import sys
+
+from rejstrik.documents.schema import FinancialStatement, Figure
+from rejstrik.registry.ares import find_company
+from rejstrik.filings.justice import list_filings
+from rejstrik.service import analyze_statements, fetch_filing
+
+
+def main() -> None:
+    query = sys.argv[1] if len(sys.argv) > 1 else "Budejovicky Budvar"
+    company = find_company(query)
+    print(f"[1/4] find_company: {company.name} ({company.ico})")
+
+    filings = [f for f in list_filings(company.ico) if f.is_financial_statement]
+    print(f"[2/4] list_filings: {len(filings)} financial statements")
+
+    doc, _source = fetch_filing(company.ico)
+    print(f"[3/4] get_filing: {doc.title} ({doc.year}) -> {doc.file_path} "
+          f"({doc.size_bytes} bytes)")
+
+    statements = [
+        FinancialStatement(
+            company_name=company.name, ico=company.ico, period_year=2024,
+            currency="CZK", income_statement=[Figure(label="Tržby", value=1000.0)],
+        ),
+        FinancialStatement(
+            company_name=company.name, ico=company.ico, period_year=2023,
+            currency="CZK", income_statement=[Figure(label="Tržby", value=800.0)],
+        ),
+    ]
+    report = analyze_statements(statements, ico=company.ico)
+    print(f"[4/4] analyze_statements: {len(report.red_flags)} red flags, "
+          f"{len(report.trends)} trend metrics (registry checks live)")
+    assert report.trends, "trends must be computed for 2 statements"
+    print("SMOKE OK")
+
+
+if __name__ == "__main__":
+    main()
