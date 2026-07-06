@@ -17,7 +17,13 @@ jobs:
           python-version: "3.12"
       - run: pip install build
       - run: python -m build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npx @anthropic-ai/mcpb pack mcpb rejstrik-mcp.mcpb
       - uses: pypa/gh-action-pypi-publish@release/v1
       - uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          files: |
+            dist/*
+            rejstrik-mcp.mcpb
