@@ -1,4 +1,5 @@
 import base64
+import os
 from typing import Protocol, TypeVar
 
 import anthropic
@@ -82,7 +83,12 @@ class OpenAIDocumentLLM:
     """OpenAI implementation used when OPENAI_API_KEY is configured."""
 
     def __init__(self, client: OpenAI | None = None, model: str | None = None) -> None:
-        self._client = client or OpenAI()
+        # Construction must not require a key: the caller (server.py) gates on
+        # has_llm_key() before extract() is ever invoked, so a real key is
+        # guaranteed present by the time a network call actually happens.
+        self._client = client or OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY") or "unset"
+        )
         self.model = model or resolve_model("openai")
 
     def extract(self, source: PdfSource, schema: type[T], instructions: str) -> T:

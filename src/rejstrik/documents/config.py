@@ -1,13 +1,13 @@
 import os
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
 DEFAULT_MODEL = "claude-opus-4-8"
 DEFAULT_OPENAI_MODEL = "gpt-4.1"
 
 
 def _load_local_env() -> None:
-    load_dotenv()
+    load_dotenv(find_dotenv(usecwd=True))
 
 
 def resolve_provider() -> str:
