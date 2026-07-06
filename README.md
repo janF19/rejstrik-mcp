@@ -111,6 +111,13 @@ clients are adapted from
 [cz-agents-mcp](https://github.com/martinhavel/cz-agents-mcp) (MIT, Martin
 Havel). See `LICENSES/cz-agents-mcp-LICENSE`.
 
+## Releasing
+
+1. One-time: on pypi.org, add a *Trusted Publisher* for this GitHub repo
+   (workflow `release.yml`, environment `pypi`).
+2. Bump the version in `pyproject.toml`, commit, tag `vX.Y.Z`, push the tag.
+   CI builds, publishes to PyPI, and attaches artifacts to the GitHub release.
+
 ## License
 
 MIT.

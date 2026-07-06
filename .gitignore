@@ -6,3 +6,5 @@ venv/
 .pytest_cache/
 *.pdf
 .DS_Store
+dist/
+*.mcpb
