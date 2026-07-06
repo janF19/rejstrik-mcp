@@ -24,3 +24,8 @@ def resolve_model(provider: str | None = None) -> str:
     provider = provider or "anthropic"
     fallback = DEFAULT_OPENAI_MODEL if provider == "openai" else DEFAULT_MODEL
     return os.environ.get("REJSTRIK_MODEL") or fallback
+
+
+def has_llm_key() -> bool:
+    _load_local_env()
+    return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY"))

@@ -1,4 +1,5 @@
 from rejstrik.documents import config
+from rejstrik.documents.config import has_llm_key
 
 
 def test_default_model_is_opus():
@@ -40,3 +41,15 @@ def test_resolve_provider_can_be_overridden(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
 
     assert config.resolve_provider() == "anthropic"
+
+
+def test_has_llm_key_false_when_unset(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    assert has_llm_key() is False
+
+
+def test_has_llm_key_true_with_either(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    assert has_llm_key() is True

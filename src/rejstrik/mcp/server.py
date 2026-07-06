@@ -9,6 +9,7 @@ from mcp_ui_server import UIResource, create_ui_resource
 from rejstrik.analysis.report import CompanyFinancialReport
 from rejstrik.documents.answer import Answer
 from rejstrik.documents.ask import ask_filing as _ask_filing
+from rejstrik.documents.config import has_llm_key
 from rejstrik.documents.extract import extract_financials as _extract_financials
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
@@ -52,6 +53,23 @@ EXPOSED_TOOL_NAMES = [
 ]
 
 
+class MissingApiKey(Exception):
+    pass
+
+
+_KEYLESS_HINT = (
+    "This tool runs a model inside the server and needs ANTHROPIC_API_KEY or "
+    "OPENAI_API_KEY set where rejstrik-mcp runs. Keyless alternative: call "
+    "get_filing to fetch the statement PDF, read it yourself, then pass the "
+    "extracted figures to analyze_financials (and render_card for the UI card)."
+)
+
+
+def _require_llm_key() -> None:
+    if not has_llm_key():
+        raise MissingApiKey(_KEYLESS_HINT)
+
+
 @mcp.tool()
 def find_company(query: str) -> Company:
     """Resolve a Czech company by name or IČO via the ARES registry."""
@@ -66,27 +84,43 @@ def list_filings(ico: str) -> list[Filing]:
 
 @mcp.tool()
 def extract_financials(ico: str) -> FinancialStatement:
-    """Extract structured financials from the latest statement PDF."""
+    """Extract structured financials from the latest statement PDF.
+
+    Requires a server-side API key; without one, use get_filing +
+    analyze_financials."""
+    _require_llm_key()
     _company, _filing, source = resolve_statement_source(ico)
     return _extract_financials(source)
 
 
 @mcp.tool()
 def ask_filing(ico: str, question: str) -> Answer:
-    """Answer a question about the latest statement with page citations."""
+    """Answer a question about the latest statement with page citations.
+
+    Requires a server-side API key; without one, use get_filing +
+    analyze_financials."""
+    _require_llm_key()
     _company, _filing, source = resolve_statement_source(ico)
     return _ask_filing(source, question)
 
 
 @mcp.tool()
 def analyze_company_financials(query: str) -> CompanyFinancialReport:
-    """Full financial report for a company."""
+    """Full financial report for a company.
+
+    Requires a server-side API key; without one, use get_filing +
+    analyze_financials."""
+    _require_llm_key()
     return _analyze_company_financials(query)
 
 
 @mcp.tool()
 def analyze_company_card(query: str) -> list[UIResource]:
-    """Full financial report rendered as an interactive HTML card."""
+    """Full financial report rendered as an interactive HTML card.
+
+    Requires a server-side API key; without one, use get_filing +
+    analyze_financials."""
+    _require_llm_key()
     report = _analyze_company_financials(query)
     return [
         create_ui_resource(

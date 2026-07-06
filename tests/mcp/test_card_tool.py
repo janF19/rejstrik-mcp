@@ -30,7 +30,8 @@ def test_card_tool_registered():
     assert "analyze_company_card" in names
 
 
-def test_card_tool_returns_ui_resource():
+def test_card_tool_returns_ui_resource(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
     with patch.object(server, "_analyze_company_financials", return_value=REPORT):
         result = server.analyze_company_card("Test")
     assert isinstance(result, list) and len(result) == 1
