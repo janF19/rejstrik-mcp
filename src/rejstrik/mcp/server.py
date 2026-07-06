@@ -1,3 +1,4 @@
+import argparse
 import base64
 import json
 import os
@@ -268,8 +269,20 @@ def company_health_check_prompt(company: str) -> str:
    with the caveats an accountant would add."""
 
 
-def main() -> None:
-    mcp.run(transport="streamable-http")
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(prog="rejstrik-mcp")
+    parser.add_argument(
+        "--http",
+        action="store_true",
+        help="serve streamable HTTP on /mcp instead of stdio",
+    )
+    parser.add_argument("--port", type=int, default=8000)
+    args = parser.parse_args(argv)
+    if args.http:
+        mcp.settings.port = args.port
+        mcp.run(transport="streamable-http")
+    else:
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
