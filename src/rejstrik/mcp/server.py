@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 from pathlib import Path
 
@@ -224,6 +225,47 @@ def get_statutory_bodies(ico: str) -> list[Officer]:
 def check_vat(ico: str) -> VatStatus:
     """Report VAT registration and DIČ from the ARES detail record."""
     return _check_vat(_to_ico(ico))
+
+
+@mcp.prompt(name="analyze-company")
+def analyze_company_prompt(company: str, years: int = 1) -> str:
+    """Guide the host model through keyless company financial analysis."""
+    schema = json.dumps(FinancialStatement.model_json_schema(), indent=2)
+    return f"""Analyze the financials of the Czech company "{company}" over the
+last {years} year(s), using only your own reading of the filed statements.
+
+Follow these steps exactly:
+1. Call find_company("{company}") to resolve the IČO.
+2. Call list_filings(ico) and identify the financial statements for the
+   {years} most recent year(s).
+3. For each year, call get_filing(ico, year=...). Read the returned PDF
+   (use the local file_path if you can read files, otherwise the embedded
+   resource).
+4. From each PDF, extract a FinancialStatement JSON object matching this
+   schema (amounts in Czech statements are usually reported in thousands of CZK
+   — keep them as printed and set currency to "CZK"; set period_year to the
+   statement year; cite source_page for every figure):
+{schema}
+5. Call analyze_financials(statements=[...], ico=ico) with ALL extracted
+   statements in one call to get ratios, red flags, and year-over-year trends.
+6. If your client renders MCP UI resources, also call render_card(report).
+7. Summarize: overall health, notable trends, every red flag with its
+   severity, and page citations for key numbers."""
+
+
+@mcp.prompt(name="company-health-check")
+def company_health_check_prompt(company: str) -> str:
+    """Guide the host model through a full registry + financials health check."""
+    return f"""Run a full health check on the Czech company "{company}".
+
+1. Call find_company("{company}") to resolve the IČO.
+2. In parallel where possible, call check_insolvency(ico), check_vat(ico),
+   and get_statutory_bodies(ico).
+3. Follow the analyze-company recipe for the latest financial year
+   (list_filings → get_filing → extract figures → analyze_financials).
+4. Report: registry status (insolvency, VAT reliability, who runs the
+   company), financial health (ratios, red flags), and an overall verdict
+   with the caveats an accountant would add."""
 
 
 def main() -> None:
