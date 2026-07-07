@@ -1,5 +1,7 @@
 # rejstrik-mcp
 
+[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml)
+
 **Add the Czech business registry to your Claude in 30 seconds — no API key.
 It reads the actual filed PDFs with your own subscription.**
 
@@ -70,6 +72,14 @@ the PDF reading server-side with schema-locked extraction and page
 citations: `extract_financials`, `ask_filing`,
 `analyze_company_financials`, `analyze_company_card`. Without a key they
 politely point you back to the keyless flow.
+
+## See it work
+
+![3-year analysis of Budějovický Budvar](docs/media/budvar-3year.gif)
+
+*The interactive report card (MCP UI hosts):*
+
+![Report card](docs/media/report-card.png)
 
 ## How it works
 

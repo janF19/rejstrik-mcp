@@ -1,0 +1,1 @@
+Drop `budvar-3year.gif` (asciinema→gif of `rejstrik analyze "Budejovicky Budvar" --years 3`) and `report-card.png` (screenshot of analyze_company_card rendered in Claude Desktop / MCP Inspector) here.
