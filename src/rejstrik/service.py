@@ -11,7 +11,7 @@ from rejstrik.analysis.trends import compute_trends
 from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.llm import DocumentLLM
-from rejstrik.documents.pick import pick_financial_filing, pick_latest_financial_filing
+from rejstrik.documents.pick import pick_financial_filing
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.documents.source import PdfSource, load_pdf
 from rejstrik.filings.justice import list_filings
@@ -78,13 +78,25 @@ def fetch_filing(
 
 def resolve_statement_source(
     query: str,
+    year: int | None = None,
+    filing_id: str | None = None,
     client: httpx.Client | None = None,
 ) -> tuple[Company, Filing, PdfSource]:
     company = find_company(query, client=client)
-    filing = pick_latest_financial_filing(list_filings(company.ico, client=client))
+    filings = list_filings(company.ico, client=client)
+    filing = pick_financial_filing(filings, year=year, filing_id=filing_id)
     if filing is None:
+        years = sorted(
+            {f.year for f in filings if f.is_financial_statement and f.year},
+            reverse=True,
+        )
+        hint = (
+            f" Available years: {years}."
+            if years
+            else " No financial statements filed."
+        )
         raise NoStatementFound(
-            f"No financial statement in Sbírka listin for {company.ico}"
+            f"No matching financial statement in Sbírka listin for {company.ico}.{hint}"
         )
     return company, filing, load_pdf(filing, client=client)
 
