@@ -104,38 +104,32 @@ def resolve_statement_source(
 def analyze_company_financials(
     query: str,
     *,
+    years: int = 1,
     llm: DocumentLLM | None = None,
     insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
     vat_check: Callable[[str], VatStatus] | None = None,
 ) -> CompanyFinancialReport:
-    insolvency_check = insolvency_check or check_insolvency
-    vat_check = vat_check or check_vat
-    company, filing, source = resolve_statement_source(query)
-    statement = extract_financials(source, llm=llm)
-    normalized = normalize(statement)
-    ratios = compute_ratios(normalized)
-    status = insolvency_check(company.ico)
-    insolvent = status.in_insolvency if status.checked else None
-    vat = vat_check(company.ico)
-    red_flags = detect_red_flags(
-        normalized,
-        ratios,
-        statement.notes,
-        insolvent=insolvent,
-        unreliable_vat=vat.is_unreliable,
+    years = max(1, min(years, 5))
+    company = find_company(query)
+    statements_filings = [
+        f for f in list_filings(company.ico) if f.is_financial_statement
+    ][:years]
+    if not statements_filings:
+        raise NoStatementFound(
+            f"No financial statement in Sbírka listin for {company.ico}"
+        )
+    statements = [
+        extract_financials(load_pdf(filing), llm=llm) for filing in statements_filings
+    ]
+    report = analyze_statements(
+        statements,
+        ico=company.ico,
+        insolvency_check=insolvency_check,
+        vat_check=vat_check,
     )
-    return CompanyFinancialReport(
-        company_name=statement.company_name or company.name,
-        ico=statement.ico or company.ico,
-        period_year=statement.period_year,
-        currency=statement.currency,
-        statement=statement,
-        normalized=normalized,
-        ratios=ratios,
-        red_flags=red_flags,
-        trends=[],
-        source_filing_title=filing.title,
-    )
+    report.company_name = report.company_name or company.name
+    report.source_filing_title = statements_filings[0].title
+    return report
 
 
 def analyze_statements(
