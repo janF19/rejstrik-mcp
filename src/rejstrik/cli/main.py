@@ -77,9 +77,9 @@ def ask(ico: str, question: str) -> None:
 
 
 @app.command()
-def analyze(query: str) -> None:
-    """Full financial analysis for a company's latest statement."""
-    report = analyze_company_financials(query)
+def analyze(query: str, years: int = typer.Option(1, "--years", min=1, max=5)) -> None:
+    """Full financial analysis for a company (optionally multi-year)."""
+    report = analyze_company_financials(query, years=years)
     typer.echo(
         f"{report.company_name}  ({report.period_year or '----'})  [{report.ico}]"
     )

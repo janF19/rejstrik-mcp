@@ -85,45 +85,49 @@ def list_filings(ico: str) -> list[Filing]:
 
 
 @mcp.tool()
-def extract_financials(ico: str) -> FinancialStatement:
-    """Extract structured financials from the latest statement PDF.
-
-    Requires a server-side API key; without one, use get_filing +
+def extract_financials(
+    ico: str, year: int | None = None, filing_id: str | None = None
+) -> FinancialStatement:
+    """Extract structured financials from a statement PDF (latest, or by year /
+    filing id). Requires a server-side API key; without one, use get_filing +
     analyze_financials."""
     _require_llm_key()
-    _company, _filing, source = resolve_statement_source(ico)
+    _company, _filing, source = resolve_statement_source(
+        ico, year=year, filing_id=filing_id
+    )
     return _extract_financials(source)
 
 
 @mcp.tool()
-def ask_filing(ico: str, question: str) -> Answer:
-    """Answer a question about the latest statement with page citations.
-
-    Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
+def ask_filing(
+    ico: str, question: str, year: int | None = None, filing_id: str | None = None
+) -> Answer:
+    """Answer a question about a statement with page citations (latest, or by
+    year / filing id). Requires a server-side API key; without one, use
+    get_filing + analyze_financials."""
     _require_llm_key()
-    _company, _filing, source = resolve_statement_source(ico)
+    _company, _filing, source = resolve_statement_source(
+        ico, year=year, filing_id=filing_id
+    )
     return _ask_filing(source, question)
 
 
 @mcp.tool()
-def analyze_company_financials(query: str) -> CompanyFinancialReport:
-    """Full financial report for a company.
-
-    Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
+def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialReport:
+    """Full financial report for a company over the last `years` (1-5) years,
+    with year-over-year trends when years > 1. Requires a server-side API key;
+    without one, use get_filing + analyze_financials."""
     _require_llm_key()
-    return _analyze_company_financials(query)
+    return _analyze_company_financials(query, years=years)
 
 
 @mcp.tool()
-def analyze_company_card(query: str) -> list[UIResource]:
-    """Full financial report rendered as an interactive HTML card.
-
-    Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
+def analyze_company_card(query: str, years: int = 1) -> list[UIResource]:
+    """Full financial report as an interactive HTML card, over the last `years`
+    (1-5) years. Requires a server-side API key; without one, use get_filing +
+    analyze_financials + render_card."""
     _require_llm_key()
-    report = _analyze_company_financials(query)
+    report = _analyze_company_financials(query, years=years)
     return [
         create_ui_resource(
             {
