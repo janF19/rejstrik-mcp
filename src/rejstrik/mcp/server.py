@@ -5,7 +5,12 @@ import os
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
-from mcp.types import BlobResourceContents, EmbeddedResource, TextContent
+from mcp.types import (
+    BlobResourceContents,
+    EmbeddedResource,
+    TextContent,
+    ToolAnnotations,
+)
 from mcp_ui_server import UIResource, create_ui_resource
 
 from rejstrik.analysis.report import CompanyFinancialReport
@@ -55,6 +60,10 @@ EXPOSED_TOOL_NAMES = [
 ]
 
 
+def _ro(title: str) -> ToolAnnotations:
+    return ToolAnnotations(title=title, readOnlyHint=True, openWorldHint=True)
+
+
 class MissingApiKey(Exception):
     pass
 
@@ -72,19 +81,19 @@ def _require_llm_key() -> None:
         raise MissingApiKey(_KEYLESS_HINT)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Find Czech company"))
 def find_company(query: str) -> Company:
     """Resolve a Czech company by name or IČO via the ARES registry."""
     return _find_company(query)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("List Sbírka listin filings"))
 def list_filings(ico: str) -> list[Filing]:
     """List a company's Sbírka listin documents."""
     return _list_filings(ico)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Extract financial statement"))
 def extract_financials(
     ico: str, year: int | None = None, filing_id: str | None = None
 ) -> FinancialStatement:
@@ -98,7 +107,7 @@ def extract_financials(
     return _extract_financials(source)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Ask about a filing"))
 def ask_filing(
     ico: str, question: str, year: int | None = None, filing_id: str | None = None
 ) -> Answer:
@@ -112,7 +121,7 @@ def ask_filing(
     return _ask_filing(source, question)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Analyze company financials"))
 def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialReport:
     """Full financial report for a company over the last `years` (1-5) years,
     with year-over-year trends when years > 1. Requires a server-side API key;
@@ -121,7 +130,7 @@ def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialRe
     return _analyze_company_financials(query, years=years)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Analyze company card"))
 def analyze_company_card(query: str, years: int = 1) -> list[UIResource]:
     """Full financial report as an interactive HTML card, over the last `years`
     (1-5) years. Requires a server-side API key; without one, use get_filing +
@@ -142,7 +151,7 @@ def analyze_company_card(query: str, years: int = 1) -> list[UIResource]:
     ]
 
 
-@mcp.tool(structured_output=False)
+@mcp.tool(annotations=_ro("Get filing PDF"), structured_output=False)
 def get_filing(
     ico: str, year: int | None = None, filing_id: str | None = None
 ) -> list[TextContent | EmbeddedResource]:
@@ -179,7 +188,7 @@ def get_filing(
     return parts
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Analyze extracted financials"))
 def analyze_financials(
     statements: list[FinancialStatement], ico: str | None = None
 ) -> CompanyFinancialReport:
@@ -190,7 +199,7 @@ def analyze_financials(
     return _analyze_statements(statements, ico=ico)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Render report card"))
 def render_card(report: CompanyFinancialReport) -> list[UIResource]:
     """Render a CompanyFinancialReport (from analyze_financials) as an
     interactive HTML card for MCP UI hosts."""
@@ -214,19 +223,19 @@ def _to_ico(value: str) -> str:
     return candidate.zfill(8) if candidate.isdigit() else _find_company(candidate).ico
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Check insolvency"))
 def check_insolvency(ico: str) -> InsolvencyStatus:
     """Check the Czech insolvency register (ISIR) by IČO or company name."""
     return _check_insolvency(_to_ico(ico))
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Get statutory bodies"))
 def get_statutory_bodies(ico: str) -> list[Officer]:
     """List statutory body members from the ARES public-register extract."""
     return _get_statutory_bodies(_to_ico(ico))
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Check VAT status"))
 def check_vat(ico: str) -> VatStatus:
     """Report VAT registration and DIČ from the ARES detail record."""
     return _check_vat(_to_ico(ico))
