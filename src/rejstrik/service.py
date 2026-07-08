@@ -111,12 +111,20 @@ def analyze_company_financials(
 ) -> CompanyFinancialReport:
     years = max(1, min(years, 5))
     company = find_company(query)
-    statements_filings = [
-        f for f in list_filings(company.ico) if f.is_financial_statement
-    ][:years]
+    all_filings = list_filings(company.ico)
+    statements_filings = [f for f in all_filings if f.is_financial_statement][:years]
     if not statements_filings:
+        available_years = sorted(
+            {f.year for f in all_filings if f.is_financial_statement and f.year},
+            reverse=True,
+        )
+        hint = (
+            f" Available years: {available_years}."
+            if available_years
+            else " No financial statements filed."
+        )
         raise NoStatementFound(
-            f"No financial statement in Sbírka listin for {company.ico}"
+            f"No financial statement in Sbírka listin for {company.ico}.{hint}"
         )
     statements = [
         extract_financials(load_pdf(filing), llm=llm) for filing in statements_filings

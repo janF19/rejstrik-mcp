@@ -2,4 +2,4 @@ import rejstrik
 
 
 def test_version_exposed():
-    assert rejstrik.__version__ == "0.1.0"
+    assert rejstrik.__version__ == "0.3.0"
