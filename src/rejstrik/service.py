@@ -18,7 +18,9 @@ from rejstrik.filings.justice import list_filings
 from rejstrik.filings.models import Filing
 from rejstrik.registry.ares import find_company
 from rejstrik.registry.isir import InsolvencyStatus, check_insolvency
+from rejstrik.registry.contracts import ContractReport
 from rejstrik.registry.models import Company
+from rejstrik.registry.subsidies import SubsidyReport
 from rejstrik.registry.vat import VatStatus, check_vat
 
 
@@ -146,6 +148,8 @@ def analyze_statements(
     ico: str | None = None,
     insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
     vat_check: Callable[[str], VatStatus] | None = None,
+    subsidy_check: Callable[[str], SubsidyReport] | None = None,
+    contract_check: Callable[[str], ContractReport] | None = None,
 ) -> CompanyFinancialReport:
     """Deterministic report from host-extracted statements. No LLM calls."""
     if not statements:
@@ -162,18 +166,31 @@ def analyze_statements(
     resolved_ico = ico or current.ico
     insolvent = None
     unreliable_vat = None
+    public_money_ratio = None
     if resolved_ico:
         insolvency_check = insolvency_check or check_insolvency
         vat_check = vat_check or check_vat
         status = insolvency_check(resolved_ico)
         insolvent = status.in_insolvency if status.checked else None
         unreliable_vat = vat_check(resolved_ico).is_unreliable
+        if (
+            normalized.revenue
+            and normalized.revenue > 0
+            and (subsidy_check or contract_check)
+        ):
+            public_total = 0.0
+            if subsidy_check:
+                public_total += subsidy_check(resolved_ico).total_amount
+            if contract_check:
+                public_total += contract_check(resolved_ico).total_value
+            public_money_ratio = public_total / normalized.revenue
     red_flags = detect_red_flags(
         normalized,
         ratios,
         current.notes,
         insolvent=insolvent,
         unreliable_vat=unreliable_vat,
+        public_money_ratio=public_money_ratio,
     )
     trends = (
         compute_trends(normalized, normalize(ordered[1])) if len(ordered) > 1 else []
