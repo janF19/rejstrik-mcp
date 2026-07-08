@@ -17,6 +17,8 @@ def test_exposed_tool_names():
         "get_filing",
         "analyze_financials",
         "render_card",
+        "get_subsidies",
+        "get_contracts",
     ]
 
 

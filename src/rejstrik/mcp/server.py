@@ -22,6 +22,7 @@ from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
 from rejstrik.filings.models import Filing
 from rejstrik.registry.ares import find_company as _find_company
+from rejstrik.registry.contracts import ContractReport, get_contracts as _get_contracts
 from rejstrik.registry.isir import (
     InsolvencyStatus,
     check_insolvency as _check_insolvency,
@@ -31,6 +32,7 @@ from rejstrik.registry.statutory import (
     Officer,
     get_statutory_bodies as _get_statutory_bodies,
 )
+from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
 from rejstrik.mcp.card import render_report_card
 from rejstrik.service import (
@@ -57,6 +59,8 @@ EXPOSED_TOOL_NAMES = [
     "get_filing",
     "analyze_financials",
     "render_card",
+    "get_subsidies",
+    "get_contracts",
 ]
 
 
@@ -239,6 +243,18 @@ def get_statutory_bodies(ico: str) -> list[Officer]:
 def check_vat(ico: str) -> VatStatus:
     """Report VAT registration and DIČ from the ARES detail record."""
     return _check_vat(_to_ico(ico))
+
+
+@mcp.tool(annotations=_ro("Get state subsidies"))
+def get_subsidies(ico: str) -> SubsidyReport:
+    """State subsidies received by a company (IS ReD / former CEDR), by IČO or name."""
+    return _get_subsidies(_to_ico(ico))
+
+
+@mcp.tool(annotations=_ro("Get public contracts"))
+def get_contracts(ico: str) -> ContractReport:
+    """Public contracts involving a company (Registr smluv), by IČO or name."""
+    return _get_contracts(_to_ico(ico))
 
 
 @mcp.prompt(name="analyze-company")

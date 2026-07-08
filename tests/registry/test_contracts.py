@@ -16,7 +16,7 @@ def test_parse_contracts_extracts_rows():
 
 
 def test_parse_contracts_numeric_value():
-    html = '''
+    html = """
     <table class="searchResultList">
     <tbody>
     <tr>
@@ -30,7 +30,7 @@ def test_parse_contracts_numeric_value():
     </tr>
     </tbody>
     </table>
-    '''
+    """
     contracts = parse_contracts(html)
     assert len(contracts) == 1
     assert contracts[0].value == 1234567.89
