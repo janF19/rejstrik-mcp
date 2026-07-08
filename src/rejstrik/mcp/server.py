@@ -5,7 +5,12 @@ import os
 from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
-from mcp.types import BlobResourceContents, EmbeddedResource, TextContent
+from mcp.types import (
+    BlobResourceContents,
+    EmbeddedResource,
+    TextContent,
+    ToolAnnotations,
+)
 from mcp_ui_server import UIResource, create_ui_resource
 
 from rejstrik.analysis.report import CompanyFinancialReport
@@ -17,6 +22,7 @@ from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
 from rejstrik.filings.models import Filing
 from rejstrik.registry.ares import find_company as _find_company
+from rejstrik.registry.contracts import ContractReport, get_contracts as _get_contracts
 from rejstrik.registry.isir import (
     InsolvencyStatus,
     check_insolvency as _check_insolvency,
@@ -26,6 +32,7 @@ from rejstrik.registry.statutory import (
     Officer,
     get_statutory_bodies as _get_statutory_bodies,
 )
+from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
 from rejstrik.mcp.card import render_report_card
 from rejstrik.service import (
@@ -52,7 +59,13 @@ EXPOSED_TOOL_NAMES = [
     "get_filing",
     "analyze_financials",
     "render_card",
+    "get_subsidies",
+    "get_contracts",
 ]
+
+
+def _ro(title: str) -> ToolAnnotations:
+    return ToolAnnotations(title=title, readOnlyHint=True, openWorldHint=True)
 
 
 class MissingApiKey(Exception):
@@ -72,58 +85,62 @@ def _require_llm_key() -> None:
         raise MissingApiKey(_KEYLESS_HINT)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Find Czech company"))
 def find_company(query: str) -> Company:
     """Resolve a Czech company by name or IČO via the ARES registry."""
     return _find_company(query)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("List Sbírka listin filings"))
 def list_filings(ico: str) -> list[Filing]:
     """List a company's Sbírka listin documents."""
     return _list_filings(ico)
 
 
-@mcp.tool()
-def extract_financials(ico: str) -> FinancialStatement:
-    """Extract structured financials from the latest statement PDF.
-
-    Requires a server-side API key; without one, use get_filing +
+@mcp.tool(annotations=_ro("Extract financial statement"))
+def extract_financials(
+    ico: str, year: int | None = None, filing_id: str | None = None
+) -> FinancialStatement:
+    """Extract structured financials from a statement PDF (latest, or by year /
+    filing id). Requires a server-side API key; without one, use get_filing +
     analyze_financials."""
     _require_llm_key()
-    _company, _filing, source = resolve_statement_source(ico)
+    _company, _filing, source = resolve_statement_source(
+        ico, year=year, filing_id=filing_id
+    )
     return _extract_financials(source)
 
 
-@mcp.tool()
-def ask_filing(ico: str, question: str) -> Answer:
-    """Answer a question about the latest statement with page citations.
-
-    Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
+@mcp.tool(annotations=_ro("Ask about a filing"))
+def ask_filing(
+    ico: str, question: str, year: int | None = None, filing_id: str | None = None
+) -> Answer:
+    """Answer a question about a statement with page citations (latest, or by
+    year / filing id). Requires a server-side API key; without one, use
+    get_filing + analyze_financials."""
     _require_llm_key()
-    _company, _filing, source = resolve_statement_source(ico)
+    _company, _filing, source = resolve_statement_source(
+        ico, year=year, filing_id=filing_id
+    )
     return _ask_filing(source, question)
 
 
-@mcp.tool()
-def analyze_company_financials(query: str) -> CompanyFinancialReport:
-    """Full financial report for a company.
-
-    Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
+@mcp.tool(annotations=_ro("Analyze company financials"))
+def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialReport:
+    """Full financial report for a company over the last `years` (1-5) years,
+    with year-over-year trends when years > 1. Requires a server-side API key;
+    without one, use get_filing + analyze_financials."""
     _require_llm_key()
-    return _analyze_company_financials(query)
+    return _analyze_company_financials(query, years=years)
 
 
-@mcp.tool()
-def analyze_company_card(query: str) -> list[UIResource]:
-    """Full financial report rendered as an interactive HTML card.
-
-    Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
+@mcp.tool(annotations=_ro("Analyze company card"))
+def analyze_company_card(query: str, years: int = 1) -> list[UIResource]:
+    """Full financial report as an interactive HTML card, over the last `years`
+    (1-5) years. Requires a server-side API key; without one, use get_filing +
+    analyze_financials + render_card."""
     _require_llm_key()
-    report = _analyze_company_financials(query)
+    report = _analyze_company_financials(query, years=years)
     return [
         create_ui_resource(
             {
@@ -138,7 +155,7 @@ def analyze_company_card(query: str) -> list[UIResource]:
     ]
 
 
-@mcp.tool(structured_output=False)
+@mcp.tool(annotations=_ro("Get filing PDF"), structured_output=False)
 def get_filing(
     ico: str, year: int | None = None, filing_id: str | None = None
 ) -> list[TextContent | EmbeddedResource]:
@@ -175,7 +192,7 @@ def get_filing(
     return parts
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Analyze extracted financials"))
 def analyze_financials(
     statements: list[FinancialStatement], ico: str | None = None
 ) -> CompanyFinancialReport:
@@ -186,7 +203,7 @@ def analyze_financials(
     return _analyze_statements(statements, ico=ico)
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Render report card"))
 def render_card(report: CompanyFinancialReport) -> list[UIResource]:
     """Render a CompanyFinancialReport (from analyze_financials) as an
     interactive HTML card for MCP UI hosts."""
@@ -210,22 +227,34 @@ def _to_ico(value: str) -> str:
     return candidate.zfill(8) if candidate.isdigit() else _find_company(candidate).ico
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Check insolvency"))
 def check_insolvency(ico: str) -> InsolvencyStatus:
     """Check the Czech insolvency register (ISIR) by IČO or company name."""
     return _check_insolvency(_to_ico(ico))
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Get statutory bodies"))
 def get_statutory_bodies(ico: str) -> list[Officer]:
     """List statutory body members from the ARES public-register extract."""
     return _get_statutory_bodies(_to_ico(ico))
 
 
-@mcp.tool()
+@mcp.tool(annotations=_ro("Check VAT status"))
 def check_vat(ico: str) -> VatStatus:
     """Report VAT registration and DIČ from the ARES detail record."""
     return _check_vat(_to_ico(ico))
+
+
+@mcp.tool(annotations=_ro("Get state subsidies"))
+def get_subsidies(ico: str) -> SubsidyReport:
+    """State subsidies received by a company (IS ReD / former CEDR), by IČO or name."""
+    return _get_subsidies(_to_ico(ico))
+
+
+@mcp.tool(annotations=_ro("Get public contracts"))
+def get_contracts(ico: str) -> ContractReport:
+    """Public contracts involving a company (Registr smluv), by IČO or name."""
+    return _get_contracts(_to_ico(ico))
 
 
 @mcp.prompt(name="analyze-company")
@@ -261,12 +290,13 @@ def company_health_check_prompt(company: str) -> str:
 
 1. Call find_company("{company}") to resolve the IČO.
 2. In parallel where possible, call check_insolvency(ico), check_vat(ico),
-   and get_statutory_bodies(ico).
+   get_statutory_bodies(ico), get_subsidies(ico), and get_contracts(ico).
 3. Follow the analyze-company recipe for the latest financial year
    (list_filings → get_filing → extract figures → analyze_financials).
 4. Report: registry status (insolvency, VAT reliability, who runs the
-   company), financial health (ratios, red flags), and an overall verdict
-   with the caveats an accountant would add."""
+   company), financial health (ratios, red flags), public-money
+   dependence (subsidies and contracts relative to revenue), and an
+   overall verdict with the caveats an accountant would add."""
 
 
 def main(argv: list[str] | None = None) -> None:

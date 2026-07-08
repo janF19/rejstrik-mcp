@@ -5,22 +5,27 @@ Usage: python scripts/smoke.py [company]
 
 import sys
 
+from rejstrik.documents.config import has_llm_key
 from rejstrik.documents.schema import FinancialStatement, Figure
 from rejstrik.registry.ares import find_company
 from rejstrik.filings.justice import list_filings
-from rejstrik.service import analyze_statements, fetch_filing
+from rejstrik.service import (
+    analyze_company_financials,
+    analyze_statements,
+    fetch_filing,
+)
 
 
 def main() -> None:
     query = sys.argv[1] if len(sys.argv) > 1 else "Budejovicky Budvar"
     company = find_company(query)
-    print(f"[1/4] find_company: {company.name} ({company.ico})")
+    print(f"[1/5] find_company: {company.name} ({company.ico})")
 
     filings = [f for f in list_filings(company.ico) if f.is_financial_statement]
-    print(f"[2/4] list_filings: {len(filings)} financial statements")
+    print(f"[2/5] list_filings: {len(filings)} financial statements")
 
     doc, _source = fetch_filing(company.ico)
-    print(f"[3/4] get_filing: {doc.title} ({doc.year}) -> {doc.file_path} "
+    print(f"[3/5] get_filing: {doc.title} ({doc.year}) -> {doc.file_path} "
           f"({doc.size_bytes} bytes)")
 
     statements = [
@@ -34,9 +39,22 @@ def main() -> None:
         ),
     ]
     report = analyze_statements(statements, ico=company.ico)
-    print(f"[4/4] analyze_statements: {len(report.red_flags)} red flags, "
+    print(f"[4/5] analyze_statements: {len(report.red_flags)} red flags, "
           f"{len(report.trends)} trend metrics (registry checks live)")
     assert report.trends, "trends must be computed for 2 statements"
+
+    if has_llm_key():
+        multi_year_report = analyze_company_financials(company.ico, years=2)
+        print(
+            f"[5/5] analyze_company_financials(years=2): "
+            f"{len(multi_year_report.trends)} trend metrics"
+        )
+        assert multi_year_report.trends, "trends must be computed for years=2"
+        for trend in multi_year_report.trends:
+            print(f"    {trend}")
+    else:
+        print("[5/5] skipped multi-year analyze_company_financials (no LLM key set)")
+
     print("SMOKE OK")
 
 

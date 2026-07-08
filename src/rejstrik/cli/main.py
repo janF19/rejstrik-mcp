@@ -4,6 +4,8 @@ from rejstrik.documents.ask import ask_filing
 from rejstrik.documents.extract import extract_financials
 from rejstrik.filings.justice import list_filings
 from rejstrik.registry.ares import CompanyNotFound, find_company
+from rejstrik.registry.contracts import get_contracts
+from rejstrik.registry.subsidies import get_subsidies
 from rejstrik.service import (
     NoStatementFound,
     analyze_company_financials,
@@ -39,6 +41,27 @@ def filings(
         marker = "[FS] " if f.is_financial_statement else "     "
         year = str(f.year) if f.year else "----"
         typer.echo(f"{marker}{year}  {f.title}  {f.pdf_url}")
+
+
+@app.command()
+def subsidies(ico: str) -> None:
+    """List state subsidies received by a company (IS ReD / former CEDR)."""
+    report = get_subsidies(ico)
+    typer.echo(
+        f"{report.recipient_name or '?'}  total: {report.total_amount}  "
+        f"({report.count} subsidies)"
+    )
+    for s in report.subsidies:
+        typer.echo(f"  {s.project_name or '?'}: {s.amount}")
+
+
+@app.command()
+def contracts(ico: str) -> None:
+    """List public contracts involving a company (Registr smluv)."""
+    report = get_contracts(ico)
+    typer.echo(f"{report.count} contracts  total: {report.total_value}")
+    for c in report.contracts:
+        typer.echo(f"  {c.subject or '?'}: {c.value}")
 
 
 def _load_latest_statement(ico: str):
@@ -77,9 +100,9 @@ def ask(ico: str, question: str) -> None:
 
 
 @app.command()
-def analyze(query: str) -> None:
-    """Full financial analysis for a company's latest statement."""
-    report = analyze_company_financials(query)
+def analyze(query: str, years: int = typer.Option(1, "--years", min=1, max=5)) -> None:
+    """Full financial analysis for a company (optionally multi-year)."""
+    report = analyze_company_financials(query, years=years)
     typer.echo(
         f"{report.company_name}  ({report.period_year or '----'})  [{report.ico}]"
     )

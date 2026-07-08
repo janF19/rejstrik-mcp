@@ -62,3 +62,18 @@ def test_analyze_statements_without_ico_skips_registry_checks():
 def test_analyze_statements_empty_raises():
     with pytest.raises(ValueError):
         analyze_statements([])
+
+
+def test_analyze_statements_public_money_flag():
+    from rejstrik.registry.subsidies import SubsidyReport
+    from rejstrik.registry.contracts import ContractReport
+
+    stmt = _statement(2024, 1000.0)  # revenue 1000 via income_statement helper
+    report = analyze_statements(
+        [stmt],
+        insolvency_check=_no_insolvency,
+        vat_check=_clean_vat,
+        subsidy_check=lambda ico: SubsidyReport(ico=ico, total_amount=400.0, count=2),
+        contract_check=lambda ico: ContractReport(ico=ico, total_value=200.0, count=1),
+    )
+    assert any(f.code == "public_money_dependence" for f in report.red_flags)
