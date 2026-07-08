@@ -82,7 +82,7 @@ def get_subsidies(ico: str, client: httpx.Client | None = None) -> SubsidyReport
             count=len(subsidies),
             subsidies=subsidies,
         )
-    except (httpx.HTTPError, ValueError, KeyError):
+    except (httpx.HTTPError, ValueError, TypeError, KeyError):
         return SubsidyReport(ico=ico, checked=False)
     finally:
         if owns:
