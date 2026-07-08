@@ -2,7 +2,7 @@ import time
 
 import httpx
 
-USER_AGENT = "rejstrik-mcp/0.3 (+https://github.com/janF19/rejstrik-mcp)"
+USER_AGENT = "rejstrik-mcp/0.4 (+https://github.com/janF19/rejstrik-mcp)"
 
 _RETRY_STATUS = {502, 503, 504}
 

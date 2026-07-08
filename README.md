@@ -61,6 +61,13 @@ subscription; the server does everything deterministic:
 | `check_insolvency` | Insolvency register (ISIR) |
 | `get_statutory_bodies` | Directors / statutory bodies (ARES) |
 | `check_vat` | VAT registration + unreliable-payer flag (ARES + ADIS) |
+| `get_subsidies` | State subsidies received (IS ReD / former CEDR) |
+| `get_contracts` | Public contracts involving the company (Registr smluv) |
+
+**Beneficial owners.** The public part of ESM (Evidence skutečných
+majitelů) closed on 2026-12-17 following an EU Court of Justice ruling, so
+beneficial-owner lookups are intentionally not offered here — a documented
+scope decision, not a gap.
 
 Use the built-in **`analyze-company`** prompt (shows up as a slash command
 in Claude) to run the whole loop — find → fetch PDFs → extract → analyze →

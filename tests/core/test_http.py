@@ -15,7 +15,7 @@ def test_client_has_user_agent_and_redirects():
 
 
 def test_user_agent_reflects_current_version():
-    assert "0.3" in USER_AGENT
+    assert "0.4" in USER_AGENT
 
 
 @respx.mock

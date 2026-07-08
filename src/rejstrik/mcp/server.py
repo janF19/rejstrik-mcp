@@ -290,12 +290,13 @@ def company_health_check_prompt(company: str) -> str:
 
 1. Call find_company("{company}") to resolve the IČO.
 2. In parallel where possible, call check_insolvency(ico), check_vat(ico),
-   and get_statutory_bodies(ico).
+   get_statutory_bodies(ico), get_subsidies(ico), and get_contracts(ico).
 3. Follow the analyze-company recipe for the latest financial year
    (list_filings → get_filing → extract figures → analyze_financials).
 4. Report: registry status (insolvency, VAT reliability, who runs the
-   company), financial health (ratios, red flags), and an overall verdict
-   with the caveats an accountant would add."""
+   company), financial health (ratios, red flags), public-money
+   dependence (subsidies and contracts relative to revenue), and an
+   overall verdict with the caveats an accountant would add."""
 
 
 def main(argv: list[str] | None = None) -> None:
