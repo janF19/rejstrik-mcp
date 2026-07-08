@@ -173,6 +173,7 @@ def analyze_statements(
         status = insolvency_check(resolved_ico)
         insolvent = status.in_insolvency if status.checked else None
         unreliable_vat = vat_check(resolved_ico).is_unreliable
+        # subsidy_check/contract_check stay None by default (unlike insolvency/vat) so keyless callers never trigger a live HTTP call here
         if (
             normalized.revenue
             and normalized.revenue > 0

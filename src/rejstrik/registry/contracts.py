@@ -1,5 +1,3 @@
-import re
-
 import httpx
 from pydantic import BaseModel
 from selectolax.parser import HTMLParser
@@ -8,7 +6,6 @@ from rejstrik.core.http import make_client
 
 _SEARCH = "https://smlouvy.gov.cz/vyhledavani"
 _BASE = "https://smlouvy.gov.cz"
-_NUM_RE = re.compile(r"[\d\s.,]+")
 
 
 class Contract(BaseModel):
