@@ -11,14 +11,16 @@ from rejstrik.analysis.trends import compute_trends
 from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.llm import DocumentLLM
-from rejstrik.documents.pick import pick_financial_filing, pick_latest_financial_filing
+from rejstrik.documents.pick import pick_financial_filing
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.documents.source import PdfSource, load_pdf
 from rejstrik.filings.justice import list_filings
 from rejstrik.filings.models import Filing
 from rejstrik.registry.ares import find_company
 from rejstrik.registry.isir import InsolvencyStatus, check_insolvency
+from rejstrik.registry.contracts import ContractReport
 from rejstrik.registry.models import Company
+from rejstrik.registry.subsidies import SubsidyReport
 from rejstrik.registry.vat import VatStatus, check_vat
 
 
@@ -78,13 +80,25 @@ def fetch_filing(
 
 def resolve_statement_source(
     query: str,
+    year: int | None = None,
+    filing_id: str | None = None,
     client: httpx.Client | None = None,
 ) -> tuple[Company, Filing, PdfSource]:
     company = find_company(query, client=client)
-    filing = pick_latest_financial_filing(list_filings(company.ico, client=client))
+    filings = list_filings(company.ico, client=client)
+    filing = pick_financial_filing(filings, year=year, filing_id=filing_id)
     if filing is None:
+        years = sorted(
+            {f.year for f in filings if f.is_financial_statement and f.year},
+            reverse=True,
+        )
+        hint = (
+            f" Available years: {years}."
+            if years
+            else " No financial statements filed."
+        )
         raise NoStatementFound(
-            f"No financial statement in Sbírka listin for {company.ico}"
+            f"No matching financial statement in Sbírka listin for {company.ico}.{hint}"
         )
     return company, filing, load_pdf(filing, client=client)
 
@@ -92,38 +106,40 @@ def resolve_statement_source(
 def analyze_company_financials(
     query: str,
     *,
+    years: int = 1,
     llm: DocumentLLM | None = None,
     insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
     vat_check: Callable[[str], VatStatus] | None = None,
 ) -> CompanyFinancialReport:
-    insolvency_check = insolvency_check or check_insolvency
-    vat_check = vat_check or check_vat
-    company, filing, source = resolve_statement_source(query)
-    statement = extract_financials(source, llm=llm)
-    normalized = normalize(statement)
-    ratios = compute_ratios(normalized)
-    status = insolvency_check(company.ico)
-    insolvent = status.in_insolvency if status.checked else None
-    vat = vat_check(company.ico)
-    red_flags = detect_red_flags(
-        normalized,
-        ratios,
-        statement.notes,
-        insolvent=insolvent,
-        unreliable_vat=vat.is_unreliable,
+    years = max(1, min(years, 5))
+    company = find_company(query)
+    all_filings = list_filings(company.ico)
+    statements_filings = [f for f in all_filings if f.is_financial_statement][:years]
+    if not statements_filings:
+        available_years = sorted(
+            {f.year for f in all_filings if f.is_financial_statement and f.year},
+            reverse=True,
+        )
+        hint = (
+            f" Available years: {available_years}."
+            if available_years
+            else " No financial statements filed."
+        )
+        raise NoStatementFound(
+            f"No financial statement in Sbírka listin for {company.ico}.{hint}"
+        )
+    statements = [
+        extract_financials(load_pdf(filing), llm=llm) for filing in statements_filings
+    ]
+    report = analyze_statements(
+        statements,
+        ico=company.ico,
+        insolvency_check=insolvency_check,
+        vat_check=vat_check,
     )
-    return CompanyFinancialReport(
-        company_name=statement.company_name or company.name,
-        ico=statement.ico or company.ico,
-        period_year=statement.period_year,
-        currency=statement.currency,
-        statement=statement,
-        normalized=normalized,
-        ratios=ratios,
-        red_flags=red_flags,
-        trends=[],
-        source_filing_title=filing.title,
-    )
+    report.company_name = report.company_name or company.name
+    report.source_filing_title = statements_filings[0].title
+    return report
 
 
 def analyze_statements(
@@ -132,6 +148,8 @@ def analyze_statements(
     ico: str | None = None,
     insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
     vat_check: Callable[[str], VatStatus] | None = None,
+    subsidy_check: Callable[[str], SubsidyReport] | None = None,
+    contract_check: Callable[[str], ContractReport] | None = None,
 ) -> CompanyFinancialReport:
     """Deterministic report from host-extracted statements. No LLM calls."""
     if not statements:
@@ -148,18 +166,32 @@ def analyze_statements(
     resolved_ico = ico or current.ico
     insolvent = None
     unreliable_vat = None
+    public_money_ratio = None
     if resolved_ico:
         insolvency_check = insolvency_check or check_insolvency
         vat_check = vat_check or check_vat
         status = insolvency_check(resolved_ico)
         insolvent = status.in_insolvency if status.checked else None
         unreliable_vat = vat_check(resolved_ico).is_unreliable
+        # subsidy_check/contract_check stay None by default (unlike insolvency/vat) so keyless callers never trigger a live HTTP call here
+        if (
+            normalized.revenue
+            and normalized.revenue > 0
+            and (subsidy_check or contract_check)
+        ):
+            public_total = 0.0
+            if subsidy_check:
+                public_total += subsidy_check(resolved_ico).total_amount
+            if contract_check:
+                public_total += contract_check(resolved_ico).total_value
+            public_money_ratio = public_total / normalized.revenue
     red_flags = detect_red_flags(
         normalized,
         ratios,
         current.notes,
         insolvent=insolvent,
         unreliable_vat=unreliable_vat,
+        public_money_ratio=public_money_ratio,
     )
     trends = (
         compute_trends(normalized, normalize(ordered[1])) if len(ordered) > 1 else []

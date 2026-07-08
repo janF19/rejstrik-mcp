@@ -38,3 +38,12 @@ def test_analyze_cli_prints_ratios_and_flags():
     assert "current_ratio" in result.stdout
     assert "WARNING" in result.stdout
     assert "Current ratio below 1." in result.stdout
+
+
+def test_analyze_cli_accepts_years_option():
+    with patch(
+        "rejstrik.cli.main.analyze_company_financials", return_value=REPORT
+    ) as mock_analyze:
+        result = runner.invoke(app, ["analyze", "Budvar", "--years", "3"])
+    assert result.exit_code == 0
+    mock_analyze.assert_called_once_with("Budvar", years=3)

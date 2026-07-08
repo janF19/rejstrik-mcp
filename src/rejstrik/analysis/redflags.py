@@ -23,6 +23,7 @@ def detect_red_flags(
     notes: list[NoteItem],
     insolvent: bool | None = None,
     unreliable_vat: bool | None = None,
+    public_money_ratio: float | None = None,
 ) -> list[RedFlag]:
     flags: list[RedFlag] = []
 
@@ -96,6 +97,18 @@ def detect_red_flags(
                 code="unreliable_vat",
                 severity="warning",
                 message="Registered as an unreliable VAT payer (nespolehlivy platce DPH).",
+            )
+        )
+
+    if public_money_ratio is not None and public_money_ratio >= 0.25:
+        flags.append(
+            RedFlag(
+                code="public_money_dependence",
+                severity="warning" if public_money_ratio >= 0.5 else "info",
+                message=(
+                    f"Public money (subsidies + state contracts) is "
+                    f"~{public_money_ratio:.0%} of revenue."
+                ),
             )
         )
 
