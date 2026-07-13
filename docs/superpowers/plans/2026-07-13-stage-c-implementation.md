@@ -935,6 +935,15 @@ Expected: all green.
 
 Before release, run the server against MCP Inspector and at least one real Apps host (Claude Desktop). Confirm the `_UI_META` key and `ui://rejstrik/report` resource wiring match the **current** MCP Apps spec; if the convention changed, update `_UI_META` / `_apps_capability`'s default key (`REJSTRIK_APPS_CAPABILITY_KEY`) accordingly. This is the "verify current API on day one" gate from the spec; the code default is a starting point, not a guarantee.
 
+> **TODO (human judgment required, not done by this automated pass):** This
+> step needs a live Claude Desktop (or other MCP Apps host) session and the
+> MCP Inspector — neither is available in this offline/keyless dev
+> environment. The code ships with the concrete default described above
+> (`_UI_META = {"mcp/ui": {"resourceUri": _UI_URI}}`, capability key
+> `"mcp-apps"`, overridable via `REJSTRIK_APPS_CAPABILITY_KEY`) but a human
+> must confirm it against the current spec before relying on card rendering
+> in a real Apps host, and update the default if the ecosystem has moved on.
+
 - [ ] **Step 8: Commit**
 
 ```bash
