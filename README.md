@@ -1,6 +1,6 @@
 # rejstrik-mcp
 
-[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml)
+[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/)
 
 **Add the Czech business registry to your Claude in 30 seconds — no API key.
 It reads the actual filed PDFs with your own subscription.**
@@ -158,8 +158,13 @@ Havel). See `LICENSES/cz-agents-mcp-LICENSE`.
 
 1. One-time: on pypi.org, add a *Trusted Publisher* for this GitHub repo
    (workflow `release.yml`, environment `pypi`).
-2. Bump the version in `pyproject.toml`, commit, tag `vX.Y.Z`, push the tag.
-   CI builds, publishes to PyPI, and attaches artifacts to the GitHub release.
+2. Bump `version` in **all three** metadata files so they agree:
+   `pyproject.toml`, `server.json` (top-level **and** `packages[0].version`),
+   and `mcpb/manifest.json`. `tests/test_version_sync.py` fails if they drift.
+3. If the release changes the published server, re-run the MCP registry
+   publisher flow with the updated `server.json`.
+4. Commit, tag `vX.Y.Z`, push the tag. CI builds, publishes to PyPI, and
+   attaches artifacts to the GitHub release.
 
 ## License
 
