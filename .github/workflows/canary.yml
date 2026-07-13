@@ -1,0 +1,37 @@
+name: filings-portal-canary
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e .
+      - name: Run canary
+        # TODO: on failure this only fails the Actions job; auto-filing/updating
+        # a tracking issue on failure is deferred (scope control, see Stage A
+        # implementation plan Task 6).
+        run: |
+          python -c "
+          from scripts.smoke import canary, _CANARY_ENDPOINTS
+          import httpx
+          canary()
+          failures = []
+          for name, url in _CANARY_ENDPOINTS.items():
+              try:
+                  resp = httpx.get(url, timeout=10.0, follow_redirects=True)
+                  if resp.status_code >= 400:
+                      failures.append(name)
+              except httpx.HTTPError:
+                  failures.append(name)
+          if len(failures) == len(_CANARY_ENDPOINTS):
+              raise SystemExit(f'Both filings portals are blocked: {failures}')
+          "
