@@ -130,6 +130,21 @@ ruff format --check src/ tests/
 python -m pytest -q
 ```
 
+### Autopilot (unattended roadmap execution)
+
+The July 2026 roadmap stages (`docs/superpowers/specs/2026-07-13-*.md`)
+can be run unattended: Opus writes each stage's implementation plan,
+Sonnet executes it in an isolated git worktree, and the script verifies
+(ruff + pytest) and merges only on green. State is derived from git, so
+the script can be stopped and rerun anywhere after a clone. Requires a
+logged-in Claude Code CLI; see
+`docs/superpowers/specs/2026-07-13-autopilot-design.md`.
+
+```bash
+python scripts/autopilot.py --dry-run   # show what would happen
+python scripts/autopilot.py             # run remaining stages
+```
+
 Useful manual smoke tests:
 
 ```bash
