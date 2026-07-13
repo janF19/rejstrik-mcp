@@ -9,6 +9,16 @@ It reads the actual filed PDFs with your own subscription.**
 claude mcp add rejstrik -- uvx rejstrik-mcp
 ```
 
+## See it work
+
+![Analyzing Budějovický Budvar's last 3 years of filings](docs/media/budvar-3year.gif)
+
+The `analyze_company_card` report rendered in Claude Desktop:
+
+![Report card in Claude Desktop](docs/media/report-card.png)
+
+Reproduce the GIF with `scripts/record_demo.sh` (needs asciinema + agg).
+
 Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
 your agent resolves the company (ARES), pulls the filed statement PDF from
 the Sbírka listin, reads it itself, and gets deterministic ratios, red
