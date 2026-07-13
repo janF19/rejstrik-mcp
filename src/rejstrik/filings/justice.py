@@ -33,33 +33,36 @@ def parse_subject_id(html: str) -> str | None:
 
 def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
     """
-    Parse the Sbírka listin page and return a sorted list of Filing objects.
+    Parse the Sbírka listin page (table.list) and return a sorted list of
+    Filing objects.
+
+    Each row's detail link resolves to the *detail page* URL, not a direct
+    PDF link — the legacy portal issues short-lived download tokens that
+    must be resolved fresh (see parse_download_link / documents.source).
 
     Sorting: financial statements first, then by year descending (None last).
     """
     tree = HTMLParser(html)
     filings: list[Filing] = []
 
-    for row in tree.css("div.document-row"):
-        title_node = row.css_first("span.document-title")
-        link_node = row.css_first("a[href]")
-        if title_node is None or link_node is None:
+    for row in tree.css("table.list tbody tr"):
+        link_node = row.css_first('a[href*="vypis-sl-detail"]')
+        symbol_nodes = row.css("span.symbol")
+        if link_node is None or not symbol_nodes:
             continue
 
-        title = (title_node.text(strip=True) or "").strip()
         href = (link_node.attributes.get("href") or "").strip()
-        if not title or not href:
+        if not href:
             continue
 
-        # Resolve relative URLs
-        if href.startswith("/"):
-            pdf_url = base_url.rstrip("/") + href
-        elif href.startswith("http"):
-            pdf_url = href
-        else:
-            pdf_url = base_url.rstrip("/") + "/" + href
+        title = ", ".join(
+            (n.text(strip=True) or "").strip() for n in symbol_nodes
+        ).strip()
+        if not title:
+            continue
 
-        # Extract year from title
+        pdf_url = base_url.rstrip("/") + "/ias/ui/" + href.removeprefix("./")
+
         year_m = _YEAR_RE.search(title)
         year = int(year_m.group(0)) if year_m else None
 
@@ -78,6 +81,20 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
     # Sort: financial statements first, then by year descending (None sorts last)
     filings.sort(key=lambda f: (not f.is_financial_statement, -(f.year or 0)))
     return filings
+
+
+def parse_download_link(html: str, base_url: str = _BASE_URL) -> str | None:
+    """Return the absolute PDF download URL from a vypis-sl-detail page, or None."""
+    tree = HTMLParser(html)
+    node = tree.css_first('a[href*="/ias/content/download"]')
+    if node is None:
+        return None
+    href = (node.attributes.get("href") or "").strip()
+    if not href:
+        return None
+    if href.startswith("http"):
+        return href
+    return base_url.rstrip("/") + "/" + href.lstrip("/")
 
 
 def parse_filings_api(data: dict) -> list[Filing]:
