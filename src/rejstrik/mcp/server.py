@@ -46,7 +46,7 @@ from rejstrik.service import (
 
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
 
-_MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "15000000"))
+_MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "25000000"))
 
 _UI_URI = "ui://rejstrik/report"
 # ext-apps _meta UI declaration. VERIFY the exact key against the MCP Apps spec
@@ -207,50 +207,92 @@ def analyze_company_card(query: str, years: int = 1) -> list[TextContent | UIRes
 
 @mcp.tool(annotations=_ro("Get filing PDF"), structured_output=False)
 def get_filing(
-    ico: str, year: int | None = None, filing_id: str | None = None
+    ico: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    embed: str = "auto",
 ) -> list[TextContent | EmbeddedResource]:
     """Download a financial statement PDF from Sbírka listin (latest, or by
     year / filing id from list_filings). Returns filing metadata with a local
-    file_path, plus the PDF itself as an embedded resource. Read the PDF with
-    your own capabilities, then pass extracted figures to analyze_financials —
-    no server-side API key needed."""
+    file_path and page_count, and — depending on `embed` — the PDF bytes.
+
+    embed:
+      - "auto" (default): embed only if the PDF fits the server's size cap.
+      - "never": metadata + file_path only. FILESYSTEM-CAPABLE HOSTS (Claude
+        Code, Codex, Desktop with fs access) SHOULD pass embed="never" and read
+        the PDF from file_path — filed statements are routinely 20-25 MB and the
+        path is strictly better than putting ~33 MB of base64 in context.
+      - "always": embed regardless (still hard-capped; an honest message is
+        returned instead of silently dropping an over-cap PDF).
+
+    Read the PDF yourself (or call read_filing_text for a page range), then pass
+    extracted figures to analyze_financials — no server-side API key needed."""
+    if embed not in ("auto", "always", "never"):
+        raise ValueError('embed must be "auto", "always", or "never"')
     doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
     parts: list[TextContent | EmbeddedResource] = [
         TextContent(type="text", text=doc.model_dump_json(indent=2))
     ]
-    if doc.size_bytes <= _MAX_EMBED_BYTES:
-        try:
-            uri = Path(doc.file_path).as_uri()
-        except ValueError:
-            uri = None
-        if uri is not None:
-            parts.append(
-                EmbeddedResource(
-                    type="resource",
-                    resource=BlobResourceContents(
-                        uri=uri,
-                        mimeType="application/pdf",
-                        blob=base64.standard_b64encode(source.data).decode(),
-                    ),
-                )
+    if embed == "never":
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"Not embedding by request (embed=never). "
+                    f"Read the PDF from file_path: {doc.file_path}"
+                ),
             )
-        else:
-            parts.append(
-                TextContent(
-                    type="text",
-                    text=(
-                        f"PDF at {doc.file_path} could not be embedded "
-                        f"(path is not absolute). Read it from that path."
-                    ),
-                )
+        )
+        return parts
+
+    over_cap = doc.size_bytes > _MAX_EMBED_BYTES
+    if embed == "auto" and over_cap:
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"PDF is {doc.size_bytes} bytes — over the {_MAX_EMBED_BYTES}-byte "
+                    f"embed cap. Read it from file_path: {doc.file_path} "
+                    f"(or call read_filing_text for a page range)."
+                ),
             )
+        )
+        return parts
+    if embed == "always" and over_cap:
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"PDF is {doc.size_bytes} bytes — too large to embed even with "
+                    f"embed=always (cap {_MAX_EMBED_BYTES} bytes). "
+                    f"Read it from file_path: {doc.file_path}"
+                ),
+            )
+        )
+        return parts
+
+    try:
+        uri = Path(doc.file_path).as_uri()
+    except ValueError:
+        uri = None
+    if uri is not None:
+        parts.append(
+            EmbeddedResource(
+                type="resource",
+                resource=BlobResourceContents(
+                    uri=uri,
+                    mimeType="application/pdf",
+                    blob=base64.standard_b64encode(source.data).decode(),
+                ),
+            )
+        )
     else:
         parts.append(
             TextContent(
                 type="text",
                 text=(
-                    f"PDF is {doc.size_bytes} bytes — too large to embed. "
-                    f"Read it from file_path: {doc.file_path}"
+                    f"PDF at {doc.file_path} could not be embedded "
+                    f"(path is not absolute). Read it from that path."
                 ),
             )
         )
