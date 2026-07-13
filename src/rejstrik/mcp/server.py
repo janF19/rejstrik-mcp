@@ -38,6 +38,11 @@ from rejstrik.registry.statutory import (
 )
 from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
+from rejstrik.analysis.valuation import (
+    ValuationAssumptions,
+    ValuationEstimate,
+    estimate_valuation as _estimate_valuation,
+)
 from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
@@ -111,6 +116,7 @@ EXPOSED_TOOL_NAMES = [
     "get_subsidies",
     "get_contracts",
     "read_filing_text",
+    "estimate_valuation",
 ]
 
 
@@ -348,6 +354,19 @@ def analyze_financials(
     Amounts in Czech statements are usually thousands of CZK. Pass the ico to
     enrich red flags with insolvency and unreliable-VAT-payer checks."""
     return _analyze_statements(statements, ico=ico)
+
+
+@mcp.tool(annotations=_ro("Estimate indicative valuation"))
+def estimate_valuation(
+    statements: list[FinancialStatement],
+    assumptions: ValuationAssumptions | None = None,
+) -> ValuationEstimate:
+    """Indicative, deterministic valuation from statements YOU extracted:
+    book value, capitalized earnings, and generic EV/EBIT and price/revenue
+    multiples, with an overall range and the assumptions used. Amounts are
+    thousands of CZK as filed. Multiples are generic, not industry-calibrated;
+    book values are not market values. This is NOT investment advice."""
+    return _estimate_valuation(statements, assumptions)
 
 
 @mcp.tool(annotations=_ro("Render report card"), meta=_UI_META, structured_output=False)

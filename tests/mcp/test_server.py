@@ -20,6 +20,7 @@ def test_exposed_tool_names():
         "get_subsidies",
         "get_contracts",
         "read_filing_text",
+        "estimate_valuation",
     ]
 
 
