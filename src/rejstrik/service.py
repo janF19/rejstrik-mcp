@@ -1,7 +1,10 @@
-import httpx
+import io
 from collections.abc import Callable
 
+import httpx
 from pydantic import BaseModel
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 from rejstrik.analysis.normalize import normalize
 from rejstrik.analysis.ratios import compute_ratios
@@ -37,6 +40,14 @@ class FilingDocument(BaseModel):
     file_path: str
     sha256: str
     size_bytes: int
+    page_count: int | None = None
+
+
+def count_pdf_pages(data: bytes) -> int | None:
+    try:
+        return len(PdfReader(io.BytesIO(data)).pages)
+    except (PdfReadError, ValueError, OSError):
+        return None
 
 
 def fetch_filing(
@@ -73,6 +84,7 @@ def fetch_filing(
             file_path=str(path),
             sha256=source.sha256,
             size_bytes=len(source.data),
+            page_count=count_pdf_pages(source.data),
         ),
         source,
     )
