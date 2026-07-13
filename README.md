@@ -65,7 +65,7 @@ subscription; the server does everything deterministic:
 | `get_contracts` | Public contracts involving the company (Registr smluv) |
 
 **Beneficial owners.** The public part of ESM (Evidence skutečných
-majitelů) closed on 2026-12-17 following an EU Court of Justice ruling, so
+majitelů) closed on 2025-12-17 following an EU Court of Justice ruling, so
 beneficial-owner lookups are intentionally not offered here — a documented
 scope decision, not a gap.
 
@@ -79,14 +79,6 @@ the PDF reading server-side with schema-locked extraction and page
 citations: `extract_financials`, `ask_filing`,
 `analyze_company_financials`, `analyze_company_card`. Without a key they
 politely point you back to the keyless flow.
-
-## See it work
-
-![3-year analysis of Budějovický Budvar](docs/media/budvar-3year.gif)
-
-*The interactive report card (MCP UI hosts):*
-
-![Report card](docs/media/report-card.png)
 
 ## How it works
 
