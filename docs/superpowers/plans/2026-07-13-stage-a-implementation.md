@@ -168,10 +168,19 @@ above), `tests/filings/test_justice.py`, `src/rejstrik/filings/justice.py`
 
 ### Task 4: Live acceptance check (manual, not part of automated suite)
 
-- [ ] Step 1: Run live (not in CI): confirm `rejstrik analyze "Budejovicky
+- [x] Step 1: Run live (not in CI): confirm `rejstrik analyze "Budejovicky
   Budvar"` (or the equivalent service call) completes end-to-end via the
   legacy fallback. Record actual result in this plan file (pass/fail +
   notes) — this satisfies the spec's Acceptance criterion.
+
+  **Result: PASS (2026-07-13).** Ran `rejstrik.service.fetch_filing
+  ("Budejovicky Budvar")` live against the real network (post Task 3). New
+  API 403'd as expected; fell back to the legacy portal automatically.
+  Output: `výroční zpráva [2025]`, year 2025, pdf_url =
+  `https://or.justice.cz/ias/ui/vypis-sl-detail?dokument=92007187&
+  subjektId=59981&spis=411891`, downloaded 5,192,176 bytes, verified
+  `%PDF-1.7` magic bytes at the start of the saved file. Full
+  find → list_filings → get_filing chain works live via the fallback.
 
 ### Task 5: `scripts/smoke.py` canary section
 
