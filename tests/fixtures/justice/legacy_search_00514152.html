@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="cs" class="ff ff124">
+	<head><script type="text/javascript" src="./wicket/resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-1.11.1.min-ver-8101D596B2B8FA35FE3A634EA342D7C3.js"></script>
+
+		<title>Veřejný rejstřík a Sbírka listin - Ministerstvo spravedlnosti České republiky</title>
+
+		<link rel="shortcut icon" href="./resource/images/favicon.ico" type="image/x-icon">
+
+		<!--
+		<link rel="stylesheet" href="./style.css" type="text/css" />
+		 -->
+
+		<link rel="stylesheet" href="./resource/css/reset.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/base.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/layout.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/drop-down-menu.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/columns.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/tables.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/forms.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/buttons.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/messages.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/icons.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/typo.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/search.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/vypis.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/tooltip.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/ias.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/ajax.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/intform.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/dynamic.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/jquery-ui-1.8.17.custom.css" media="screen">
+
+		<link rel="stylesheet" href="./resource/css/print.css" media="print">
+
+		<script src="./resource/js/modernizr-latest.js"></script><!-- feature detection -->
+
+		<script>
+/*<![CDATA[*/
+
+			var APP = {
+				_ready : [],
+				_load : [],
+				run : function(fn,onload){var q=APP[onload?'_load':'_ready'];if(fn){if(q&&typeof q.push==='function'){q.push(fn);}else{fn();}}}
+			};
+		
+/*]]>*/
+</script>
+		<script>
+/*<![CDATA[*/
+
+			APP.Strings = {
+				invalidAjaxResponse : 'CHYBA - při zpracování požadavku došlo k interní chybě.'
+			};
+		
+/*]]>*/
+</script>
+
+		<script src="./resource/js/app-ias.js"></script>
+		<script src="./resource/js/app-tools.js"></script>
+		<script src="./resource/js/modules/drop-down-menu.js"></script>
+		<script src="./resource/js/modules/placeholder.js"></script>
+		<script src="./resource/js/modules/tooltip.js"></script>
+		<script src="./resource/js/modules/message-panel.js"></script>
+
+		<style type="text/css">
+/*<![CDATA[*/
+
+			/* CSS pre nove vypisy */
+			div.vr-hlavicka{font-weight:bold;}
+			.vr-child .vr-child div.vr-child {margin-left: 5mm}
+			.vr-child .vr-child div.vr-hlavicka {margin-left: 5mm}
+			.underline span {border-bottom: 1px solid black;}
+			.underline .nounderline {border-bottom-style: none}
+			.preformatted { white-space: pre-wrap; }
+			.iq_alert {
+				padding: 20px;
+				background-color: #f44336;
+				color: white;
+				text-align: center;
+			}
+		
+/*]]>*/
+</style>
+
+		<!--[if lte IE 6 ]>
+		<script src="./resource/js/supersleight-min.js"></script>
+		<![endif]-->
+		<style>
+/*<![CDATA[*/
+
+			@media print {
+				#chatbot {
+					display: none !important;
+				}
+			}
+		
+/*]]>*/
+</style>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-event-jquery.min-ver-7C4C4A31B92F211E7D61B1BF2BA81B39.js"></script>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery.min-ver-116260811FE9679D5DDCC60F7AE641BD.js"></script>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9" /><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="stylesheet" type="text/css" href="./wicket/resource/cz.corpus.isror.ui.internet.InternetBasePage/basepage-ver-F0FB650D42CA79C149B4023B5F69BE5C.css" />
+<script type="text/javascript" src="./wicket/resource/cz.corpus.grools.function.JavaScriptFunction/lib-ver-500AA971F6707ED2FBC2DECD679E5755.js"></script>
+<script type="text/javascript" src="./wicket/resource/cz.corpus.isror.ui.internet.analytics.GoogleAnalyticsJs/google-analytics.js"></script>
+</head>
+<body>
+	<div id="page">
+        <div class="iq_alert">
+			<span><strong>V ověřovacím provozu byla spuštěna nová podoba obchodního rejstříku, sbírky listin a svěřenských fondů (přístupné jsou vyhledávací funkce pro nepřihlášeného uživatele). Můžete ji vyzkoušet <a href="https://verejnerejstriky.msp.gov.cz/">zde</a>.</strong></span>
+		</div>
+		<div id="page-h" class="noprint">
+			<a id="logo" href="./rejstrik-$firma?-1.ILinkListener-htmlContainer-logo&amp;ico=00514152"></a>
+			<hr class="hidden">
+		</div>
+		<div id="page-c">
+			<div id="frag-rejstrik-switchComp-wholebead">
+				
+	<div class="section">
+		<div class="section-h">
+			<div class="inner">
+				<h1>
+					<span>Veřejný rejstřík podle subjektů</span><span class="nobold"></span>
+				</h1>
+			</div>
+		</div>
+		<div class="section-c">
+			<div class="inner">
+
+				<div id="AdvancedSearch" class="inner">
+					<form class="search-form noprint" id="id1" method="get" action=""><div style="width:0px;height:0px;position:absolute;left:-100px;top:-100px;overflow:hidden"><input type="hidden" name="id1_hf_0" id="id1_hf_0" /><input type="hidden" name="./rejstrik-$firma" value="" /></div>
+						<div class="search clearfix">
+
+							
+	<div class="search-main">
+		<table class="wide">
+			<colgroup>
+				<col width="150">
+				<col>
+			</colgroup>
+			<tbody>
+				<tr>
+					<th><label id="id2-w-lbl" for="id2">Název subjektu:</label> <sup>*</sup></th>
+					<td colspan="2"><span class="field field-text"> <input type="text" title="Název subjektu" maxlength="40" class="text hint" name="nazev" value="" id="id2"/>
+					</span></td>
+				</tr>
+				<tr>
+					<th><label class="tiny" id="id3-w-lbl" for="id3">Identifikační
+							číslo:</label> <sup>*</sup></th>
+					<td colspan="2"><span class="field field-text"> <input type="text" title="Identifikační číslo" maxlength="10" class="text hint tiny" name="ico" value="00514152" id="id3"/>
+					</span></td>
+				</tr>
+				<tr>
+					<th><label class="short" id="id4-w-lbl" for="id4">Obec:</label></th>
+					<td colspan="2"><span id="obec-field" class="field field-text">
+							<input type="text" title="Obec" maxlength="150" class="text hint short" name="obec" value="" id="id4"/>
+					</span></td>
+				</tr>
+				<tr>
+					<th><label class="short" id="id5-w-lbl" for="id5">Ulice:</label></th>
+					<td colspan="2"><span class="field field-text"> <input type="text" title="Ulice" maxlength="150" class="text hint short" name="ulice" value="" id="id5"/>
+					</span></td>
+				</tr>
+				<tr>
+					<th><label class="wide" id="id6-w-lbl" for="id6">Právní
+							forma:</label></th>
+					<td colspan="2"><span class="field field-enum"> <select title="Právní forma" class="hint wide" data-validations="#forma-validations" name="forma" id="id6">
+<option selected="selected" value=""></option>
+<option value="as">Akciová společnost</option>
+<option value="ctk">Česká tisková kancelář</option>
+<option value="ce_st_dr_st_or">Československé státní dráhy-státní organizace</option>
+<option value="ci_na_sp">Církve a náboženské společnosti</option>
+<option value="do_sv_ob">Dobrovolný svazek obcí</option>
+<option value="dr">Družstvo</option>
+<option value="ev_ci_pr_os">Evidované církevní právnické osoby</option>
+<option value="evr_dr_spol">Evropská družstevní společnost</option>
+<option value="evr_spol">Evropská společnost</option>
+<option value="evr_hzs">Evropské hospodářské zájmové sdružení</option>
+<option value="ev_se_pr_uz_sp">Evropské seskupení pro územní spolupráci</option>
+<option value="fo">Fyzická osoba - podnikatel</option>
+<option value="gf_ocp">Garanční fond obchodníků s cennými papíry</option>
+<option value="ho_sp">Honební společenstvo</option>
+<option value="ks">Komanditní společnost</option>
+<option value="kom_bur">Komoditní burza</option>
+<option value="komora_ha">Komora (hospodářská, agrární)</option>
+<option value="kraj">Kraj</option>
+<option value="me_ca_hm_pr">Městská část hlavního města Prahy</option>
+<option value="nevlad_org">Mezinárodní nevládní organizace</option>
+<option value="m_odbor_org">Mezinárodní odborová organizace</option>
+<option value="m_org_zam">Mezinárodní organizace zaměstnavatelů</option>
+<option value="nad">Nadace</option>
+<option value="nad_f">Nadační fond</option>
+<option value="np">Národní podnik</option>
+<option value="os">Občanské sdružení</option>
+<option value="obec">Obec</option>
+<option value="ops">Obecně prospěšná společnost</option>
+<option value="odbor_organizace">Odborová organizace</option>
+<option value="odbor_org">Odborová organizace a organizace zaměstnavatelů</option>
+<option value="oz">Odštěpný závod</option>
+<option value="os_zfo">Odštěpný závod zahraniční fyzické osoby</option>
+<option value="os_zpo">Odštěpný závod zahraniční právnické osoby</option>
+<option value="org_zam">Organizace zaměstnavatelů</option>
+<option value="p_nevlad_org">Organizační jednotka mezinárodní nevládní organizace</option>
+<option value="or_je_ob_sd">Organizační jednotka občanského sdružení</option>
+<option value="p_zvlastni_org">Organizační jednotka zvláštní organizace pro zastoupení českých zájmů v mezinárodních nevládních organizacích</option>
+<option value="os_z_nad_f">Organizační složka zahraničního nadačního fondu</option>
+<option value="os_z_nad">Organizační složka zahraniční nadace</option>
+<option value="ostatni">Ostatní</option>
+<option value="p_m_odbor_org">Pobočná mezinárodní odborová organizace</option>
+<option value="p_m_org_zam">Pobočná mezinárodní organizace zaměstnavatelů</option>
+<option value="p_odbor_org">Pobočná odborová organizace a organizace zaměstnavatelů</option>
+<option value="pobocny_spolek">Pobočný spolek</option>
+<option value="pfot">Podnikající fyzická osoba tuzemská</option>
+<option value="podn_hz_ps">Podnik nebo hospodářské zařízení politické strany</option>
+<option value="podn_hz_sdr">Podnik nebo hospodářské zařízení sdružení</option>
+<option value="po_se_za_ma_uc">Podnik se zahraniční majetkovou účastí</option>
+<option value="po_za_ob">Podnik zahraničního obchodu</option>
+<option value="po_st_po_hn">Politická strana, politické hnutí</option>
+<option value="po_zzz">Právnická osoba zřízená zvláštním zákonem zapisovaná do veřejného rejstříku</option>
+<option value="prisp">Příspěvková organizace</option>
+<option value="ra_pr_ve_do_na_a">Rada pro veřejný dohled nad auditem</option>
+<option value="re_ra_re_so">Regionální rada regionu soudržnosti</option>
+<option value="sa_st_or">Samosprávná stavovská organizace (profesní komora) </option>
+<option value="sam_dr_prov">Samostatná drobná provozovna (obecního úřadu)</option>
+<option value="sd_me_ob">Sdružení mezinárodního obchodu</option>
+<option value="sk_pr_os">Školská právnická osoba</option>
+<option value="svj">Společenství vlastníků jednotek</option>
+<option value="sro">Společnost s ručením omezeným</option>
+<option value="spol_pod">Společný podnik</option>
+<option value="spolek">Spolek</option>
+<option value="stat_banka_cs">Státní banka československá</option>
+<option value="sf_zz">Státní fond ze zákona</option>
+<option value="sf_nor">Státní fond ze zákona nezapisující se do obchodního rejstříku</option>
+<option value="szdc">Státní organizace Správa železnic</option>
+<option value="sp">Státní podnik</option>
+<option value="st_prisp">Státní příspěvková organizace</option>
+<option value="sv_ci_na_sp">Svazy církví a náboženských společností</option>
+<option value="uc_za_ob_or">Účelová zahraničně obchodní organizace</option>
+<option value="ustav">Ústav</option>
+<option value="vos">Veřejná obchodní společnost</option>
+<option value="ve_vy_or">Veřejná výzkumná instituce </option>
+<option value="ve_ne_us_zd_za">Veřejné neziskové ústavní zdravotnické zařízení </option>
+<option value="ve_inst">Veřejnoprávní instituce</option>
+<option value="vzp">Všeobecná zdravotní pojišťovna</option>
+<option value="vs">Vysoká škola (veřejná, státní)</option>
+<option value="zahr_fos">Zahraniční fyzická osoba </option>
+<option value="zahr_os">Zahraniční osoba</option>
+<option value="z_pobocny_spolek">Zahraniční pobočný spolek</option>
+<option value="za_sp">Zahraniční spolek</option>
+<option value="zaj_sdr">Zájmové sdružení</option>
+<option value="n_zaj_sdr_po">Zájmové sdružení právnických osob</option>
+<option value="zaj_sdr_po">Zájmové sdružení právnických osob zapsané v OR</option>
+<option value="zp">Zdravotní pojišťovna (mimo VZP)</option>
+<option value="zvlastni_org">Zvláštní organizace pro zastoupení českých zájmů v mezinárodních nevládních organizacích</option>
+</select>
+					</span></td>
+				</tr>
+				<tr>
+					<th rowspan="2">Spisová zn.: <sup>*</sup></th>
+					<td><span class="field field-text"> <input type="text" maxlength="12" placeholder="Oddíl" title="Identifikace oddílu (A, B, C, Dr, Pr, H, N, O, S, L, U)" class="text hint placeholder tiny" name="oddil" value=""/>
+					</span></td>
+					<td><span class="field field-text"> <input type="text" maxlength="10" placeholder="Vložka" title="Číslo vložky (je součástí údaje &quot;Spisová značka&quot;)" class="text hint placeholder short" name="vlozka" value=""/>
+					</span></td>
+				</tr>
+				<tr>
+					<td><strong><label class="auto" id="id7-w-lbl" for="id7">vedená
+								u:</label> </strong></td>
+					<td><span class="field field-enum"> <select title="Místně příslušný rejstříkový soud" class="hint auto" name="soud" id="id7">
+<option selected="selected" value=""></option>
+<option value="MSPH">Městský soud v Praze</option>
+<option value="KSCB">Krajský soud v Českých Budějovicích</option>
+<option value="KSPL">Krajský soud v Plzni</option>
+<option value="KSUL">Krajský soud v Ústí nad Labem</option>
+<option value="KSHK">Krajský soud v Hradci Králové</option>
+<option value="KSBR">Krajský soud v Brně</option>
+<option value="KSOS">Krajský soud v Ostravě</option>
+</select>
+					</span></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p id="AdvancedSearch-validation">
+			<span><sup>*</sup> Vyplňte alespoň jedno z polí: <strong>Název
+					subjektu</strong>, <strong>Identifikační číslo</strong>, <strong>Spisová
+					zn.</strong>.</span>
+		</p>
+
+	</div>
+
+
+
+							<div class="search-settings">
+								<table>
+									<tbody>
+										<tr>
+											<th><label class="" id="id8-w-lbl" for="id8">Max.
+													počet zobrazených položek:</label></th>
+										</tr>
+										<tr>
+											<td><span class="field field-enum"> <select title="Max. počet zobrazených položek" class="hint" name="polozek" id="id8">
+<option selected="selected" value="50">50</option>
+<option value="200">200</option>
+<option value="500">500</option>
+</select>
+											</span></td>
+										</tr>
+										
+											<tr>
+												<th><label class="" id="id9-w-lbl" for="id9">Typ
+														hledání v názvu:</label></th>
+											</tr>
+											<tr>
+												<td><span class="field field-enum"> <select title="Typ hledání v názvu" class="hint" name="typHledani" id="id9">
+<option value="CONTAINS">Dle začátku slov</option>
+<option selected="selected" value="STARTS_WITH">Od začátku</option>
+</select>
+												</span></td>
+											</tr>
+										
+										<tr>
+											<th><label class="" id="ida-w-lbl" for="ida">Vyhledávat
+													údaje:</label></th>
+										</tr>
+										<tr>
+											<td><span class="field field-enum"> <select title="Vyhledávat údaje" class="hint" name="jenPlatne" id="ida">
+<option selected="selected" value="PLATNE">Jen platné</option>
+<option value="VSECHNY">Platné i neplatné</option>
+</select>
+											</span></td>
+										</tr>
+										<tr>
+											<th><label class="" id="idb-w-lbl" for="idb">V případě spolku nebo pobočného spolku vyhledávat:</label></th>
+										</tr>
+										<tr>
+											<td><span class="field field-enum"> <select title="Typy spolku" class="hint" name="typHledaniSpolku" id="idb">
+<option value="AKTIVNI">Aktivní</option>
+<option selected="selected" value="ALL">Všechny</option>
+<option value="NEAKTIVNI">Neaktivní</option>
+</select>
+											</span></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div id="idc">
+  
+</div>
+						<p class="search-buttons">
+							<button class="button" type="submit" onclick="var e=document.getElementById(&#039;id1_hf_0&#039;); e.name=&#039;p::submit&#039;; e.value=&#039;x&#039;;var f=document.getElementById(&#039;id1&#039;);var ff=f;if (ff.onsubmit != undefined) { if (ff.onsubmit()==false) return false; }f.submit();e.value=&#039;&#039;;e.name=&#039;&#039;;return false;">
+								<span class=" i-16 i-search"> Vyhledat</span>
+							</button>
+							&mdash; <a target="_blank" href="./napoveda">Nápověda</a> <a class="button search-clear" href="./rejstrik-$firma"> <span
+								class="i-16 i-cancel"> Vyčistit formulář</span>
+							</a>
+						</p>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+				
+	<div id="SearchResults" class="section dark">
+		<div class="section-h">
+			<div class="inner">
+				<h2 class="fl">
+					Počet nalezených subjektů: <span>1</span><span
+						class="noprint nobold"> - <a
+						onclick="print(); return false;" href="#">Vytisknout seznam</a></span>
+				</h2>
+				<span class="fr">Údaje platné ke dni <span>13. července 2026</span></span>
+			</div>
+		</div>
+		<div class="section-c">
+			<div class="search-results">
+				<ol>
+					<li class="result even">
+						<div class="inner">
+							<table class="result-details">
+								<colgroup>
+									<col width="18%">
+									<col width="49%">
+									<col width="13%">
+									<col width="20%">
+								</colgroup>
+								<tbody>
+									
+									<tr>
+										<th class="nowrap">Název subjektu:</th>
+										<td><strong class="left">Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale</strong> 
+												</td>
+										
+											<th>IČO:</th>
+											<td class="right nowrap"><strong>
+	<span class="nowrap">005<span style="margin-left: 0.5em"></span>14<span style="margin-left: 0.5em"></span>152</span>
+</strong></td>
+										
+									</tr>
+									<tr>
+										<th class="nowrap">Spisová značka:</th>
+										<td class="left">
+<span style="white-space: nowrap;">AV 325 vedená u Krajského soudu v Českých Budějovicích</span>
+</td>
+										<th class="nowrap">Den zápisu:</th>
+										<td class="right nowrap">1. února 1967</td>
+									</tr>
+									
+										<tr>
+											<th>Sídlo:</th>
+											<td colspan="3" id="idd">
+	<div>
+	<span>
+		<span>K. Světlé 512/4, České Budějovice 3, 370 04  České Budějovice</span>
+		
+	</span>
+	
+	
+	
+	
+</div>
+</td>
+										</tr>
+									
+								</tbody>
+							</table>
+							<ul class="result-links noprint">
+								<li><a href="./rejstrik-firma.vysledky?subjektId=59981&amp;typ=PLATNY&amp;sp=H4sIAAAAAAAAAKtWykvMTU0JSCwCUiWpRcVKVtHVStmplUpWSpnJ%252BUo6SmWJOaWpQJ6BgamhiaGp%250D%250AkVJtbC0AjLWrbTYAAAA%253D%250D%250A">Výpis platných</a></li>
+								<li><a href="./rejstrik-firma.vysledky?subjektId=59981&amp;typ=UPLNY&amp;sp=H4sIAAAAAAAAAKtWykvMTU0JSCwCUiWpRcVKVtHVStmplUpWSpnJ%252BUo6SmWJOaWpQJ6BgamhiaGp%250D%250AkVJtbC0AjLWrbTYAAAA%253D%250D%250A">Úplný výpis</a></li>
+								<li><a href="./vypis-sl-firma?subjektId=59981">Sbírka listin</a></li>
+								
+							</ul>
+						</div>
+					</li>
+				</ol>
+			</div>
+		</div>
+	</div>
+
+			</div>
+		</div>
+		<div id="page-f" class="noprint">
+			<div id="page-f-links">
+				<ul class="links1">
+					<li><a href="./soudy">Rejstříkové soudy</a></li>
+					<li><a href="https://or.justice.cz/ias/ui/rejstrik">Obchodní rejstřík</a></li>
+					<li><a href="http://upadci.justice.cz/">Evidence úpadců</a></li>
+					<li><a href="https://isir.justice.cz/isir/common/index.do">Insolvenční rejstřík</a></li>
+					<li><a href="https://esf.justice.cz/ias/isesf/rejstrik">Svěřenské fondy</a></li>
+					<li><a href="https://esm.justice.cz/ias/issm/rejstrik">Skuteční majitelé</a></li>
+				</ul>
+				<ul class="links2">
+					<li><a href="./napoveda">Jak na to?</a></li>
+					<li><a href="./rejstrik-$firma">Veřejný rejstřík podle subjektů</a></li>
+					<li><a href="./rejstrik-$spolecnici">Veřejný rejstřík podle právnických osob v angažmá</a></li>
+					<li><a href="./rejstrik-$osoba">Veřejný rejstřík podle fyzických osob v angažmá</a></li>
+					<li><a href="http://www.businessinfo.cz/cs/clanky/obchodni-spolecnosti-zalozeni-vznik-opu-13164.html">Průvodce: Jak založit firmu / společnost</a></li>
+					<li><a href="http://www.komora.cz/hk-cr/inmp/lang_1/Default.aspx">Informační místa pro podnikatele</a></li>
+					<li><a href="./podani">Podání do veřejného rejstříku</a></li>
+					<li><a href="./vzorsmlouvy">Vzor společenské smlouvy pro založení s. r. o.</a></li>
+				</ul>
+				<ul class="links3">
+
+					<li><a href="./zr">Automatické aktualizace ze základních registrů</a></li>
+					<li><a href="./evypisy">Co s elektronickým výpisem</a></li>
+					<li><a href="http://www.businessinfo.cz/">Portál pro podnikatele: BusinessInfo.cz</a></li>
+					<li><a href="./podminky">Podmínky provozu</a></li>
+					<li><a href="/ias/ui/download/Informace_GDPR_ISVR-2.pdf">Ochrana osobních údajů</a></li>
+					<li><a href="./podpora">Technická podpora</a></li>
+				</ul>
+			</div>
+			<span id="footer-logo"></span>
+			<p class="center">
+				&copy; Ministerstvo spravedlnosti České republiky<br>
+				Verze aplikace: <span>15.6.2</span>
+			</p>
+		</div>
+	</div>
+	<script charset="utf-8" defer="" src="https://chatbot-mspcr-storage.predu.sk/52f8e636-2b74-42f6-a8c1-33e3f5e9e8c4/webchat/integration-script.js"></script>
+</body>
+</html>
