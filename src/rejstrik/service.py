@@ -6,11 +6,12 @@ from pydantic import BaseModel
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
+from rejstrik.analysis.in05 import compute_in05
 from rejstrik.analysis.normalize import normalize
 from rejstrik.analysis.ratios import compute_ratios
 from rejstrik.analysis.redflags import detect_red_flags
 from rejstrik.analysis.report import CompanyFinancialReport, YearlyFigures
-from rejstrik.analysis.trends import compute_trends
+from rejstrik.analysis.trends import compute_trend_series, compute_trends
 from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.llm import DocumentLLM
@@ -176,6 +177,7 @@ def analyze_statements(
     current = ordered[0]
     normalized = normalized_all[0]
     ratios = compute_ratios(normalized)
+    in05 = compute_in05(normalized)
     resolved_ico = ico or current.ico
     insolvent = None
     unreliable_vat = None
@@ -207,8 +209,10 @@ def analyze_statements(
         insolvent=insolvent,
         unreliable_vat=unreliable_vat,
         public_money_ratio=public_money_ratio,
+        in05=in05,
     )
     trends = compute_trends(normalized, normalized_all[1]) if len(ordered) > 1 else []
+    trend_series = compute_trend_series(list(reversed(normalized_all)))
     yearly = [
         YearlyFigures(
             period_year=n.period_year,
@@ -229,6 +233,8 @@ def analyze_statements(
         ratios=ratios,
         red_flags=red_flags,
         trends=trends,
+        trend_series=trend_series,
+        in05=in05,
         yearly=yearly,
         subsidies_total=subsidies_total,
         contracts_total=contracts_total,

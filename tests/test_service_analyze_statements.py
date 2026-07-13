@@ -77,3 +77,38 @@ def test_analyze_statements_public_money_flag():
         contract_check=lambda ico: ContractReport(ico=ico, total_value=200.0, count=1),
     )
     assert any(f.code == "public_money_dependence" for f in report.red_flags)
+
+
+def test_report_carries_in05_and_trend_series():
+    def _rich(year, factor):
+        return FinancialStatement(
+            company_name="Budvar",
+            ico="00514152",
+            period_year=year,
+            currency="CZK",
+            balance_sheet=[
+                Figure(label="Aktiva celkem", value=1000.0 * factor),
+                Figure(label="Cizí zdroje", value=500.0 * factor),
+                Figure(label="Oběžná aktiva", value=600.0 * factor),
+                Figure(label="Krátkodobé závazky", value=300.0 * factor),
+            ],
+            income_statement=[
+                Figure(label="Tržby z prodeje výrobků a služeb", value=2000.0 * factor),
+                Figure(label="Provozní výsledek hospodaření", value=100.0 * factor),
+                Figure(label="Nákladové úroky", value=20.0),
+                Figure(
+                    label="Výsledek hospodaření za účetní období", value=90.0 * factor
+                ),
+            ],
+        )
+
+    report = analyze_statements(
+        [_rich(2021, 1.0), _rich(2022, 1.1), _rich(2023, 1.2)],
+        insolvency_check=_no_insolvency,
+        vat_check=_clean_vat,
+    )
+    assert report.in05 is not None
+    assert report.in05.value is not None
+    revenue_series = next(s for s in report.trend_series if s.metric == "revenue")
+    assert revenue_series.years == [2021, 2022, 2023]
+    assert revenue_series.cagr is not None
