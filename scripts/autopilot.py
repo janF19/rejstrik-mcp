@@ -157,7 +157,12 @@ def run_claude(
     )
     if result.returncode != 0:
         blob = (result.stdout + result.stderr).lower()
-        if "usage limit" in blob or "rate limit" in blob or "log in" in blob:
+        if (
+            "usage limit" in blob
+            or "rate limit" in blob
+            or "session limit" in blob
+            or "log in" in blob
+        ):
             sys.exit(
                 f"claude CLI unavailable (limits/auth) — see {log_path}. "
                 "Rerun autopilot later; it will resume where it stopped."
