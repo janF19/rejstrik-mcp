@@ -38,6 +38,11 @@ from rejstrik.registry.statutory import (
 )
 from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
+from rejstrik.analysis.valuation import (
+    ValuationAssumptions,
+    ValuationEstimate,
+    estimate_valuation as _estimate_valuation,
+)
 from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
@@ -111,6 +116,7 @@ EXPOSED_TOOL_NAMES = [
     "get_subsidies",
     "get_contracts",
     "read_filing_text",
+    "estimate_valuation",
 ]
 
 
@@ -350,6 +356,19 @@ def analyze_financials(
     return _analyze_statements(statements, ico=ico)
 
 
+@mcp.tool(annotations=_ro("Estimate indicative valuation"))
+def estimate_valuation(
+    statements: list[FinancialStatement],
+    assumptions: ValuationAssumptions | None = None,
+) -> ValuationEstimate:
+    """Indicative, deterministic valuation from statements YOU extracted:
+    book value, capitalized earnings, and generic EV/EBIT and price/revenue
+    multiples, with an overall range and the assumptions used. Amounts are
+    thousands of CZK as filed. Multiples are generic, not industry-calibrated;
+    book values are not market values. This is NOT investment advice."""
+    return _estimate_valuation(statements, assumptions)
+
+
 @mcp.tool(annotations=_ro("Render report card"), meta=_UI_META, structured_output=False)
 def render_card(report: CompanyFinancialReport) -> list[TextContent | UIResource]:
     """Render a CompanyFinancialReport (from analyze_financials) as a card. Hosts
@@ -414,12 +433,19 @@ Follow these steps exactly:
 4. From each PDF, extract a FinancialStatement JSON object matching this
    schema (amounts in Czech statements are usually reported in thousands of CZK
    — keep them as printed and set currency to "CZK"; set period_year to the
-   statement year; cite source_page for every figure):
+   statement year; cite source_page for every figure). ALSO fill the `canonical`
+   object: each of its fields' descriptions names the exact Czech statutory line
+   that feeds it (e.g. total_assets ← "Aktiva celkem", net_profit ← "Výsledek
+   hospodaření za účetní období") — this is what makes the analysis reliable:
 {schema}
 5. Call analyze_financials(statements=[...], ico=ico) with ALL extracted
-   statements in one call to get ratios, red flags, and year-over-year trends.
-6. If your client renders MCP UI resources, also call render_card(report).
-7. Summarize: overall health, notable trends, every red flag with its
+   statements in one call to get ratios, red flags, the IN05 distress index,
+   and year-over-year trends.
+6. Optionally call estimate_valuation(statements=[...]) for an indicative
+   valuation range (book value, capitalized earnings, generic multiples) — it
+   is not investment advice.
+7. If your client renders MCP UI resources, also call render_card(report).
+8. Summarize: overall health, notable trends, every red flag with its
    severity, and page citations for key numbers."""
 
 

@@ -32,3 +32,28 @@ def test_financial_statement_defaults_empty_lists():
     fs = FinancialStatement()
     assert fs.balance_sheet == []
     assert fs.notes == []
+
+
+def test_canonical_figures_default_none_and_round_trip():
+    from rejstrik.documents.schema import CanonicalFigures
+
+    fs = FinancialStatement()
+    assert fs.canonical is None
+
+    fs2 = FinancialStatement(
+        canonical=CanonicalFigures(
+            total_assets=Figure(label="Aktiva celkem", value=1000.0, source_page=3),
+            net_profit=Figure(label="VH za účetní období", value=120.0),
+        )
+    )
+    restored = FinancialStatement(**fs2.model_dump())
+    assert restored.canonical.total_assets.value == 1000.0
+    assert restored.canonical.total_assets.source_page == 3
+    assert restored.canonical.equity is None
+
+
+def test_canonical_schema_names_czech_lines():
+    schema = FinancialStatement.model_json_schema()
+    dumped = str(schema)
+    assert "Aktiva celkem" in dumped
+    assert "nákladové úroky" in dumped

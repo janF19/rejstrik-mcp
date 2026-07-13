@@ -12,6 +12,13 @@ class TrendItem(BaseModel):
     pct_change: float | None = None
 
 
+class TrendSeriesItem(BaseModel):
+    metric: str
+    years: list[int | None] = []
+    values: list[float | None] = []
+    cagr: float | None = None
+
+
 def compute_trends(
     current: NormalizedFinancials,
     prior: NormalizedFinancials,
@@ -29,6 +36,34 @@ def compute_trends(
                 current=current_value,
                 prior=prior_value,
                 pct_change=pct_change,
+            )
+        )
+    return items
+
+
+def _cagr(values: list[float | None]) -> float | None:
+    if len(values) < 3:
+        return None
+    start, end = values[0], values[-1]
+    if start is None or end is None or start <= 0 or end <= 0:
+        return None
+    periods = len(values) - 1
+    return (end / start) ** (1 / periods) - 1
+
+
+def compute_trend_series(
+    chronological: list[NormalizedFinancials],
+) -> list[TrendSeriesItem]:
+    """Full year-by-year series per metric. Input is oldest-first."""
+    items: list[TrendSeriesItem] = []
+    for metric in _METRICS:
+        values = [getattr(n, metric) for n in chronological]
+        items.append(
+            TrendSeriesItem(
+                metric=metric,
+                years=[n.period_year for n in chronological],
+                values=values,
+                cagr=_cagr(values),
             )
         )
     return items
