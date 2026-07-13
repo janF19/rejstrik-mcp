@@ -1,6 +1,6 @@
 [project]
 name = "rejstrik-mcp"
-version = "0.4.0"
+version = "0.5.0"
 description = "Czech registry MCP that reads the documents"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -21,6 +21,7 @@ dependencies = [
     "openai>=2.30",
     "python-dotenv>=1.0",
     "platformdirs>=4",
+    "pypdf>=5",
     "mcp>=1.2",
     "mcp-ui-server>=1.0",
 ]
