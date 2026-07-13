@@ -38,3 +38,28 @@ def test_load_pdf_from_filing_uses_pdf_url():
     )
     src = load_pdf(filing)
     assert src.data == PDF_BYTES
+
+
+@respx.mock
+def test_load_pdf_from_legacy_detail_url_resolves_fresh_token():
+    detail_url = (
+        "https://or.justice.cz/ias/ui/vypis-sl-detail"
+        "?dokument=87101138&subjektId=59981&spis=411891"
+    )
+    download_url = "https://or.justice.cz/ias/content/download?id=fresh-token"
+    detail_html = (
+        '<html><body><a href="/ias/content/download?id=fresh-token">report.pdf</a>'
+        "</body></html>"
+    )
+    respx.get(detail_url).mock(return_value=httpx.Response(200, text=detail_html))
+    respx.get(download_url).mock(return_value=httpx.Response(200, content=PDF_BYTES))
+
+    filing = Filing(
+        title="Účetní závěrka [2024]",
+        year=2024,
+        pdf_url=detail_url,
+        is_financial_statement=True,
+    )
+    src = load_pdf(filing)
+    assert src.data == PDF_BYTES
+    assert src.sha256 == hashlib.sha256(PDF_BYTES).hexdigest()
