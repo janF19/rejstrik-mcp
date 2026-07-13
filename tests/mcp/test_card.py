@@ -1,10 +1,11 @@
+from rejstrik.analysis.in05 import IN05Result
 from rejstrik.analysis.normalize import NormalizedFinancials
 from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.redflags import RedFlag
 from rejstrik.analysis.report import CompanyFinancialReport, YearlyFigures
 from rejstrik.analysis.trends import TrendItem
 from rejstrik.documents.schema import FinancialStatement
-from rejstrik.mcp.card import render_report_card
+from rejstrik.mcp.card import render_report_card, render_report_markdown
 
 REPORT = CompanyFinancialReport(
     company_name="Test & Co s.r.o.",
@@ -107,3 +108,33 @@ def test_card_shows_public_money_section():
 def test_card_footer_notes_thousands_czk():
     html = render_report_card(RICH_REPORT)
     assert "thousands of CZK" in html
+
+
+IN05_REPORT = CompanyFinancialReport(
+    company_name="Test s.r.o.",
+    ico="00006947",
+    period_year=2023,
+    currency="CZK",
+    statement=FinancialStatement(),
+    normalized=NormalizedFinancials(),
+    ratios=Ratios(interest_coverage=4.0),
+    in05=IN05Result(value=1.457, zone="grey"),
+    source_filing_title="Ucetni zaverka 2023",
+)
+
+
+def test_card_shows_in05_section_html():
+    html = render_report_card(IN05_REPORT)
+    assert "IN05" in html
+    assert "grey" in html
+
+
+def test_card_shows_in05_section_markdown():
+    md = render_report_markdown(IN05_REPORT)
+    assert "IN05" in md
+    assert "grey" in md
+
+
+def test_card_new_ratio_has_blurb():
+    html = render_report_card(IN05_REPORT)
+    assert "interest" in html.lower()
