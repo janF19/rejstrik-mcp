@@ -169,16 +169,31 @@ def get_filing(
         TextContent(type="text", text=doc.model_dump_json(indent=2))
     ]
     if doc.size_bytes <= _MAX_EMBED_BYTES:
-        parts.append(
-            EmbeddedResource(
-                type="resource",
-                resource=BlobResourceContents(
-                    uri=Path(doc.file_path).as_uri(),
-                    mimeType="application/pdf",
-                    blob=base64.standard_b64encode(source.data).decode(),
-                ),
+        try:
+            uri = Path(doc.file_path).as_uri()
+        except ValueError:
+            uri = None
+        if uri is not None:
+            parts.append(
+                EmbeddedResource(
+                    type="resource",
+                    resource=BlobResourceContents(
+                        uri=uri,
+                        mimeType="application/pdf",
+                        blob=base64.standard_b64encode(source.data).decode(),
+                    ),
+                )
             )
-        )
+        else:
+            parts.append(
+                TextContent(
+                    type="text",
+                    text=(
+                        f"PDF at {doc.file_path} could not be embedded "
+                        f"(path is not absolute). Read it from that path."
+                    ),
+                )
+            )
     else:
         parts.append(
             TextContent(
