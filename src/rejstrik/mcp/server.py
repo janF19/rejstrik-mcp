@@ -12,6 +12,7 @@ from mcp.types import (
     ToolAnnotations,
 )
 from mcp_ui_server import UIResource, create_ui_resource
+from pydantic import BaseModel
 
 from rejstrik.analysis.normalize import NormalizedFinancials
 from rejstrik.analysis.ratios import Ratios
@@ -20,6 +21,7 @@ from rejstrik.documents.answer import Answer
 from rejstrik.documents.ask import ask_filing as _ask_filing
 from rejstrik.documents.config import has_llm_key
 from rejstrik.documents.extract import extract_financials as _extract_financials
+from rejstrik.documents.pdftext import PageText, extract_pages_text, parse_page_range
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
 from rejstrik.filings.models import Filing
@@ -40,6 +42,7 @@ from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
     analyze_statements as _analyze_statements,
+    count_pdf_pages,
     fetch_filing as _fetch_filing,
     resolve_statement_source,
 )
@@ -107,6 +110,7 @@ EXPOSED_TOOL_NAMES = [
     "render_card",
     "get_subsidies",
     "get_contracts",
+    "read_filing_text",
 ]
 
 
@@ -299,6 +303,42 @@ def get_filing(
     return parts
 
 
+class FilingText(BaseModel):
+    ico: str
+    year: int | None = None
+    page_count: int
+    requested_pages: list[int]
+    pages: list[PageText]
+    message: str | None = None
+
+
+@mcp.tool(annotations=_ro("Read filing text"))
+def read_filing_text(
+    ico: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    pages: str = "1-10",
+) -> FilingText:
+    """Extract the embedded text layer of a statement PDF for a page range —
+    keyless, no LLM, no OCR. Page grammar: "3", "1-5", "1-3,7" (default "1-10").
+    At most 20 pages per call. Czech filings are often scanned images with no
+    text layer; pages without text are reported honestly (has_text=false) with a
+    note pointing to extract_financials or filesystem reading — never a silent
+    empty string."""
+    doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
+    page_count = doc.page_count or count_pdf_pages(source.data) or 0
+    requested, message = parse_page_range(pages, page_count=page_count)
+    page_texts = extract_pages_text(source.data, requested)
+    return FilingText(
+        ico=doc.ico,
+        year=doc.year,
+        page_count=page_count,
+        requested_pages=requested,
+        pages=page_texts,
+        message=message,
+    )
+
+
 @mcp.tool(annotations=_ro("Analyze extracted financials"))
 def analyze_financials(
     statements: list[FinancialStatement], ico: str | None = None
@@ -365,9 +405,12 @@ Follow these steps exactly:
 1. Call find_company("{company}") to resolve the IČO.
 2. Call list_filings(ico) and identify the financial statements for the
    {years} most recent year(s).
-3. For each year, call get_filing(ico, year=...). Read the returned PDF
-   (use the local file_path if you can read files, otherwise the embedded
-   resource).
+3. For each year, call get_filing(ico, year=...). If you can read local files
+   (Claude Code, Codex, Desktop with filesystem access), pass embed="never" and
+   read the PDF from the returned file_path — filed statements are routinely
+   20-25 MB and the path is strictly better than embedding. Otherwise use the
+   embedded resource, or call read_filing_text(ico, year=..., pages="1-10") to
+   pull the text layer in digestible slices.
 4. From each PDF, extract a FinancialStatement JSON object matching this
    schema (amounts in Czech statements are usually reported in thousands of CZK
    — keep them as printed and set currency to "CZK"; set period_year to the
