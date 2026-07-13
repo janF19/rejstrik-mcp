@@ -19,6 +19,7 @@ def test_exposed_tool_names():
         "render_card",
         "get_subsidies",
         "get_contracts",
+        "read_filing_text",
     ]
 
 
