@@ -13,6 +13,8 @@ from mcp.types import (
 )
 from mcp_ui_server import UIResource, create_ui_resource
 
+from rejstrik.analysis.normalize import NormalizedFinancials
+from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.report import CompanyFinancialReport
 from rejstrik.documents.answer import Answer
 from rejstrik.documents.ask import ask_filing as _ask_filing
@@ -34,7 +36,7 @@ from rejstrik.registry.statutory import (
 )
 from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
-from rejstrik.mcp.card import render_report_card
+from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
     analyze_statements as _analyze_statements,
@@ -45,6 +47,50 @@ from rejstrik.service import (
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
 
 _MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "15000000"))
+
+_UI_URI = "ui://rejstrik/report"
+# ext-apps _meta UI declaration. VERIFY the exact key against the MCP Apps spec
+# (blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps) on the implementation
+# day — the ecosystem moves monthly. Override at runtime via REJSTRIK_APPS_CAPABILITY_KEY.
+_UI_META = {"mcp/ui": {"resourceUri": _UI_URI}}
+
+
+def _apps_capability(experimental: dict | None) -> bool:
+    if not experimental:
+        return False
+    key = os.environ.get("REJSTRIK_APPS_CAPABILITY_KEY", "mcp-apps")
+    return key in experimental
+
+
+def _host_supports_apps() -> bool:
+    try:
+        ctx = mcp.get_context()
+        experimental = ctx.session.client_params.capabilities.experimental
+    except Exception:
+        return False
+    return _apps_capability(experimental)
+
+
+def _card_ui_resource(report: CompanyFinancialReport) -> UIResource:
+    return create_ui_resource(
+        {
+            "uri": _UI_URI,
+            "content": {
+                "type": "rawHtml",
+                "htmlString": render_report_card(report),
+            },
+            "encoding": "text",
+        }
+    )
+
+
+def _render_card_output(
+    report: CompanyFinancialReport, *, apps_supported: bool
+) -> list[TextContent | UIResource]:
+    if apps_supported:
+        return [_card_ui_resource(report)]
+    return [TextContent(type="text", text=render_report_markdown(report))]
+
 
 EXPOSED_TOOL_NAMES = [
     "find_company",
@@ -134,25 +180,29 @@ def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialRe
     return _analyze_company_financials(query, years=years)
 
 
-@mcp.tool(annotations=_ro("Analyze company card"))
-def analyze_company_card(query: str, years: int = 1) -> list[UIResource]:
-    """Full financial report as an interactive HTML card, over the last `years`
-    (1-5) years. Requires a server-side API key; without one, use get_filing +
-    analyze_financials + render_card."""
+@mcp.resource(_UI_URI, mime_type="text/html", meta=_UI_META)
+def report_card_ui() -> str:
+    """The financial report card's self-contained HTML shell (MCP Apps template)."""
+    return render_report_card(
+        CompanyFinancialReport(
+            statement=FinancialStatement(),
+            normalized=NormalizedFinancials(),
+            ratios=Ratios(),
+        )
+    )
+
+
+@mcp.tool(
+    annotations=_ro("Analyze company card"), meta=_UI_META, structured_output=False
+)
+def analyze_company_card(query: str, years: int = 1) -> list[TextContent | UIResource]:
+    """Full financial report as a card, over the last `years` (1-5) years. Hosts
+    that negotiate the MCP Apps capability get an interactive HTML card; others
+    get a compact markdown summary. Requires a server-side API key; without one,
+    use get_filing + analyze_financials + render_card."""
     _require_llm_key()
     report = _analyze_company_financials(query, years=years)
-    return [
-        create_ui_resource(
-            {
-                "uri": "ui://rejstrik/report",
-                "content": {
-                    "type": "rawHtml",
-                    "htmlString": render_report_card(report),
-                },
-                "encoding": "text",
-            }
-        )
-    ]
+    return _render_card_output(report, apps_supported=_host_supports_apps())
 
 
 @mcp.tool(annotations=_ro("Get filing PDF"), structured_output=False)
@@ -218,22 +268,12 @@ def analyze_financials(
     return _analyze_statements(statements, ico=ico)
 
 
-@mcp.tool(annotations=_ro("Render report card"))
-def render_card(report: CompanyFinancialReport) -> list[UIResource]:
-    """Render a CompanyFinancialReport (from analyze_financials) as an
-    interactive HTML card for MCP UI hosts."""
-    return [
-        create_ui_resource(
-            {
-                "uri": "ui://rejstrik/report",
-                "content": {
-                    "type": "rawHtml",
-                    "htmlString": render_report_card(report),
-                },
-                "encoding": "text",
-            }
-        )
-    ]
+@mcp.tool(annotations=_ro("Render report card"), meta=_UI_META, structured_output=False)
+def render_card(report: CompanyFinancialReport) -> list[TextContent | UIResource]:
+    """Render a CompanyFinancialReport (from analyze_financials) as a card. Hosts
+    that negotiate MCP Apps get interactive HTML; others get a compact markdown
+    summary suitable for Claude Code and other text-only hosts."""
+    return _render_card_output(report, apps_supported=_host_supports_apps())
 
 
 def _to_ico(value: str) -> str:
