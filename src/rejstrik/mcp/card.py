@@ -19,12 +19,15 @@ _ARROW = {"up": "▲", "down": "▼", "flat": "→"}
 _STYLE = """
 body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:16px;color:#1f2933;background:#fff}
 h1{font-size:18px;line-height:1.25;margin:0 0 2px}
-.sub{color:#52606d;font-size:13px;margin-bottom:14px}
-table{border-collapse:collapse;width:100%;margin-bottom:14px}
-td{padding:5px 8px;border-bottom:1px solid #e4e7eb;font-size:13px}
-td.k{color:#52606d}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#52606d;margin:16px 0 6px}
+.sub{color:#52606d;font-size:13px;margin-bottom:8px}
+table{border-collapse:collapse;width:100%;margin-bottom:8px}
+th,td{padding:5px 8px;border-bottom:1px solid #e4e7eb;font-size:13px;text-align:right}
+th:first-child,td:first-child,td.k{text-align:left;color:#52606d}
+.blurb{color:#7b8794}
 .flag{padding:7px 10px;border-radius:6px;margin:4px 0;color:#fff;font-size:13px}
-.foot{color:#7b8794;font-size:11px;margin-top:10px}
+.pm{padding:8px 10px;border-radius:6px;background:#f0f4f8;font-size:13px;margin:6px 0}
+.foot{color:#7b8794;font-size:11px;margin-top:12px}
 """
 
 
@@ -61,29 +64,67 @@ def _sorted_flags(report: CompanyFinancialReport):
 
 
 def render_report_card(report: CompanyFinancialReport) -> str:
-    rows = "".join(
-        f"<tr><td class='k'>{_esc(name)}</td><td>{_esc(_shown(value))}</td></tr>"
+    if report.yearly:
+        year_head = "".join(
+            f"<th>{_esc(y.period_year or '-')}</th>" for y in report.yearly
+        )
+        metric_rows = ""
+        for label, attr in (
+            ("Revenue", "revenue"),
+            ("Net profit", "net_profit"),
+            ("Total assets", "total_assets"),
+            ("Equity", "equity"),
+        ):
+            cells = "".join(
+                f"<td>{_esc(_fmt(getattr(y, attr)))}</td>" for y in report.yearly
+            )
+            metric_rows += f"<tr><td class='k'>{_esc(label)}</td>{cells}</tr>"
+        yearly_html = (
+            "<h2>Figures by year</h2>"
+            f"<table><tr><th>Metric</th>{year_head}</tr>{metric_rows}</table>"
+        )
+    else:
+        yearly_html = ""
+
+    ratio_rows = "".join(
+        f"<tr><td class='k'>{_esc(name)}</td><td>{_esc(_shown(value))}</td>"
+        f"<td class='blurb'>{_esc(_RATIO_BLURB.get(name, ''))}</td></tr>"
         for name, value in report.ratios.model_dump().items()
     )
-    if report.red_flags:
+
+    flags_sorted = _sorted_flags(report)
+    if flags_sorted:
         flags = "".join(
             f"<div class='flag' style='background:{_SEVERITY_COLOR.get(flag.severity, '#667085')}'>"
             f"[{_esc(flag.severity.upper())}] {_esc(flag.message)}</div>"
-            for flag in report.red_flags
+            for flag in flags_sorted
         )
     else:
         flags = (
             "<div class='flag' style='background:#2f855a'>No red flags detected.</div>"
         )
 
+    if report.public_money_ratio is not None:
+        public_money = (
+            f"<div class='pm'>Public money (subsidies + state contracts) is "
+            f"~{_esc(f'{report.public_money_ratio:.0%}')} of revenue.</div>"
+        )
+    else:
+        public_money = ""
+
     return f"""<!doctype html>
 <html><head><meta charset="utf-8"><style>{_STYLE}</style></head>
 <body>
   <h1>{_esc(report.company_name or "")}</h1>
-  <div class="sub">ICO {_esc(report.ico or "-")} &middot; period {_esc(report.period_year or "-")} &middot; {_esc(report.currency or "")}</div>
-  <table>{rows}</table>
+  <div class="sub">IČO {_esc(report.ico or "-")} &middot; period {_esc(report.period_year or "-")} &middot; {_esc(report.currency or "")}</div>
+  <div class="sub">Source: {_esc(report.source_filing_title or "Sbírka listin")}</div>
+  {yearly_html}
+  <h2>Ratios</h2>
+  <table>{ratio_rows}</table>
+  <h2>Red flags</h2>
   {flags}
-  <div class="foot">Source: {_esc(report.source_filing_title or "Sbirka listin")}</div>
+  {public_money}
+  <div class="foot">Figures as filed; typically thousands of CZK. Source: {_esc(report.source_filing_title or "Sbírka listin")}</div>
 </body></html>"""
 
 
