@@ -89,7 +89,7 @@ above), `tests/filings/test_justice.py`, `src/rejstrik/filings/justice.py`
 
 - [x] Step 1: Capture real fixtures (done above — search, deeds, detail,
   block pages for IČO 00514152 / subjektId 59981).
-- [ ] Step 2: Write failing tests in `tests/filings/test_justice.py` against
+- [x] Step 2: Write failing tests in `tests/filings/test_justice.py` against
   the new fixtures: `parse_subject_id` finds `59981` from
   `legacy_search_00514152.html`; `parse_deeds` on
   `legacy_deeds_00514152.html` returns filings with correct titles (joined
@@ -101,14 +101,14 @@ above), `tests/filings/test_justice.py`, `src/rejstrik/filings/justice.py`
   (`subject_00006947.html`, `deeds_00006947.html`) — decide based on whether
   they still add value once real fixtures exist; prefer deleting duplicated
   synthetic coverage to avoid maintaining two selector contracts.
-- [ ] Step 3: Rewrite `parse_deeds()` in `justice.py` against the real
+- [x] Step 3: Rewrite `parse_deeds()` in `justice.py` against the real
   `table.list` structure. Extract `dokument`, `subjektId`, `spis` from the
   row's detail link; build absolute `pdf_url` from `_BASE_URL +
   "/ias/ui/" + href.lstrip("./")`. Join all `span.symbol` texts with `", "`
   for the title.
-- [ ] Step 4: Verify — `python -m pytest tests/filings/test_justice.py -q`
+- [x] Step 4: Verify — `python -m pytest tests/filings/test_justice.py -q`
   green.
-- [ ] Step 5: Commit: `fix(filings): rewrite parse_deeds against real
+- [x] Step 5: Commit: `fix(filings): rewrite parse_deeds against real
   or.justice.cz markup`.
 
 ### Task 2: `parse_download_link` + legacy-aware `load_pdf`
@@ -116,30 +116,30 @@ above), `tests/filings/test_justice.py`, `src/rejstrik/filings/justice.py`
 **Files:** `src/rejstrik/filings/justice.py`, `src/rejstrik/documents/source.py`,
 `tests/filings/test_justice.py`, `tests/documents/test_source.py`
 
-- [ ] Step 1: Write failing test for `parse_download_link(html, base_url)`
+- [x] Step 1: Write failing test for `parse_download_link(html, base_url)`
   using `legacy_detail_87101138.html` — asserts it returns the absolute
   `https://or.justice.cz/ias/content/download?id=...` URL.
-- [ ] Step 2: Implement `parse_download_link` in `justice.py`.
-- [ ] Step 3: Write failing test in `tests/documents/test_source.py`:
+- [x] Step 2: Implement `parse_download_link` in `justice.py`.
+- [x] Step 3: Write failing test in `tests/documents/test_source.py`:
   `load_pdf()` given a `Filing` whose `pdf_url` is a
   `.../vypis-sl-detail?...` URL does a two-step fetch (mock both requests
   with `respx`: GET detail page → GET resolved download link) and returns
   the PDF bytes from the second response. Also add a case confirming plain
   URLs (new-API document URLs, or any non-legacy-detail URL) still do a
   single direct GET (no regression).
-- [ ] Step 4: Implement the branch in `load_pdf()`: detect legacy detail
+- [x] Step 4: Implement the branch in `load_pdf()`: detect legacy detail
   URLs (`or.justice.cz` host + `/ias/ui/vypis-sl-detail` path), fetch,
   parse download link via `parse_download_link`, fetch that, return.
-- [ ] Step 5: Verify — `python -m pytest tests/documents/test_source.py
+- [x] Step 5: Verify — `python -m pytest tests/documents/test_source.py
   tests/filings/test_justice.py -q` green.
-- [ ] Step 6: Commit: `feat(documents): resolve legacy filing PDFs via
+- [x] Step 6: Commit: `feat(documents): resolve legacy filing PDFs via
   fresh detail-page token`.
 
 ### Task 3: Fallback chain + typed error in `list_filings`
 
 **Files:** `src/rejstrik/filings/justice.py`, `tests/filings/test_justice.py`
 
-- [ ] Step 1: Write failing tests with `respx`:
+- [x] Step 1: Write failing tests with `respx`:
   - New API returns 403 → `list_filings` falls back: mocks legacy search
     (200, `legacy_search_00514152.html`) and legacy deeds (200,
     `legacy_deeds_00514152.html`) → returns parsed legacy filings.
@@ -154,16 +154,16 @@ above), `tests/filings/test_justice.py`, `src/rejstrik/filings/justice.py`
     non-URL-encoded ICO as used in the manual link), and mentions the
     registry may be blocking automated access.
   - Sort order (financial-first, year-desc) preserved in the fallback path.
-- [ ] Step 2: Add `RegistryBlockedError(Exception)` to `justice.py`.
-- [ ] Step 3: Implement the fallback chain in `list_filings()`: try new
+- [x] Step 2: Add `RegistryBlockedError(Exception)` to `justice.py`.
+- [x] Step 3: Implement the fallback chain in `list_filings()`: try new
   API; on `httpx.HTTPStatusError` with `status_code == 403`, try legacy
   (search by ICO w/ leading zeros preserved → `parse_subject_id` →
   `vypis-sl-firma` → `parse_deeds`); if legacy also fails or finds no
   subject, raise `RegistryBlockedError`. Non-403 errors from the new API
   propagate unchanged.
-- [ ] Step 4: Verify — `python -m pytest tests/filings/test_justice.py -q`
+- [x] Step 4: Verify — `python -m pytest tests/filings/test_justice.py -q`
   green.
-- [ ] Step 5: Commit: `feat(filings): fall back to legacy or.justice.cz
+- [x] Step 5: Commit: `feat(filings): fall back to legacy or.justice.cz
   portal when new API is blocked`.
 
 ### Task 4: Live acceptance check (manual, not part of automated suite)
@@ -187,27 +187,27 @@ above), `tests/filings/test_justice.py`, `src/rejstrik/filings/justice.py`
 **Files:** `scripts/smoke.py`, `tests/test_smoke.py` (new or existing —
 check first)
 
-- [ ] Step 1: Check whether `tests/test_smoke.py` already exists; if not,
+- [x] Step 1: Check whether `tests/test_smoke.py` already exists; if not,
   create it. Write a failing offline test asserting `scripts/smoke.py`
   defines a `canary()` (or `canary_endpoints()`) callable that the module
   exposes, and that it's referenced from `main()` — test this via
   source-text or `ast` inspection / import + `hasattr`, no network calls.
-- [ ] Step 2: Implement `canary()` in `smoke.py`: does two lightweight
+- [x] Step 2: Implement `canary()` in `smoke.py`: does two lightweight
   direct `httpx.get()` calls (short timeout, e.g. 10s) — one to the new API
   base, one to `or.justice.cz` search — and prints one PASS/BLOCKED line
   per endpoint (status code, no exception raised out of `canary()` even on
   network failure — catch and report as BLOCKED). Call `canary()` at the
   start of `main()`.
-- [ ] Step 3: Verify — `python -m pytest tests/test_smoke.py -q` green
+- [x] Step 3: Verify — `python -m pytest tests/test_smoke.py -q` green
   (offline). Do not run `scripts/smoke.py` itself in the automated suite.
-- [ ] Step 4: Commit: `feat(smoke): add endpoint canary section for both
+- [x] Step 4: Commit: `feat(smoke): add endpoint canary section for both
   filings portals`.
 
 ### Task 6: Scheduled canary GitHub Actions workflow (optional, include since cheap)
 
 **Files:** `.github/workflows/canary.yml`
 
-- [ ] Step 1: Add a workflow triggered on `schedule` (weekly, e.g. `cron:
+- [x] Step 1: Add a workflow triggered on `schedule` (weekly, e.g. `cron:
   "0 6 * * 1"`) and `workflow_dispatch`, that checks out, installs deps,
   and runs a small inline script (or `python -c` block) calling
   `scripts.smoke.canary()` directly, exiting non-zero if both endpoints are
@@ -216,19 +216,19 @@ check first)
   Auto-filing an issue on failure is a nice-to-have — leave a `TODO` comment
   in the workflow noting it's not implemented in this stage rather than
   building it now (scope control).
-- [ ] Step 2: No automated test for this (workflow YAML isn't exercised by
+- [x] Step 2: No automated test for this (workflow YAML isn't exercised by
   pytest); sanity-check with `python -c "import yaml;
   yaml.safe_load(open('.github/workflows/canary.yml'))"` if `pyyaml` is
   available, else visually verify syntax.
-- [ ] Step 3: Commit: `ci: add weekly filings-portal canary workflow`.
+- [x] Step 3: Commit: `ci: add weekly filings-portal canary workflow`.
 
 ### Task 7: Full verification + wrap-up
 
-- [ ] Step 1: `ruff check src/ tests/ && ruff format --check src/ tests/ &&
+- [x] Step 1: `ruff check src/ tests/ && ruff format --check src/ tests/ &&
   python -m pytest -q` — all green.
-- [ ] Step 2: Update this plan file's Task 4 with the live acceptance
+- [x] Step 2: Update this plan file's Task 4 with the live acceptance
   result if not already done.
-- [ ] Step 3: Final commit if anything is outstanding (e.g. plan file
+- [x] Step 3: Final commit if anything is outstanding (e.g. plan file
   updates).
 
 ## TODO for human judgment
