@@ -10,9 +10,11 @@ live-investigation notes.
 from pathlib import Path
 
 import httpx
+import pytest
 import respx
 
 from rejstrik.filings.justice import (
+    RegistryBlockedError,
     parse_download_link,
     parse_subject_id,
     parse_deeds,
@@ -23,10 +25,13 @@ FIXTURES = Path(__file__).parent.parent / "fixtures" / "justice"
 SEARCH_HTML = (FIXTURES / "legacy_search_00514152.html").read_text(encoding="utf-8")
 DEEDS_HTML = (FIXTURES / "legacy_deeds_00514152.html").read_text(encoding="utf-8")
 DETAIL_HTML = (FIXTURES / "legacy_detail_87101138.html").read_text(encoding="utf-8")
+BLOCK_HTML = (FIXTURES / "new_api_block_403.html").read_text(encoding="utf-8")
 
 _NEW_FILINGS_URL = (
     "https://verejnerejstriky.msp.gov.cz/api/sbirka-listin/subjekty/514152"
 )
+_LEGACY_SEARCH_URL = "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=00514152"
+_LEGACY_DEEDS_URL = "https://or.justice.cz/ias/ui/vypis-sl-firma?subjektId=59981"
 
 
 def test_parse_subject_id_found():
@@ -140,3 +145,54 @@ def test_list_filings_uses_new_sbirka_listin_api():
     assert filings[0].pdf_url == (
         "https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/107465869"
     )
+
+
+@respx.mock
+def test_list_filings_falls_back_to_legacy_portal_on_403():
+    respx.get(_NEW_FILINGS_URL).mock(return_value=httpx.Response(403, text=BLOCK_HTML))
+    respx.get(_LEGACY_SEARCH_URL).mock(
+        return_value=httpx.Response(200, text=SEARCH_HTML)
+    )
+    respx.get(_LEGACY_DEEDS_URL).mock(return_value=httpx.Response(200, text=DEEDS_HTML))
+
+    client = httpx.Client()
+    filings = list_filings("00514152", client=client)
+    client.close()
+
+    assert len(filings) >= 90
+    assert filings[0].is_financial_statement is True
+    assert filings[0].pdf_url.startswith(
+        "https://or.justice.cz/ias/ui/vypis-sl-detail?dokument="
+    )
+
+
+@respx.mock
+def test_list_filings_does_not_fall_back_on_404():
+    respx.get(_NEW_FILINGS_URL).mock(return_value=httpx.Response(404, text="not found"))
+
+    client = httpx.Client()
+    try:
+        with pytest.raises(httpx.HTTPStatusError):
+            list_filings("00514152", client=client)
+    finally:
+        client.close()
+
+
+@respx.mock
+def test_list_filings_raises_registry_blocked_when_both_portals_fail():
+    respx.get(_NEW_FILINGS_URL).mock(return_value=httpx.Response(403, text=BLOCK_HTML))
+    respx.get(_LEGACY_SEARCH_URL).mock(
+        return_value=httpx.Response(200, text="<html><body>no results</body></html>")
+    )
+
+    client = httpx.Client()
+    try:
+        with pytest.raises(RegistryBlockedError) as exc_info:
+            list_filings("00514152", client=client)
+    finally:
+        client.close()
+
+    message = str(exc_info.value)
+    assert "verejnerejstriky.msp.gov.cz" in message
+    assert "or.justice.cz" in message
+    assert "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=00514152" in message
