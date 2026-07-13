@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
+from rejstrik.analysis.in05 import IN05Result
 from rejstrik.analysis.normalize import NormalizedFinancials
 from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.redflags import RedFlag
-from rejstrik.analysis.trends import TrendItem
+from rejstrik.analysis.trends import TrendItem, TrendSeriesItem
 from rejstrik.documents.schema import FinancialStatement
 
 
@@ -25,6 +26,8 @@ class CompanyFinancialReport(BaseModel):
     ratios: Ratios
     red_flags: list[RedFlag] = []
     trends: list[TrendItem] = []
+    trend_series: list[TrendSeriesItem] = []
+    in05: IN05Result | None = None
     yearly: list[YearlyFigures] = []
     subsidies_total: float | None = None
     contracts_total: float | None = None
