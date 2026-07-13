@@ -1,7 +1,7 @@
 import httpx
 
 from rejstrik.core.http import make_client
-from rejstrik.registry.models import Company
+from rejstrik.registry.models import Company, legal_form_name
 
 BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty"
 
@@ -14,11 +14,13 @@ class CompanyNotFound(Exception):
 
 def parse_detail(payload: dict) -> Company:
     sidlo = payload.get("sidlo") or {}
+    legal_form = payload.get("pravniForma")
     return Company(
         ico=str(payload["ico"]),
         name=payload.get("obchodniJmeno") or "",
         address=sidlo.get("textovaAdresa"),
-        legal_form=payload.get("pravniForma"),
+        legal_form=legal_form,
+        legal_form_name=legal_form_name(legal_form),
         founded=payload.get("datumVzniku"),
     )
 
