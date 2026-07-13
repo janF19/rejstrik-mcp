@@ -12,6 +12,12 @@ _RATIO_BLURB = {
     "debt_to_equity": "leverage — liabilities per unit of equity",
     "net_margin": "net profit per unit of revenue",
     "return_on_equity": "net profit per unit of equity",
+    "quick_ratio": "liquidity excluding inventories",
+    "return_on_assets": "net profit per unit of assets",
+    "asset_turnover": "revenue per unit of assets",
+    "interest_coverage": "operating profit vs interest expense",
+    "operating_margin": "operating profit per unit of revenue",
+    "ocf_to_liabilities": "operating cash flow vs total liabilities",
 }
 
 _ARROW = {"up": "▲", "down": "▼", "flat": "→"}
@@ -112,6 +118,15 @@ def render_report_card(report: CompanyFinancialReport) -> str:
     else:
         public_money = ""
 
+    if report.in05 is not None and report.in05.value is not None:
+        in05_html = (
+            "<h2>IN05 distress index</h2>"
+            f"<div class='pm'>IN05 = {_esc(round(report.in05.value, 2))} — "
+            f"{_esc((report.in05.zone or '').replace('_', ' '))} zone.</div>"
+        )
+    else:
+        in05_html = ""
+
     return f"""<!doctype html>
 <html><head><meta charset="utf-8"><style>{_STYLE}</style></head>
 <body>
@@ -121,6 +136,7 @@ def render_report_card(report: CompanyFinancialReport) -> str:
   {yearly_html}
   <h2>Ratios</h2>
   <table>{ratio_rows}</table>
+  {in05_html}
   <h2>Red flags</h2>
   {flags}
   {public_money}
@@ -158,6 +174,12 @@ def render_report_markdown(report: CompanyFinancialReport) -> str:
         suffix = f" — {blurb}" if blurb else ""
         lines.append(f"- **{name}**: {shown}{suffix}")
     lines.append("")
+
+    if report.in05 is not None and report.in05.value is not None:
+        lines.append("### IN05 distress index")
+        zone = (report.in05.zone or "").replace("_", " ")
+        lines.append(f"- IN05 = {round(report.in05.value, 2)} — {zone} zone")
+        lines.append("")
 
     if report.trends:
         lines.append("### Year-over-year (latest vs prior)")
