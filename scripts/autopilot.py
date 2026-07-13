@@ -76,6 +76,13 @@ def git(args: list[str], cwd: Path = REPO, check: bool = True) -> str:
     return result.stdout.strip()
 
 
+def base_branch() -> str:
+    """The branch autopilot integrates into — the main checkout's current
+    HEAD, not a hardcoded 'main'. Stage branches fork from and merge back
+    into whatever branch you launched autopilot on."""
+    return git(["rev-parse", "--abbrev-ref", "HEAD"])
+
+
 # ---------------------------------------------------------------- state
 
 
@@ -100,7 +107,7 @@ def branch_exists(stage: str) -> bool:
 def branch_merged(stage: str) -> bool:
     if not branch_exists(stage):
         return False
-    merged = git(["branch", "--merged", "main", "--format=%(refname:short)"])
+    merged = git(["branch", "--merged", base_branch(), "--format=%(refname:short)"])
     return f"stage/{stage}" in merged.splitlines()
 
 
@@ -239,7 +246,16 @@ def phase_execute(stage: str, plan: Path, opts: argparse.Namespace) -> Path | No
         if branch_exists(stage):
             git(["worktree", "add", str(worktree), f"stage/{stage}"])
         else:
-            git(["worktree", "add", "-b", f"stage/{stage}", str(worktree), "main"])
+            git(
+                [
+                    "worktree",
+                    "add",
+                    "-b",
+                    f"stage/{stage}",
+                    str(worktree),
+                    base_branch(),
+                ]
+            )
     bootstrap_venv(worktree)
     base = f"""You are in a git worktree on branch stage/{stage} of rejstrik-mcp.
 Execute the implementation plan at {plan.relative_to(REPO).as_posix()} COMPLETELY.
@@ -303,7 +319,7 @@ def phase_merge(stage: str, worktree: Path, opts: argparse.Namespace) -> bool:
     git(["worktree", "remove", str(worktree), "--force"], check=False)
     git(["branch", "-d", f"stage/{stage}"], check=False)
     if opts.push:
-        git(["push", "origin", "main"])
+        git(["push", "origin", base_branch()])
     print(f"[stage {stage}] DONE")
     return True
 
