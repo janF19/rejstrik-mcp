@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="cs" class="ff ff124">
+	<head><script type="text/javascript" src="./wicket/resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-1.11.1.min-ver-8101D596B2B8FA35FE3A634EA342D7C3.js"></script>
+
+		<title>Veřejný rejstřík a Sbírka listin - Ministerstvo spravedlnosti České republiky</title>
+
+		<link rel="shortcut icon" href="./resource/images/favicon.ico" type="image/x-icon">
+
+		<!--
+		<link rel="stylesheet" href="./style.css" type="text/css" />
+		 -->
+
+		<link rel="stylesheet" href="./resource/css/reset.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/base.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/layout.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/drop-down-menu.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/columns.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/tables.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/forms.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/buttons.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/messages.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/icons.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/typo.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/search.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/vypis.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/tooltip.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/ias.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/ajax.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/intform.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/dynamic.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/jquery-ui-1.8.17.custom.css" media="screen">
+
+		<link rel="stylesheet" href="./resource/css/print.css" media="print">
+
+		<script src="./resource/js/modernizr-latest.js"></script><!-- feature detection -->
+
+		<script>
+/*<![CDATA[*/
+
+			var APP = {
+				_ready : [],
+				_load : [],
+				run : function(fn,onload){var q=APP[onload?'_load':'_ready'];if(fn){if(q&&typeof q.push==='function'){q.push(fn);}else{fn();}}}
+			};
+		
+/*]]>*/
+</script>
+		<script>
+/*<![CDATA[*/
+
+			APP.Strings = {
+				invalidAjaxResponse : 'CHYBA - při zpracování požadavku došlo k interní chybě.'
+			};
+		
+/*]]>*/
+</script>
+
+		<script src="./resource/js/app-ias.js"></script>
+		<script src="./resource/js/app-tools.js"></script>
+		<script src="./resource/js/modules/drop-down-menu.js"></script>
+		<script src="./resource/js/modules/placeholder.js"></script>
+		<script src="./resource/js/modules/tooltip.js"></script>
+		<script src="./resource/js/modules/message-panel.js"></script>
+
+		<style type="text/css">
+/*<![CDATA[*/
+
+			/* CSS pre nove vypisy */
+			div.vr-hlavicka{font-weight:bold;}
+			.vr-child .vr-child div.vr-child {margin-left: 5mm}
+			.vr-child .vr-child div.vr-hlavicka {margin-left: 5mm}
+			.underline span {border-bottom: 1px solid black;}
+			.underline .nounderline {border-bottom-style: none}
+			.preformatted { white-space: pre-wrap; }
+			.iq_alert {
+				padding: 20px;
+				background-color: #f44336;
+				color: white;
+				text-align: center;
+			}
+		
+/*]]>*/
+</style>
+
+		<!--[if lte IE 6 ]>
+		<script src="./resource/js/supersleight-min.js"></script>
+		<![endif]-->
+		<style>
+/*<![CDATA[*/
+
+			@media print {
+				#chatbot {
+					display: none !important;
+				}
+			}
+		
+/*]]>*/
+</style>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-event-jquery.min-ver-7C4C4A31B92F211E7D61B1BF2BA81B39.js"></script>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery.min-ver-116260811FE9679D5DDCC60F7AE641BD.js"></script>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9" /><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="stylesheet" type="text/css" href="./wicket/resource/cz.corpus.isror.ui.internet.InternetBasePage/basepage-ver-F0FB650D42CA79C149B4023B5F69BE5C.css" />
+<script type="text/javascript" src="./wicket/resource/cz.corpus.grools.function.JavaScriptFunction/lib-ver-500AA971F6707ED2FBC2DECD679E5755.js"></script>
+<script type="text/javascript" src="./wicket/resource/cz.corpus.isror.ui.internet.analytics.GoogleAnalyticsJs/google-analytics.js"></script>
+</head>
+<body>
+	<div id="page">
+        <div class="iq_alert">
+			<span><strong>V ověřovacím provozu byla spuštěna nová podoba obchodního rejstříku, sbírky listin a svěřenských fondů (přístupné jsou vyhledávací funkce pro nepřihlášeného uživatele). Můžete ji vyzkoušet <a href="https://verejnerejstriky.msp.gov.cz/">zde</a>.</strong></span>
+		</div>
+		<div id="page-h" class="noprint">
+			<a id="logo" href="./vypis-sl-detail?-1.ILinkListener-htmlContainer-logo&amp;dokument=87101138&amp;subjektId=59981&amp;spis=411891"></a>
+			<hr class="hidden">
+		</div>
+		<div id="page-c">
+			<div id="frag-rejstrik-switchComp-wholebead">
+				
+	<div class="section">
+		<div class="vypis-h">
+			<div class="inner">
+				<h1>Sbírka listin</h1>
+				<h2>Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale</h2>
+				<a class="vypis-print noprint" onclick="print(); return false;"
+					href="#">Vytisknout</a>
+			</div>
+		</div>
+		<div class="section-c">
+			<div class="inner">
+				<p class="noprint">
+					<a class="back" href="./vypis-sl-firma?subjektId=59981">Zpět na Sbírku listin <strong>Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale</strong>
+					</a>
+				</p>
+				<table>
+					<colgroup>
+						<col width="200">
+						<col>
+					</colgroup>
+					<tbody>
+						
+	<tr>
+		<th class="title" colspan="2">Základní identifikační údaje</th>
+	</tr>
+	<tr class="subrow">
+		<th>Spisová značka:</th>
+		<td>
+<span style="white-space: nowrap;">AV 325 vedená u Krajského soudu v Českých Budějovicích</span>
+</td>
+	</tr>
+	<tr class="subrow">
+		<th>Obchodní jméno:</th>
+		<td>Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale</td>
+	</tr>
+	<tr class="subrow" id="id2">
+		<th>Identifikační číslo:</th>
+		<td><span>
+	<span class="nowrap">005<span style="margin-left: 0.5em"></span>14<span style="margin-left: 0.5em"></span>152</span>
+</span> <span class="noprint">(viz <a href="./rejstrik-$firma?ico=514152">obchodní rejstřík</a>)</span></td>
+	</tr>
+	<tr>
+		<th class="title" colspan="2">Adresa</th>
+	</tr>
+	<tr class="subrow">
+		<th>Sídlo společnosti:</th>
+		<td id="id3">
+	<div>
+	<span>
+		<span>K. Světlé 512/4, České Budějovice 3, 370 04  České Budějovice</span>
+		
+	</span>
+	
+	
+	
+	
+</div>
+</td>
+	</tr>
+						
+						<tr>
+							<th class="title" colspan="2">Listina</th>
+						</tr>
+						<tr class="subrow">
+							<th>Značka:</th>
+							<td>AV&nbsp;325/SL93/KSCB</td>
+						</tr>
+						<tr class="subrow">
+							<th>Typ:</th>
+							<td><span>
+	<span class="symbol">účetní závěrka [2024]</span>, <span class="symbol">výroční zpráva [2024]</span>, <span class="symbol">zpráva auditora [2024]</span>
+</span> </td>
+						</tr>
+						<tr class="subrow">
+							<th>Kdy vznikla:</th>
+							<td></td>
+						</tr>
+						<tr class="subrow">
+							<th>Kdy měla být založena:</th>
+							<td></td>
+						</tr>
+						<tr class="subrow">
+							<th>Kdy došla:</th>
+							<td>30.6.2025</td>
+						</tr>
+						<tr class="subrow">
+							<th>Kdy byla založena:</th>
+							<td>1.7.2025</td>
+						</tr>
+
+					</tbody>
+				</table>
+				<div>
+					<table>
+						<colgroup>
+							<col width="200">
+							<col>
+						</colgroup>
+						<tbody>
+							<tr>
+								<th class="title" colspan="2">Obsah</th>
+							</tr>
+							<tr class="subrow">
+								<th><span>Digitální podoba:</span></th>
+								<td><a href="/ias/content/download?id=31f30c5a53504474b38a760aef148895"><span>Budvar_výroční zpráva_2024-final.pdf</span><span> (2678 kB, počet stran: 40)</span></a><br></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+				
+
+			</div>
+		</div>
+		<div id="page-f" class="noprint">
+			<div id="page-f-links">
+				<ul class="links1">
+					<li><a href="./soudy">Rejstříkové soudy</a></li>
+					<li><a href="https://or.justice.cz/ias/ui/rejstrik">Obchodní rejstřík</a></li>
+					<li><a href="http://upadci.justice.cz/">Evidence úpadců</a></li>
+					<li><a href="https://isir.justice.cz/isir/common/index.do">Insolvenční rejstřík</a></li>
+					<li><a href="https://esf.justice.cz/ias/isesf/rejstrik">Svěřenské fondy</a></li>
+					<li><a href="https://esm.justice.cz/ias/issm/rejstrik">Skuteční majitelé</a></li>
+				</ul>
+				<ul class="links2">
+					<li><a href="./napoveda">Jak na to?</a></li>
+					<li><a href="./rejstrik-$firma">Veřejný rejstřík podle subjektů</a></li>
+					<li><a href="./rejstrik-$spolecnici">Veřejný rejstřík podle právnických osob v angažmá</a></li>
+					<li><a href="./rejstrik-$osoba">Veřejný rejstřík podle fyzických osob v angažmá</a></li>
+					<li><a href="http://www.businessinfo.cz/cs/clanky/obchodni-spolecnosti-zalozeni-vznik-opu-13164.html">Průvodce: Jak založit firmu / společnost</a></li>
+					<li><a href="http://www.komora.cz/hk-cr/inmp/lang_1/Default.aspx">Informační místa pro podnikatele</a></li>
+					<li><a href="./podani">Podání do veřejného rejstříku</a></li>
+					<li><a href="./vzorsmlouvy">Vzor společenské smlouvy pro založení s. r. o.</a></li>
+				</ul>
+				<ul class="links3">
+
+					<li><a href="./zr">Automatické aktualizace ze základních registrů</a></li>
+					<li><a href="./evypisy">Co s elektronickým výpisem</a></li>
+					<li><a href="http://www.businessinfo.cz/">Portál pro podnikatele: BusinessInfo.cz</a></li>
+					<li><a href="./podminky">Podmínky provozu</a></li>
+					<li><a href="/ias/ui/download/Informace_GDPR_ISVR-2.pdf">Ochrana osobních údajů</a></li>
+					<li><a href="./podpora">Technická podpora</a></li>
+				</ul>
+			</div>
+			<span id="footer-logo"></span>
+			<p class="center">
+				&copy; Ministerstvo spravedlnosti České republiky<br>
+				Verze aplikace: <span>15.6.2</span>
+			</p>
+		</div>
+	</div>
+	<script charset="utf-8" defer="" src="https://chatbot-mspcr-storage.predu.sk/52f8e636-2b74-42f6-a8c1-33e3f5e9e8c4/webchat/integration-script.js"></script>
+</body>
+</html>
