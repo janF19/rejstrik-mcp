@@ -26,6 +26,8 @@ def test_resolve_model_defaults_to_openai_model_for_openai_provider(monkeypatch)
 
 
 def test_resolve_provider_prefers_openai_key_from_dotenv(monkeypatch, tmp_path):
+    monkeypatch.setattr(config, "_DOTENV_DISABLED", False)  # re-enable loader
+    config._reset_dotenv_cache()  # forget the disabled no-op load
     env = tmp_path / ".env"
     env.write_text("OPENAI_API_KEY=sk-test\n", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
@@ -53,3 +55,20 @@ def test_has_llm_key_true_with_either(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
     assert has_llm_key() is True
+
+
+def test_dotenv_loaded_at_most_once_per_process(monkeypatch):
+    from rejstrik.documents import config
+
+    monkeypatch.setattr(config, "_DOTENV_DISABLED", False)
+    config._reset_dotenv_cache()
+
+    calls = []
+    monkeypatch.setattr(config, "find_dotenv", lambda **kwargs: "/tmp/.env")
+    monkeypatch.setattr(config, "load_dotenv", lambda *a, **k: calls.append(1))
+
+    config._load_local_env()
+    config._load_local_env()
+    config.has_llm_key()
+
+    assert calls == [1]
