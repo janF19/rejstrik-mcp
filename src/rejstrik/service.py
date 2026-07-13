@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from rejstrik.analysis.normalize import normalize
 from rejstrik.analysis.ratios import compute_ratios
 from rejstrik.analysis.redflags import detect_red_flags
-from rejstrik.analysis.report import CompanyFinancialReport
+from rejstrik.analysis.report import CompanyFinancialReport, YearlyFigures
 from rejstrik.analysis.trends import compute_trends
 from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
@@ -160,12 +160,15 @@ def analyze_statements(
     ordered = sorted(
         statements, key=lambda s: (s.period_year is None, -(s.period_year or 0))
     )
+    normalized_all = [normalize(s) for s in ordered]
     current = ordered[0]
-    normalized = normalize(current)
+    normalized = normalized_all[0]
     ratios = compute_ratios(normalized)
     resolved_ico = ico or current.ico
     insolvent = None
     unreliable_vat = None
+    subsidies_total = None
+    contracts_total = None
     public_money_ratio = None
     if resolved_ico:
         insolvency_check = insolvency_check or check_insolvency
@@ -174,16 +177,16 @@ def analyze_statements(
         insolvent = status.in_insolvency if status.checked else None
         unreliable_vat = vat_check(resolved_ico).is_unreliable
         # subsidy_check/contract_check stay None by default (unlike insolvency/vat) so keyless callers never trigger a live HTTP call here
+        if subsidy_check:
+            subsidies_total = subsidy_check(resolved_ico).total_amount
+        if contract_check:
+            contracts_total = contract_check(resolved_ico).total_value
         if (
             normalized.revenue
             and normalized.revenue > 0
-            and (subsidy_check or contract_check)
+            and (subsidies_total is not None or contracts_total is not None)
         ):
-            public_total = 0.0
-            if subsidy_check:
-                public_total += subsidy_check(resolved_ico).total_amount
-            if contract_check:
-                public_total += contract_check(resolved_ico).total_value
+            public_total = (subsidies_total or 0.0) + (contracts_total or 0.0)
             public_money_ratio = public_total / normalized.revenue
     red_flags = detect_red_flags(
         normalized,
@@ -193,9 +196,17 @@ def analyze_statements(
         unreliable_vat=unreliable_vat,
         public_money_ratio=public_money_ratio,
     )
-    trends = (
-        compute_trends(normalized, normalize(ordered[1])) if len(ordered) > 1 else []
-    )
+    trends = compute_trends(normalized, normalized_all[1]) if len(ordered) > 1 else []
+    yearly = [
+        YearlyFigures(
+            period_year=n.period_year,
+            revenue=n.revenue,
+            net_profit=n.net_profit,
+            total_assets=n.total_assets,
+            equity=n.equity,
+        )
+        for n in normalized_all
+    ]
     return CompanyFinancialReport(
         company_name=current.company_name,
         ico=resolved_ico,
@@ -206,4 +217,8 @@ def analyze_statements(
         ratios=ratios,
         red_flags=red_flags,
         trends=trends,
+        yearly=yearly,
+        subsidies_total=subsidies_total,
+        contracts_total=contracts_total,
+        public_money_ratio=public_money_ratio,
     )
