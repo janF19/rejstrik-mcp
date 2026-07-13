@@ -64,3 +64,41 @@ def test_get_filing_falls_back_when_path_not_absolute(monkeypatch):
 def test_get_filing_registered():
     tools = asyncio.run(server.mcp.list_tools())
     assert "get_filing" in {t.name for t in tools}
+
+
+def test_get_filing_never_skips_blob(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "00514152-2024-abcd1234.pdf"
+    monkeypatch.setattr(server, "_fetch_filing", _make_fake_fetch(pdf_path))
+    parts = server.get_filing("00514152", embed="never")
+    assert all(isinstance(p, TextContent) for p in parts)
+    assert any("file_path" in p.text for p in parts if isinstance(p, TextContent))
+
+
+def test_get_filing_always_embeds_within_cap(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "00514152-2024-abcd1234.pdf"
+    monkeypatch.setattr(server, "_fetch_filing", _make_fake_fetch(pdf_path))
+    parts = server.get_filing("00514152", embed="always")
+    assert isinstance(parts[1], EmbeddedResource)
+
+
+def test_get_filing_always_over_cap_is_honest(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "00514152-2024-abcd1234.pdf"
+    monkeypatch.setattr(server, "_fetch_filing", _make_fake_fetch(pdf_path))
+    monkeypatch.setattr(server, "_MAX_EMBED_BYTES", 4)
+    parts = server.get_filing("00514152", embed="always")
+    assert isinstance(parts[1], TextContent)
+    assert "too large" in parts[1].text.lower()
+
+
+def test_get_filing_default_embed_cap_is_25mb():
+    assert server._MAX_EMBED_BYTES == 25000000
+
+
+def test_get_filing_metadata_carries_page_count(monkeypatch, tmp_path):
+    pdf_path = tmp_path / "00514152-2024-abcd1234.pdf"
+    monkeypatch.setattr(server, "_fetch_filing", _make_fake_fetch(pdf_path))
+    parts = server.get_filing("00514152")
+    import json
+
+    meta = json.loads(parts[0].text)
+    assert "page_count" in meta
