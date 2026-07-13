@@ -57,7 +57,8 @@ subscription; the server does everything deterministic:
 | `list_filings` | List Sbírka listin documents, financial statements first |
 | `get_filing` | Download a statement PDF (latest, by year, or by id) — returns local path + `page_count`; `embed` controls whether the PDF bytes are also returned (`"auto"` default, `"always"`, or `"never"`) |
 | `read_filing_text` | Keyless extraction of the PDF text layer for a page range (no LLM/OCR); pages without a text layer are reported honestly |
-| `analyze_financials` | Your extracted figures in → ratios, red flags, year-over-year trends out (no LLM) |
+| `analyze_financials` | Your extracted figures in → ratios, red flags, IN05 distress index, year-over-year trends out (no LLM) |
+| `estimate_valuation` | Your extracted figures in → indicative valuation range (book value, capitalized earnings, multiples), no LLM. Not investment advice |
 | `render_card` | The report as a card — an interactive HTML card for MCP Apps hosts, a markdown summary for text-only hosts like Claude Code |
 | `check_insolvency` | Insolvency register (ISIR) |
 | `get_statutory_bodies` | Directors / statutory bodies (ARES) |
