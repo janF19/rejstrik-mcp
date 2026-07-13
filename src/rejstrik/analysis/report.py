@@ -7,6 +7,14 @@ from rejstrik.analysis.trends import TrendItem
 from rejstrik.documents.schema import FinancialStatement
 
 
+class YearlyFigures(BaseModel):
+    period_year: int | None = None
+    revenue: float | None = None
+    net_profit: float | None = None
+    total_assets: float | None = None
+    equity: float | None = None
+
+
 class CompanyFinancialReport(BaseModel):
     company_name: str | None = None
     ico: str | None = None
@@ -17,4 +25,8 @@ class CompanyFinancialReport(BaseModel):
     ratios: Ratios
     red_flags: list[RedFlag] = []
     trends: list[TrendItem] = []
+    yearly: list[YearlyFigures] = []
+    subsidies_total: float | None = None
+    contracts_total: float | None = None
+    public_money_ratio: float | None = None
     source_filing_title: str | None = None

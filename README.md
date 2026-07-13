@@ -55,9 +55,10 @@ subscription; the server does everything deterministic:
 |---|---|
 | `find_company` | Resolve a company by name or IČO (ARES) |
 | `list_filings` | List Sbírka listin documents, financial statements first |
-| `get_filing` | Download a statement PDF (latest, by year, or by id) — returns local path + embedded PDF |
+| `get_filing` | Download a statement PDF (latest, by year, or by id) — returns local path + `page_count`; `embed` controls whether the PDF bytes are also returned (`"auto"` default, `"always"`, or `"never"`) |
+| `read_filing_text` | Keyless extraction of the PDF text layer for a page range (no LLM/OCR); pages without a text layer are reported honestly |
 | `analyze_financials` | Your extracted figures in → ratios, red flags, year-over-year trends out (no LLM) |
-| `render_card` | The report as an interactive HTML card (MCP UI hosts) |
+| `render_card` | The report as a card — an interactive HTML card for MCP Apps hosts, a markdown summary for text-only hosts like Claude Code |
 | `check_insolvency` | Insolvency register (ISIR) |
 | `get_statutory_bodies` | Directors / statutory bodies (ARES) |
 | `check_vat` | VAT registration + unreliable-payer flag (ARES + ADIS) |

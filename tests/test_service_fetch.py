@@ -1,12 +1,14 @@
 import hashlib
+import io
 
 import pytest
+from pypdf import PdfWriter
 
 from rejstrik import service
 from rejstrik.documents.source import PdfSource
 from rejstrik.filings.models import Filing
 from rejstrik.registry.models import Company
-from rejstrik.service import NoStatementFound, fetch_filing
+from rejstrik.service import NoStatementFound, count_pdf_pages, fetch_filing
 
 _PDF = b"%PDF-1.4 fake"
 
@@ -65,3 +67,20 @@ def test_fetch_filing_no_financials(monkeypatch, tmp_path):
     _wire(monkeypatch, tmp_path, [])
     with pytest.raises(NoStatementFound):
         fetch_filing("Budvar")
+
+
+def _two_page_pdf() -> bytes:
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    writer.add_blank_page(width=200, height=200)
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
+
+
+def test_count_pdf_pages_counts():
+    assert count_pdf_pages(_two_page_pdf()) == 2
+
+
+def test_count_pdf_pages_bad_bytes_returns_none():
+    assert count_pdf_pages(b"not a pdf") is None
