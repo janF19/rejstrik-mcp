@@ -112,3 +112,34 @@ def test_report_carries_in05_and_trend_series():
     revenue_series = next(s for s in report.trend_series if s.metric == "revenue")
     assert revenue_series.years == [2021, 2022, 2023]
     assert revenue_series.cagr is not None
+
+
+def _two_metric_statement(year: int, scale: float) -> FinancialStatement:
+    return FinancialStatement(
+        company_name="Budvar",
+        ico="00514152",
+        period_year=year,
+        currency="CZK",
+        income_statement=[Figure(label="Tržby", value=1_000.0 * scale)],
+        balance_sheet=[Figure(label="Aktiva celkem", value=2_000.0 * scale)],
+    )
+
+
+def test_analyze_statements_flags_cross_year_unit_mismatch():
+    report = analyze_statements(
+        [_two_metric_statement(2024, 1.0), _two_metric_statement(2023, 1_000.0)],
+        insolvency_check=_no_insolvency,
+        vat_check=_clean_vat,
+    )
+    flag = next(f for f in report.red_flags if f.code == "unit_mismatch_suspected")
+    assert flag.severity == "warning"
+    assert all(t.pct_change is None for t in report.trends)
+
+
+def test_analyze_statements_consistent_years_carry_no_mismatch_flag():
+    report = analyze_statements(
+        [_two_metric_statement(2024, 1.1), _two_metric_statement(2023, 1.0)],
+        insolvency_check=_no_insolvency,
+        vat_check=_clean_vat,
+    )
+    assert not any(f.code == "unit_mismatch_suspected" for f in report.red_flags)

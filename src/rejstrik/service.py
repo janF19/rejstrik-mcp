@@ -9,9 +9,13 @@ from pypdf.errors import PdfReadError
 from rejstrik.analysis.in05 import compute_in05
 from rejstrik.analysis.normalize import normalize
 from rejstrik.analysis.ratios import compute_ratios
-from rejstrik.analysis.redflags import detect_red_flags
+from rejstrik.analysis.redflags import RedFlag, detect_red_flags
 from rejstrik.analysis.report import CompanyFinancialReport, YearlyFigures
-from rejstrik.analysis.trends import compute_trend_series, compute_trends
+from rejstrik.analysis.trends import (
+    compute_trend_series,
+    compute_trends,
+    suspected_unit_mismatch,
+)
 from rejstrik.documents.cache import save_filing_pdf
 from rejstrik.documents.extract import extract_financials
 from rejstrik.documents.llm import DocumentLLM
@@ -211,6 +215,22 @@ def analyze_statements(
         public_money_ratio=public_money_ratio,
         in05=in05,
     )
+    if any(
+        suspected_unit_mismatch(normalized_all[i], normalized_all[i + 1])
+        for i in range(len(normalized_all) - 1)
+    ):
+        red_flags.append(
+            RedFlag(
+                code="unit_mismatch_suspected",
+                severity="warning",
+                message=(
+                    "Headline figures shift ~1000x between years — the "
+                    "statements were likely read at different scales (CZK vs "
+                    "thousands of CZK). Year-over-year changes are suppressed; "
+                    "check each statement's unit field and re-extract."
+                ),
+            )
+        )
     trends = compute_trends(normalized, normalized_all[1]) if len(ordered) > 1 else []
     trend_series = compute_trend_series(list(reversed(normalized_all)))
     yearly = [
