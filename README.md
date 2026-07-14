@@ -1,6 +1,6 @@
 # rejstrik-mcp
 
-[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/)
+[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) <!-- PyPI badge hidden until first publish (Stage E T5/T6); restore this line: [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/) -->
 
 **Add the Czech business registry to your Claude in 30 seconds — no API key.
 It reads the actual filed PDFs with your own subscription.**
@@ -11,13 +11,8 @@ claude mcp add rejstrik -- uvx rejstrik-mcp
 
 ## See it work
 
-![Analyzing Budějovický Budvar's last 3 years of filings](docs/media/budvar-3year.gif)
-
-The `analyze_company_card` report rendered in Claude Desktop:
-
-![Report card in Claude Desktop](docs/media/report-card.png)
-
-Reproduce the GIF with `scripts/record_demo.sh` (needs asciinema + agg).
+Demo media is being recorded (see `scripts/record_demo.sh`, which needs
+asciinema + agg); meanwhile the walkthrough below shows the exact flow.
 
 Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
 your agent resolves the company (ARES), pulls the filed statement PDF from
@@ -98,6 +93,7 @@ politely point you back to the keyless flow.
 core/      shared HTTP + text utilities
 registry/  ARES, ISIR (insolvency), ADIS (VAT), statutory bodies
 filings/   verejnerejstriky.msp.gov.cz Sbirka listin client
+           (falls back to legacy or.justice.cz when the new portal is blocked)
 documents/ native-PDF extraction + document Q&A
 analysis/  normalize -> ratios -> red flags -> trends (pure, no I/O)
 service/   orchestration (registry + filings + documents + analysis)
@@ -117,6 +113,14 @@ listin from `or.justice.cz` to a new Nuxt portal
 portal's API. Registry, filings, insolvency, statutory-body, VAT, and ADIS
 lookups are covered by fixtures/unit tests; live smoke testing verified the
 registry/document analysis path against Budejovicky Budvar with OpenAI.
+
+In July 2026 the new portal began returning Azure Front Door block responses
+— 403/429/5xx and 200-with-challenge-HTML interstitials — to automated
+clients. The filings client now treats all of these as block-shaped and falls
+back to the legacy `or.justice.cz` portal, so a single blocked edge does not
+break lookups. A `scripts/smoke.py` canary hits both portals directly and
+prints PASS/BLOCKED per endpoint, so this drift is caught before a release
+tag rather than in the field.
 
 ## CI
 
@@ -168,9 +172,10 @@ Havel). See `LICENSES/cz-agents-mcp-LICENSE`.
 
 1. One-time: on pypi.org, add a *Trusted Publisher* for this GitHub repo
    (workflow `release.yml`, environment `pypi`).
-2. Bump `version` in **all three** metadata files so they agree:
-   `pyproject.toml`, `server.json` (top-level **and** `packages[0].version`),
-   and `mcpb/manifest.json`. `tests/test_version_sync.py` fails if they drift.
+2. Bump `version` in **all four** places so they agree: `pyproject.toml`,
+   `server.json` (top-level **and** `packages[0].version`), `mcpb/manifest.json`,
+   and `src/rejstrik/__init__.py` (`__version__`). `tests/test_version_sync.py`
+   fails if any of them drift.
 3. If the release changes the published server, re-run the MCP registry
    publisher flow with the updated `server.json`.
 4. Commit, tag `vX.Y.Z`, push the tag. CI builds, publishes to PyPI, and

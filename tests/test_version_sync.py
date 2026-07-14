@@ -27,3 +27,9 @@ def test_manifest_json_matches_pyproject() -> None:
     version = _pyproject_version()
     manifest = json.loads((ROOT / "mcpb" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["version"] == version
+
+
+def test_package_dunder_version_matches_pyproject() -> None:
+    import rejstrik
+
+    assert rejstrik.__version__ == _pyproject_version()

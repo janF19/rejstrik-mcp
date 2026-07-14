@@ -196,3 +196,114 @@ def test_list_filings_raises_registry_blocked_when_both_portals_fail():
     assert "verejnerejstriky.msp.gov.cz" in message
     assert "or.justice.cz" in message
     assert "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=00514152" in message
+
+
+@respx.mock
+def test_list_filings_falls_back_on_429():
+    respx.get(_NEW_FILINGS_URL).mock(return_value=httpx.Response(429, text="slow down"))
+    respx.get(_LEGACY_SEARCH_URL).mock(
+        return_value=httpx.Response(200, text=SEARCH_HTML)
+    )
+    respx.get(_LEGACY_DEEDS_URL).mock(return_value=httpx.Response(200, text=DEEDS_HTML))
+
+    client = httpx.Client()
+    filings = list_filings("00514152", client=client)
+    client.close()
+
+    assert len(filings) >= 90
+    assert filings[0].pdf_url.startswith(
+        "https://or.justice.cz/ias/ui/vypis-sl-detail?dokument="
+    )
+
+
+@respx.mock
+def test_list_filings_falls_back_on_503():
+    respx.get(_NEW_FILINGS_URL).mock(
+        return_value=httpx.Response(503, text="unavailable")
+    )
+    respx.get(_LEGACY_SEARCH_URL).mock(
+        return_value=httpx.Response(200, text=SEARCH_HTML)
+    )
+    respx.get(_LEGACY_DEEDS_URL).mock(return_value=httpx.Response(200, text=DEEDS_HTML))
+
+    client = httpx.Client()
+    filings = list_filings("00514152", client=client)
+    client.close()
+
+    assert len(filings) >= 90
+
+
+@respx.mock
+def test_list_filings_falls_back_on_challenge_html_200():
+    # Azure Front Door interstitial: HTTP 200 but an HTML challenge body, not JSON.
+    respx.get(_NEW_FILINGS_URL).mock(
+        return_value=httpx.Response(
+            200,
+            html="<html><body>Checking your browser…</body></html>",
+        )
+    )
+    respx.get(_LEGACY_SEARCH_URL).mock(
+        return_value=httpx.Response(200, text=SEARCH_HTML)
+    )
+    respx.get(_LEGACY_DEEDS_URL).mock(return_value=httpx.Response(200, text=DEEDS_HTML))
+
+    client = httpx.Client()
+    filings = list_filings("00514152", client=client)
+    client.close()
+
+    assert len(filings) >= 90
+
+
+@respx.mock
+def test_list_filings_does_not_fall_back_on_timeout():
+    respx.get(_NEW_FILINGS_URL).mock(side_effect=httpx.ConnectTimeout("boom"))
+
+    client = httpx.Client()
+    try:
+        with pytest.raises(httpx.ConnectTimeout):
+            list_filings("00514152", client=client)
+    finally:
+        client.close()
+
+
+@respx.mock
+def test_registry_blocked_message_names_non_json_trigger():
+    respx.get(_NEW_FILINGS_URL).mock(
+        return_value=httpx.Response(
+            200, html="<html><body>Checking your browser…</body></html>"
+        )
+    )
+    respx.get(_LEGACY_SEARCH_URL).mock(
+        return_value=httpx.Response(200, text="<html><body>no results</body></html>")
+    )
+
+    client = httpx.Client()
+    try:
+        with pytest.raises(RegistryBlockedError) as exc_info:
+            list_filings("00514152", client=client)
+    finally:
+        client.close()
+
+    assert "non-JSON response" in str(exc_info.value)
+
+
+def test_parse_filings_api_split_year_title_takes_max_year():
+    from rejstrik.filings.justice import parse_filings_api
+
+    data = {
+        "vysledekdetail": {
+            "prehledlistin": [
+                {
+                    "typlistiny": "účetní závěrka 2023/2024",
+                    "detail": [
+                        {"obsah": {"digitalnipodoba": {"documentid": "111222333"}}}
+                    ],
+                }
+            ]
+        }
+    }
+
+    filings = parse_filings_api(data)
+    assert len(filings) == 1
+    # The accounting period ends in the later year — take 2024, not 2023.
+    assert filings[0].year == 2024
