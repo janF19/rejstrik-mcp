@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 
@@ -24,6 +25,19 @@ _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
 class RegistryBlockedError(Exception):
     """Raised when both the new and legacy Sbírka listin portals are unreachable."""
+
+
+class _BlockShaped(Exception):
+    """Internal: a new-portal response that looks like an edge/WAF block.
+
+    Block-shaped means fallback-eligible: HTTP 403/429/5xx, or a 2xx body that
+    is not parseable JSON (a challenge/interstitial page). ``reason`` names the
+    actual trigger so RegistryBlockedError messages stay honest.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
 
 
 def parse_subject_id(html: str) -> str | None:
@@ -151,15 +165,38 @@ def _fetch_legacy_filings(ico_padded: str, client: httpx.Client) -> list[Filing]
     return parse_deeds(deeds_resp.text)
 
 
+def _fetch_new_filings(ico_stripped: str, client: httpx.Client) -> list[Filing]:
+    """Fetch from the new portal; raise _BlockShaped on a WAF/edge block shape.
+
+    Non-block failures (404, other 4xx) re-raise as httpx.HTTPStatusError so
+    they propagate unchanged. Timeouts/transport errors are not caught here and
+    propagate to the caller.
+    """
+    resp = client.get(_NEW_FILINGS_URL.format(ico=ico_stripped))
+    try:
+        resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        if status in (403, 429) or 500 <= status <= 599:
+            raise _BlockShaped(f"HTTP {status}") from exc
+        raise
+    try:
+        data = resp.json()
+    except json.JSONDecodeError as exc:
+        raise _BlockShaped("non-JSON response") from exc
+    return parse_filings_api(data)
+
+
 def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
     """
     Fetch and return all Sbírka listin filings for a given IČO.
 
     Tries the new verejnerejstriky.msp.gov.cz JSON API first (numeric IČO
-    without leading zeroes). On a block-shaped failure (HTTP 403) falls back
-    to the legacy or.justice.cz HTML portal (IČO with leading zeroes). Other
-    failures (404, timeouts, etc.) from the new API propagate unchanged —
-    they aren't evidence of a block.
+    without leading zeroes). On a block-shaped failure — HTTP 403, 429, any
+    5xx, or a 2xx body that is not JSON (an Azure Front Door challenge page) —
+    falls back to the legacy or.justice.cz HTML portal (IČO with leading
+    zeroes). Non-block failures (404, timeouts, transport errors) from the new
+    API propagate unchanged — they aren't evidence of a block.
     """
     ico_padded = ico.strip().zfill(8)
     ico_stripped = ico_padded.lstrip("0") or "0"
@@ -169,12 +206,8 @@ def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
 
     try:
         try:
-            resp = client.get(_NEW_FILINGS_URL.format(ico=ico_stripped))
-            resp.raise_for_status()
-            return parse_filings_api(resp.json())
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code != 403:
-                raise
+            return _fetch_new_filings(ico_stripped, client)
+        except _BlockShaped as block:
             try:
                 legacy_filings = _fetch_legacy_filings(ico_padded, client)
             except httpx.HTTPError:
@@ -182,11 +215,12 @@ def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
             if legacy_filings is None:
                 raise RegistryBlockedError(
                     f"Sbírka listin unreachable for IČO {ico_padded}: "
-                    f"new portal (verejnerejstriky.msp.gov.cz) returned 403 and "
-                    f"the legacy portal (or.justice.cz) has no matching subject. "
-                    f"The registry may be blocking automated access. Check manually: "
+                    f"new portal (verejnerejstriky.msp.gov.cz) returned "
+                    f"{block.reason} and the legacy portal (or.justice.cz) has "
+                    f"no matching subject. The registry may be blocking "
+                    f"automated access. Check manually: "
                     f"https://or.justice.cz/ias/ui/rejstrik-$firma?ico={ico_padded}"
-                ) from exc
+                ) from block
             return legacy_filings
     finally:
         if own_client:
