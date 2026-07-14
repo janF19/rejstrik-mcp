@@ -3,6 +3,7 @@
 Usage: python scripts/smoke.py [company]
 """
 
+from datetime import date
 import sys
 
 import httpx
@@ -52,19 +53,20 @@ def main() -> None:
         f"[3/5] get_filing: {doc.title} ({doc.year}) -> {doc.file_path} "
         f"({doc.size_bytes} bytes)"
     )
+    base_year = doc.year or (date.today().year - 1)
 
     statements = [
         FinancialStatement(
             company_name=company.name,
             ico=company.ico,
-            period_year=2024,
+            period_year=base_year,
             currency="CZK",
             income_statement=[Figure(label="Tržby", value=1000.0)],
         ),
         FinancialStatement(
             company_name=company.name,
             ico=company.ico,
-            period_year=2023,
+            period_year=base_year - 1,
             currency="CZK",
             income_statement=[Figure(label="Tržby", value=800.0)],
         ),
