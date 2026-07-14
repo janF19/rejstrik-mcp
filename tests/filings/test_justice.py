@@ -285,3 +285,25 @@ def test_registry_blocked_message_names_non_json_trigger():
         client.close()
 
     assert "non-JSON response" in str(exc_info.value)
+
+
+def test_parse_filings_api_split_year_title_takes_max_year():
+    from rejstrik.filings.justice import parse_filings_api
+
+    data = {
+        "vysledekdetail": {
+            "prehledlistin": [
+                {
+                    "typlistiny": "účetní závěrka 2023/2024",
+                    "detail": [
+                        {"obsah": {"digitalnipodoba": {"documentid": "111222333"}}}
+                    ],
+                }
+            ]
+        }
+    }
+
+    filings = parse_filings_api(data)
+    assert len(filings) == 1
+    # The accounting period ends in the later year — take 2024, not 2023.
+    assert filings[0].year == 2024
