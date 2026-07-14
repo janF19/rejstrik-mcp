@@ -8,6 +8,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import (
     BlobResourceContents,
     EmbeddedResource,
+    ImageContent,
     TextContent,
     ToolAnnotations,
 )
@@ -22,6 +23,7 @@ from rejstrik.documents.ask import ask_filing as _ask_filing
 from rejstrik.documents.config import has_llm_key
 from rejstrik.documents.extract import extract_financials as _extract_financials
 from rejstrik.documents.pdftext import PageText, extract_pages_text, parse_page_range
+from rejstrik.documents.pdfimages import render_page_images
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
 from rejstrik.filings.models import Filing
@@ -116,6 +118,7 @@ EXPOSED_TOOL_NAMES = [
     "get_subsidies",
     "get_contracts",
     "read_filing_text",
+    "read_filing_page_images",
     "estimate_valuation",
 ]
 
@@ -345,6 +348,41 @@ def read_filing_text(
     )
 
 
+@mcp.tool(annotations=_ro("Read filing page images"), structured_output=False)
+def read_filing_page_images(
+    ico: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    pages: str = "1-5",
+) -> list[TextContent | ImageContent]:
+    """Rasterize statement PDF pages to PNG images — keyless, no LLM, no OCR.
+    For SCANNED filings with no text layer (read_filing_text reports
+    has_text=false) on hosts WITHOUT filesystem access: this delivers legible
+    page images the host model can read directly. Page grammar: "3", "1-5",
+    "1-3,5" (default "1-5"). At most 5 pages per call (images are token-heavy);
+    request later ranges for the rest. Returns one metadata text block, then one
+    PNG image per rendered page."""
+    doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
+    page_count = doc.page_count or count_pdf_pages(source.data) or 0
+    requested, message = parse_page_range(pages, page_count=page_count, max_pages=5)
+    images = render_page_images(source.data, requested)
+    meta = {
+        "ico": doc.ico,
+        "year": doc.year,
+        "page_count": page_count,
+        "rendered_pages": [im.page for im in images],
+        "message": message,
+    }
+    parts: list[TextContent | ImageContent] = [
+        TextContent(type="text", text=json.dumps(meta, indent=2))
+    ]
+    for im in images:
+        parts.append(
+            ImageContent(type="image", data=im.png_base64, mimeType="image/png")
+        )
+    return parts
+
+
 @mcp.tool(annotations=_ro("Analyze extracted financials"))
 def analyze_financials(
     statements: list[FinancialStatement], ico: str | None = None
@@ -429,7 +467,9 @@ Follow these steps exactly:
    read the PDF from the returned file_path — filed statements are routinely
    20-25 MB and the path is strictly better than embedding. Otherwise use the
    embedded resource, or call read_filing_text(ico, year=..., pages="1-10") to
-   pull the text layer in digestible slices.
+   pull the text layer in digestible slices. If read_filing_text reports
+   has_text=false (a scanned filing) and you cannot read local files, call
+   read_filing_page_images(ico, year=..., pages="1-5") to get the pages as PNGs.
 4. From each PDF, extract a FinancialStatement JSON object matching this
    schema (amounts in Czech statements are usually reported in thousands of CZK
    — keep them as printed and set currency to "CZK"; set period_year to the
