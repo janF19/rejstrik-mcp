@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.7.0 — Stages F+G: hardening + scanned filings, Damodaran valuation, filings cache
+
+- Filings fallback now triggers on any block-shaped response from the new
+  portal (403, 429, 5xx, or a 2xx page that fails to parse as JSON), not
+  just a bare 403.
+- `estimate_valuation([])` now raises a helpful `ValueError` instead of
+  crashing with an `IndexError`.
+- Version metadata drift guard now also covers `rejstrik.__version__`.
+- New keyless tool `read_filing_page_images(ico, year=None, filing_id=None,
+  pages="1-5")`: rasterizes scanned (no-text-layer) filing pages to PNG via
+  `pypdfium2` so filesystem-less hosts can still read scans. New
+  dependency: `pypdfium2`.
+- `estimate_valuation` now resolves real **Damodaran Europe industry
+  multiples** (EV/EBITDA) via a vendored, versioned dataset and a ported
+  NACE-division → industry-key map, through an optional `ico` or
+  `industry_key` argument. `Company` now surfaces `nace_codes`, and
+  `CanonicalFigures` gained `depreciation_amortization` to derive EBITDA.
+  Statements-only calls (no `ico`/`industry_key`) are behaviorally
+  unchanged from v0.6.x. Not industry-calibrated for divisions Damodaran
+  doesn't cover — generic multiples remain the fallback.
+- `list_filings` gains a short-TTL in-process cache
+  (`REJSTRIK_FILINGS_TTL_SECONDS`, default 15 min; 0 disables) so
+  multi-year analyses don't re-hit the registry per tool call.
+- The filings-portal canary workflow now opens/updates a tracking issue on
+  failure instead of only failing a scheduled job silently.
+
 ## 0.6.0 — Stage D: analysis depth + indicative valuation
 
 - Extraction now fills a `canonical` object on each `FinancialStatement`
