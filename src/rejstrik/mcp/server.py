@@ -15,6 +15,7 @@ from mcp.types import (
 from mcp_ui_server import UIResource, create_ui_resource
 from pydantic import BaseModel
 
+from rejstrik import __version__
 from rejstrik.analysis.normalize import NormalizedFinancials
 from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.report import CompanyFinancialReport
@@ -56,6 +57,9 @@ from rejstrik.service import (
 )
 
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
+# FastMCP has no version kwarg; without this, serverInfo.version reports the MCP
+# SDK version instead of ours. Pin it to the package version so hosts show 0.7.0.
+mcp._mcp_server.version = __version__
 
 _MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "25000000"))
 

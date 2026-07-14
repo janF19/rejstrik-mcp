@@ -33,3 +33,10 @@ def test_tools_registered_on_server():
 
 def test_main_is_callable():
     assert callable(server.main)
+
+
+def test_server_reports_package_version():
+    from rejstrik import __version__
+    from rejstrik.mcp.server import mcp
+
+    assert mcp._mcp_server.version == __version__
