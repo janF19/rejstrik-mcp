@@ -122,6 +122,17 @@ break lookups. A `scripts/smoke.py` canary hits both portals directly and
 prints PASS/BLOCKED per endpoint, so this drift is caught before a release
 tag rather than in the field.
 
+### Industry valuation multiples data
+
+`src/rejstrik/analysis/data/industry_multiples.json` vendors **Damodaran
+Europe** industry EV/EBITDA multiples (source, source_url, as_of and region are
+recorded in the file). NACE is used only as a mapping key into Damodaran's
+industry taxonomy — no hand-tuned multiples. Regenerate (network, manual, never
+in CI) with:
+
+    pip install xlrd
+    python scripts/import_damodaran_multiples.py --as-of YYYY-MM-DD
+
 ## CI
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` runs `ruff` and
