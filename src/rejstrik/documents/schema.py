@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -69,6 +71,17 @@ class FinancialStatement(BaseModel):
     ico: str | None = None
     period_year: int | None = None
     currency: str | None = None
+    unit: Literal["czk", "thousands_czk", "millions_czk"] | None = Field(
+        default=None,
+        description=(
+            "Scale the figures are printed in, as declared on the statement "
+            "(usually on the first page of the rozvaha): 'v celých tisících Kč' "
+            "→ thousands_czk, plain Kč → czk, 'v celých milionech Kč' → "
+            "millions_czk. Record every figure verbatim as printed and set this "
+            "field instead of converting; None means unknown and is treated as "
+            "thousands_czk, the Czech statutory default."
+        ),
+    )
     canonical: CanonicalFigures | None = None
     balance_sheet: list[Figure] = []
     income_statement: list[Figure] = []

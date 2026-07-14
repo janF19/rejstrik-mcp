@@ -1,3 +1,6 @@
+import pytest
+from pydantic import ValidationError
+
 from rejstrik.documents.schema import Figure, NoteItem, FinancialStatement
 
 
@@ -57,3 +60,15 @@ def test_canonical_schema_names_czech_lines():
     dumped = str(schema)
     assert "Aktiva celkem" in dumped
     assert "nákladové úroky" in dumped
+
+
+def test_statement_unit_accepts_known_scales():
+    assert FinancialStatement(unit="thousands_czk").unit == "thousands_czk"
+    assert FinancialStatement(unit="czk").unit == "czk"
+    assert FinancialStatement(unit="millions_czk").unit == "millions_czk"
+    assert FinancialStatement().unit is None
+
+
+def test_statement_unit_rejects_unknown_scale():
+    with pytest.raises(ValidationError):
+        FinancialStatement(unit="bushels")
