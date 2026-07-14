@@ -17,7 +17,7 @@ def test_analyze_company_prompt_mentions_tools_and_schema():
         "get_filing",
         "analyze_financials",
         "render_card",
-        "thousands of CZK",
+        "thousands_czk",
         "period_year",
         "Budvar",
         "3",

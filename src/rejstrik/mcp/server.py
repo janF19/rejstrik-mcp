@@ -394,8 +394,12 @@ def analyze_financials(
 ) -> CompanyFinancialReport:
     """Deterministic financial report from statements YOU extracted from the
     get_filing PDF(s): normalize → ratios → red flags → trends (with 2+ years).
-    Amounts in Czech statements are usually thousands of CZK. Pass the ico to
-    enrich red flags with insolvency and unreliable-VAT-payer checks."""
+    Record figures verbatim as printed and set each statement's unit field
+    ("czk" | "thousands_czk" | "millions_czk") to the scale the statement
+    declares (usually 'v celých tisících Kč' → thousands_czk); the server
+    converts everything to thousands of CZK, so multi-year trends stay
+    comparable. Pass the ico to enrich red flags with insolvency and
+    unreliable-VAT-payer checks."""
     return _analyze_statements(statements, ico=ico)
 
 
@@ -413,8 +417,9 @@ def estimate_valuation(
     the server map the company's CZ-NACE to a Damodaran industry, or pass
     `industry_key` directly (you know the business better than a registry code).
     Precedence: explicit `assumptions` > `industry_key` > NACE-derived > generic
-    defaults. Amounts are thousands of CZK as filed; book values are not market
-    values. NOT investment advice."""
+    defaults. Set each statement's unit field ("czk" | "thousands_czk" | "millions_czk")
+    and pass figures verbatim as printed; results are in thousands of CZK.
+    Book values are not market values. NOT investment advice."""
     resolved_key: str | None = None
     reason: str | None = None
     if assumptions is None:
@@ -496,9 +501,10 @@ Follow these steps exactly:
    has_text=false (a scanned filing) and you cannot read local files, call
    read_filing_page_images(ico, year=..., pages="1-5") to get the pages as PNGs.
 4. From each PDF, extract a FinancialStatement JSON object matching this
-   schema (amounts in Czech statements are usually reported in thousands of CZK
-   — keep them as printed and set currency to "CZK"; set period_year to the
-   statement year; cite source_page for every figure). ALSO fill the `canonical`
+   schema (record figures verbatim as printed and set the `unit` field to the
+   scale the statement declares — usually 'v celých tisících Kč' →
+   thousands_czk; set currency to "CZK"; set period_year to the statement
+   year; cite source_page for every figure). ALSO fill the `canonical`
    object: each of its fields' descriptions names the exact Czech statutory line
    that feeds it (e.g. total_assets ← "Aktiva celkem", net_profit ← "Výsledek
    hospodaření za účetní období") — this is what makes the analysis reliable:

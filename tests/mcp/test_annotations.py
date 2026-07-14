@@ -12,3 +12,19 @@ def test_all_tools_are_read_only_and_open_world():
         assert tool.annotations.readOnlyHint is True, f"{name} not marked read-only"
         assert tool.annotations.openWorldHint is True, f"{name} not marked open-world"
         assert tool.annotations.title, f"{name} missing title"
+
+
+def test_keyless_analysis_tools_document_unit_field():
+    tools = {t.name: t for t in asyncio.run(server.mcp.list_tools())}
+    for name in ("analyze_financials", "estimate_valuation"):
+        desc = tools[name].description
+        assert "unit" in desc, name
+        assert "thousands_czk" in desc, name
+
+
+def test_analyze_company_prompt_mentions_unit_field():
+    from rejstrik.mcp.server import analyze_company_prompt
+
+    text = analyze_company_prompt("Budvar", years=2)
+    assert "`unit`" in text
+    assert "thousands_czk" in text
