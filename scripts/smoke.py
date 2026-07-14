@@ -39,6 +39,24 @@ def canary() -> None:
             print(f"[canary] BLOCKED {name}: {exc!r}")
 
 
+def trend_plausibility_issues(report) -> list[str]:
+    """Sanity-check a multi-year report: unit-mismatch flags or >90% headline
+    swings mean the numbers are almost certainly unit-inconsistent, and the
+    smoke run must fail rather than print SMOKE OK over garbage."""
+    issues = [
+        f"red flag: {flag.message}"
+        for flag in report.red_flags
+        if flag.code == "unit_mismatch_suspected"
+    ]
+    for trend in report.trends:
+        if trend.pct_change is not None and abs(trend.pct_change) > 0.9:
+            issues.append(
+                f"implausible {trend.metric} change {trend.pct_change:+.1%} "
+                f"(current={trend.current}, prior={trend.prior})"
+            )
+    return issues
+
+
 def main() -> None:
     canary()
     query = sys.argv[1] if len(sys.argv) > 1 else "Budejovicky Budvar"
@@ -87,6 +105,11 @@ def main() -> None:
         assert multi_year_report.trends, "trends must be computed for years=2"
         for trend in multi_year_report.trends:
             print(f"    {trend}")
+        issues = trend_plausibility_issues(multi_year_report)
+        if issues:
+            for issue in issues:
+                print(f"[5/5] IMPLAUSIBLE: {issue}")
+            sys.exit("SMOKE FAILED: multi-year figures look unit-inconsistent")
     else:
         print("[5/5] skipped multi-year analyze_company_financials (no LLM key set)")
 
