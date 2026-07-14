@@ -8,7 +8,7 @@ from rejstrik.registry.models import Company
 def test_breadth_tools_in_exposed_names():
     for name in ("check_insolvency", "get_statutory_bodies", "check_vat"):
         assert name in server.EXPOSED_TOOL_NAMES
-    assert len(server.EXPOSED_TOOL_NAMES) == 16
+    assert len(server.EXPOSED_TOOL_NAMES) == 17
 
 
 def test_breadth_tools_registered():

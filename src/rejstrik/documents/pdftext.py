@@ -5,8 +5,9 @@ from pypdf import PdfReader
 
 _NO_TEXT_NOTE = (
     "No extractable text layer on this page — the filing is likely a scanned "
-    "image. Use the keyed extract_financials tool, or read the PDF from "
-    "file_path with your own capabilities."
+    "image. Read the PDF from file_path with your own capabilities, call the "
+    "keyed extract_financials tool, or — on a host without filesystem access — "
+    "call read_filing_page_images for this page range to get legible PNGs."
 )
 
 
