@@ -5,7 +5,7 @@ from scripts import smoke
 
 
 def test_version_exposed():
-    assert rejstrik.__version__ == "0.7.0"
+    assert rejstrik.__version__ == "0.7.1"
 
 
 def test_smoke_exposes_canary_function():
