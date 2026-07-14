@@ -59,13 +59,13 @@
   - `class PageImage(BaseModel)` with fields `page: int`, `png_base64: str`, `width: int`, `height: int`.
   - `def render_page_images(data: bytes, pages: list[int], *, dpi: int = 150, max_long_side: int = 1600) -> list[PageImage]` — rasterizes the given 1-based page numbers to PNG (color type RGBA), base64-encoded. Pages out of range are skipped (returns fewer items).
 
-- [ ] **Step 0: Confirm pypdfium2 wheel availability, then install it**
+- [x] **Step 0: Confirm pypdfium2 wheel availability, then install it**
 
 Run: `pip index versions pypdfium2` (or check https://pypi.org/project/pypdfium2/#files) and confirm prebuilt wheels exist for `manylinux`, `win_amd64`, cp311 and cp312. pypdfium2 ships platform wheels with the PDFium binary bundled (no system deps).
 Then: `pip install pypdfium2`
 Expected: install succeeds; `python -c "import pypdfium2 as p; print(p.PdfDocument)"` prints a class.
 
-- [ ] **Step 1: Add the runtime dependency**
+- [x] **Step 1: Add the runtime dependency**
 
 In `pyproject.toml`, add `"pypdfium2>=4"` to the `dependencies` list (immediately after `"pypdf>=5",`):
 
@@ -75,7 +75,7 @@ In `pyproject.toml`, add `"pypdfium2>=4"` to the `dependencies` list (immediatel
     "mcp>=1.2",
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `tests/documents/test_pdfimages.py`:
 
@@ -138,12 +138,12 @@ def test_render_skips_out_of_range_pages():
     assert [im.page for im in images] == [1]
 ```
 
-- [ ] **Step 3: Run the test to verify it fails**
+- [x] **Step 3: Run the test to verify it fails**
 
 Run: `python -m pytest tests/documents/test_pdfimages.py -q`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rejstrik.documents.pdfimages'`.
 
-- [ ] **Step 4: Write the minimal implementation**
+- [x] **Step 4: Write the minimal implementation**
 
 Create `src/rejstrik/documents/pdfimages.py`:
 
@@ -243,17 +243,17 @@ def render_page_images(
         pdf.close()
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `python -m pytest tests/documents/test_pdfimages.py -q`
 Expected: PASS (3 passed).
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green. (If `ruff format --check` complains, run `ruff format src/ tests/` and re-run.)
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pyproject.toml src/rejstrik/documents/pdfimages.py tests/documents/test_pdfimages.py
@@ -273,7 +273,7 @@ git commit -m "feat(documents): rasterize PDF pages to PNG via pypdfium2"
 - Consumes: `render_page_images` and `PageImage` from Task 1; existing `parse_page_range`, `_fetch_filing`, `count_pdf_pages`.
 - Produces: MCP tool `read_filing_page_images(ico, year=None, filing_id=None, pages="1-5") -> list[TextContent | ImageContent]` (metadata TextContent first, then one ImageContent per rendered page). Added to `EXPOSED_TOOL_NAMES`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/mcp/test_read_filing_page_images.py`:
 
@@ -366,12 +366,12 @@ def test_registered_and_exposed():
     assert "read_filing_page_images" in names
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/mcp/test_read_filing_page_images.py -q`
 Expected: FAIL with `AttributeError: module 'rejstrik.mcp.server' has no attribute 'read_filing_page_images'`.
 
-- [ ] **Step 3: Add the `ImageContent` import to `server.py`**
+- [x] **Step 3: Add the `ImageContent` import to `server.py`**
 
 In `src/rejstrik/mcp/server.py`, extend the `mcp.types` import block (currently `BlobResourceContents, EmbeddedResource, TextContent, ToolAnnotations`) to include `ImageContent`:
 
@@ -385,7 +385,7 @@ from mcp.types import (
 )
 ```
 
-- [ ] **Step 4: Add the `render_page_images` import to `server.py`**
+- [x] **Step 4: Add the `render_page_images` import to `server.py`**
 
 Immediately after the existing `from rejstrik.documents.pdftext import ...` line, add:
 
@@ -393,7 +393,7 @@ Immediately after the existing `from rejstrik.documents.pdftext import ...` line
 from rejstrik.documents.pdfimages import render_page_images
 ```
 
-- [ ] **Step 5: Register the tool name**
+- [x] **Step 5: Register the tool name**
 
 In `EXPOSED_TOOL_NAMES`, add `"read_filing_page_images"` immediately after `"read_filing_text"`:
 
@@ -403,7 +403,7 @@ In `EXPOSED_TOOL_NAMES`, add `"read_filing_page_images"` immediately after `"rea
     "estimate_valuation",
 ```
 
-- [ ] **Step 6: Implement the tool**
+- [x] **Step 6: Implement the tool**
 
 In `src/rejstrik/mcp/server.py`, immediately after the `read_filing_text` function (after its `return FilingText(...)` block, before `analyze_financials`), add:
 
@@ -443,7 +443,7 @@ def read_filing_page_images(
     return parts
 ```
 
-- [ ] **Step 7: Steer `read_filing_text`'s no-text note to the new tool**
+- [x] **Step 7: Steer `read_filing_text`'s no-text note to the new tool**
 
 In `src/rejstrik/documents/pdftext.py`, replace `_NO_TEXT_NOTE`:
 
@@ -456,7 +456,7 @@ _NO_TEXT_NOTE = (
 )
 ```
 
-- [ ] **Step 8: Steer the `analyze-company` prompt (step 3)**
+- [x] **Step 8: Steer the `analyze-company` prompt (step 3)**
 
 In `src/rejstrik/mcp/server.py`, in `analyze_company_prompt`, replace the tail of step 3 (the sentence beginning "Otherwise use the embedded resource, or call read_filing_text...") so it reads:
 
@@ -467,17 +467,17 @@ In `src/rejstrik/mcp/server.py`, in `analyze_company_prompt`, replace the tail o
    read_filing_page_images(ico, year=..., pages="1-5") to get the pages as PNGs.
 ```
 
-- [ ] **Step 9: Run the test to verify it passes**
+- [x] **Step 9: Run the test to verify it passes**
 
 Run: `python -m pytest tests/mcp/test_read_filing_page_images.py -q`
 Expected: PASS (3 passed).
 
-- [ ] **Step 10: Full verification**
+- [x] **Step 10: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add src/rejstrik/mcp/server.py src/rejstrik/documents/pdftext.py tests/mcp/test_read_filing_page_images.py
@@ -498,7 +498,7 @@ git commit -m "feat(mcp): add keyless read_filing_page_images tool for scanned f
 
 > **Note:** The importer is manual, network-using tooling like `scripts/smoke.py`. It is NEVER run in CI or tests. The dataset it produces is committed and versioned; tests read only the committed file. Because we cannot run the network importer here, Step 1 copies the already-vendored, importer-produced dataset from the reference project verbatim.
 
-- [ ] **Step 1: Copy the vendored dataset into the package**
+- [x] **Step 1: Copy the vendored dataset into the package**
 
 ```bash
 mkdir -p src/rejstrik/analysis/data
@@ -506,7 +506,7 @@ cp ~/projects/obchodni-rejstrik-ai/apps/api/data/valuation/industry_multiples_20
    src/rejstrik/analysis/data/industry_multiples.json
 ```
 
-- [ ] **Step 2: Verify the copied dataset shape**
+- [x] **Step 2: Verify the copied dataset shape**
 
 Run:
 ```bash
@@ -514,7 +514,7 @@ python -c "import json; d=json.load(open('src/rejstrik/analysis/data/industry_mu
 ```
 Expected: `rows 94` (or ≥60), `keys ['as_of', 'metric', 'region', 'rows', 'source', 'source_url']`, `fallback True`.
 
-- [ ] **Step 3: Ensure the JSON ships in the wheel**
+- [x] **Step 3: Ensure the JSON ships in the wheel**
 
 In `pyproject.toml`, under `[tool.hatch.build.targets.wheel]`, the line `packages = ["src/rejstrik"]` already globs the package tree; JSON data files under `src/rejstrik/analysis/data/` are included automatically by hatchling. Confirm by running:
 ```bash
@@ -527,7 +527,7 @@ Expected: a list containing `rejstrik/analysis/data/industry_multiples.json`. If
 ```
 (Clean up `dist/` afterward: `rm -rf dist build`.)
 
-- [ ] **Step 4: Port the importer script**
+- [x] **Step 4: Port the importer script**
 
 Create `scripts/import_damodaran_multiples.py` (adapted paths; manual tooling — needs `pip install xlrd`; network; never in CI):
 
@@ -708,7 +708,7 @@ if __name__ == "__main__":
     main()
 ```
 
-- [ ] **Step 5: Document the dataset + regeneration command in the README**
+- [x] **Step 5: Document the dataset + regeneration command in the README**
 
 In `README.md`, add a short subsection (place it near the "How it works" / valuation discussion; exact anchor is author's choice) with this text:
 
@@ -725,12 +725,12 @@ in CI) with:
     python scripts/import_damodaran_multiples.py --as-of YYYY-MM-DD
 ```
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green (no new tests yet; dataset + script are inert until Task 4).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/rejstrik/analysis/data/industry_multiples.json scripts/import_damodaran_multiples.py README.md pyproject.toml
@@ -752,7 +752,7 @@ git commit -m "feat(analysis): vendor Damodaran Europe multiples + importer tool
   - `@dataclass(frozen=True) class IndustryMultiple` with `industry_key`, `source_industry`, `ev_ebitda: float`, `firms: int`, `source`, `source_url`, `as_of`, `region` (all `str` except the two typed).
   - `def get_industry_multiple(industry_key: str | None) -> IndustryMultiple` — unknown/blank keys fall back to `total_market_ex_financials`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/analysis/test_industry_multiples.py`:
 
@@ -788,12 +788,12 @@ def test_blank_key_falls_back():
     assert get_industry_multiple("  ").industry_key == FALLBACK_INDUSTRY_KEY
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/analysis/test_industry_multiples.py -q`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rejstrik.analysis.industry_multiples'`.
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 Create `src/rejstrik/analysis/industry_multiples.py` (ported verbatim from the reference, with the package-local `DATA_PATH`):
 
@@ -848,17 +848,17 @@ def get_industry_multiple(industry_key: str | None) -> IndustryMultiple:
     )
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `python -m pytest tests/analysis/test_industry_multiples.py -q`
 Expected: PASS (3 passed).
 
-- [ ] **Step 5: Full verification**
+- [x] **Step 5: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/rejstrik/analysis/industry_multiples.py tests/analysis/test_industry_multiples.py
@@ -879,7 +879,7 @@ git commit -m "feat(analysis): load vendored Damodaran industry multiples with f
   - `NACE_DIVISION_MAP: dict[str, str]` — **ported verbatim** from the reference `business_classification.py` (2-digit division → Damodaran industry slug; divisions 64/65/66 → fallback).
   - `def industry_key_for_nace(nace_codes: list[str]) -> tuple[str, str]` — returns `(industry_key, human_reason)`; empty/unmatched → `(FALLBACK_INDUSTRY_KEY, <reason>)`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/analysis/test_industry.py`:
 
@@ -925,12 +925,12 @@ def test_unmapped_division_returns_fallback():
     assert key == FALLBACK_INDUSTRY_KEY
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/analysis/test_industry.py -q`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rejstrik.analysis.industry'`.
 
-- [ ] **Step 3: Write the minimal implementation**
+- [x] **Step 3: Write the minimal implementation**
 
 Create `src/rejstrik/analysis/industry.py`. `NACE_DIVISION_MAP` and `_division_priority` are ported verbatim from the reference `business_classification.py`; the division-selection logic mirrors the reference `_nace_classification` (minus the out-of-scope keyword layer):
 
@@ -1069,17 +1069,17 @@ def industry_key_for_nace(nace_codes: list[str]) -> tuple[str, str]:
     return target, f"NACE {int(selected)} → {target}"
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `python -m pytest tests/analysis/test_industry.py -q`
 Expected: PASS (5 passed).
 
-- [ ] **Step 5: Full verification**
+- [x] **Step 5: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/rejstrik/analysis/industry.py tests/analysis/test_industry.py
@@ -1098,7 +1098,7 @@ git commit -m "feat(analysis): port NACE division map + industry_key resolver"
 **Interfaces:**
 - Produces: `Company.nace_codes: list[str]` populated from the ARES detail record's top-level `czNace` array (verified present in `tests/fixtures/ares/detail_00006947.json`).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/registry/test_ares.py`:
 
@@ -1114,12 +1114,12 @@ def test_parse_detail_missing_nace_defaults_empty():
     assert company.nace_codes == []
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/registry/test_ares.py -q`
 Expected: FAIL with `AttributeError: 'Company' object has no attribute 'nace_codes'`.
 
-- [ ] **Step 3: Add the field to the model**
+- [x] **Step 3: Add the field to the model**
 
 In `src/rejstrik/registry/models.py`, add `nace_codes` to the `Company` model (after `founded`):
 
@@ -1134,7 +1134,7 @@ class Company(BaseModel):
     nace_codes: list[str] = []
 ```
 
-- [ ] **Step 4: Populate it in `parse_detail`**
+- [x] **Step 4: Populate it in `parse_detail`**
 
 In `src/rejstrik/registry/ares.py`, in `parse_detail`, add the field to the returned `Company(...)`:
 
@@ -1153,17 +1153,17 @@ def parse_detail(payload: dict) -> Company:
     )
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `python -m pytest tests/registry/test_ares.py -q`
 Expected: PASS.
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green. (Existing `test_models.py` still passes; the new field has a default so no fixture breaks.)
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/rejstrik/registry/models.py src/rejstrik/registry/ares.py tests/registry/test_ares.py
@@ -1184,7 +1184,7 @@ git commit -m "feat(registry): surface CZ-NACE codes on Company"
   - `CanonicalFigures.depreciation_amortization: Figure | None` (description names the Czech line "Úpravy hodnot v provozní oblasti").
   - `NormalizedFinancials.depreciation_amortization: float | None`, populated by `normalize()` from the canonical field or a keyword match.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/analysis/test_normalize.py`:
 
@@ -1221,12 +1221,12 @@ def test_normalize_extracts_depreciation_from_income_statement_label():
     assert normalize(stmt).depreciation_amortization == 17.0
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/analysis/test_normalize.py -q`
 Expected: FAIL (`AttributeError`/validation: `depreciation_amortization` not on `NormalizedFinancials`/`CanonicalFigures`).
 
-- [ ] **Step 3: Add the canonical field**
+- [x] **Step 3: Add the canonical field**
 
 In `src/rejstrik/documents/schema.py`, add to `CanonicalFigures` (after `operating_cash_flow`):
 
@@ -1241,7 +1241,7 @@ In `src/rejstrik/documents/schema.py`, add to `CanonicalFigures` (after `operati
     )
 ```
 
-- [ ] **Step 4: Add the normalize rule, field list entry, and model field**
+- [x] **Step 4: Add the normalize rule, field list entry, and model field**
 
 In `src/rejstrik/analysis/normalize.py`:
 
@@ -1279,17 +1279,17 @@ Add the field to `NormalizedFinancials` (after `operating_cash_flow`):
     depreciation_amortization: float | None = None
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `python -m pytest tests/analysis/test_normalize.py -q`
 Expected: PASS.
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/rejstrik/documents/schema.py src/rejstrik/analysis/normalize.py tests/analysis/test_normalize.py
@@ -1313,7 +1313,7 @@ git commit -m "feat(analysis): capture depreciation/amortization for EBITDA"
     - When `industry_key` is set AND latest `operating_profit` and `depreciation_amortization` are both present → compute `ebitda = operating_profit + D&A`, `ev_ebitda_multiple = im.ev_ebitda * ebitda`, include it in the value range, set `industry_multiple_applied = im.industry_key`, and append a provenance caveat (industry, firms, as_of, source URL) while dropping the "generic defaults" caveat.
     - When `industry_key` is set but D&A (or EBIT) is missing → do NOT apply an EBITDA multiple; keep the generic EBIT multiple and append a caveat explaining the fallback.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/analysis/test_valuation.py` (extend the `_stmt` helper to accept D&A, and add the new tests):
 
@@ -1383,12 +1383,12 @@ def test_industry_key_without_da_does_not_apply_ebitda_multiple():
     assert any("EBITDA multiple not applied" in c for c in result.caveats)
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/analysis/test_valuation.py -q`
 Expected: FAIL (`TypeError: estimate_valuation() got an unexpected keyword argument 'industry_key'` / missing fields).
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 Rewrite `src/rejstrik/analysis/valuation.py` as follows (adds imports, three model fields, and the industry branch; existing logic unchanged):
 
@@ -1521,17 +1521,17 @@ def estimate_valuation(
     )
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `python -m pytest tests/analysis/test_valuation.py -q`
 Expected: PASS (all, including the pre-existing tests).
 
-- [ ] **Step 5: Full verification**
+- [x] **Step 5: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/rejstrik/analysis/valuation.py tests/analysis/test_valuation.py
@@ -1550,7 +1550,7 @@ git commit -m "feat(analysis): apply Damodaran EV/EBITDA multiple with provenanc
 - Consumes: `industry_key_for_nace` (Task 5), `Company.nace_codes` (Task 6), the extended `_estimate_valuation` (Task 8), existing `_find_company`.
 - Produces: MCP tool `estimate_valuation(statements, assumptions=None, industry_key=None, ico=None)` enforcing precedence: explicit `assumptions` > explicit `industry_key` > NACE-derived (via `ico`) > generic defaults.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/mcp/test_valuation_tool.py`:
 
@@ -1606,12 +1606,12 @@ def test_explicit_assumptions_take_precedence_over_industry():
     assert result.ev_ebit_multiple == 600.0
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/mcp/test_valuation_tool.py -q`
 Expected: FAIL (`TypeError: estimate_valuation() got an unexpected keyword argument 'industry_key'`).
 
-- [ ] **Step 3: Add the resolver import to `server.py`**
+- [x] **Step 3: Add the resolver import to `server.py`**
 
 Immediately after the existing `from rejstrik.analysis.valuation import (...)` block, add:
 
@@ -1619,7 +1619,7 @@ Immediately after the existing `from rejstrik.analysis.valuation import (...)` b
 from rejstrik.analysis.industry import industry_key_for_nace
 ```
 
-- [ ] **Step 4: Rewrite the tool**
+- [x] **Step 4: Rewrite the tool**
 
 In `src/rejstrik/mcp/server.py`, replace the `estimate_valuation` tool function with:
 
@@ -1657,17 +1657,17 @@ def estimate_valuation(
     )
 ```
 
-- [ ] **Step 5: Run the test to verify it passes**
+- [x] **Step 5: Run the test to verify it passes**
 
 Run: `python -m pytest tests/mcp/test_valuation_tool.py -q`
 Expected: PASS.
 
-- [ ] **Step 6: Full verification**
+- [x] **Step 6: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/rejstrik/mcp/server.py tests/mcp/test_valuation_tool.py
@@ -1687,7 +1687,7 @@ git commit -m "feat(mcp): resolve NACE/industry_key for estimate_valuation"
   - `list_filings(ico, client=None, *, clock=time.monotonic)` — in-process TTL cache keyed by 8-padded IČO. TTL from `REJSTRIK_FILINGS_TTL_SECONDS` (default `900`, `0` disables). Only successful results are cached; returns a shallow copy.
   - `clear_filings_cache() -> None` — test helper to reset the cache.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/filings/test_filings_cache.py`:
 
@@ -1774,12 +1774,12 @@ def test_ttl_zero_disables_cache(monkeypatch):
     assert route.call_count == 2
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/filings/test_filings_cache.py -q`
 Expected: FAIL with `ImportError: cannot import name 'clear_filings_cache'`.
 
-- [ ] **Step 3: Implement the cache**
+- [x] **Step 3: Implement the cache**
 
 In `src/rejstrik/filings/justice.py`:
 
@@ -1872,19 +1872,19 @@ def list_filings(
     return list(result)
 ```
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 Run: `python -m pytest tests/filings/test_filings_cache.py -q`
 Expected: PASS (3 passed).
 
-- [ ] **Step 5: Full verification**
+- [x] **Step 5: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green. (Existing `tests/filings/test_justice.py` cache-agnostic tests still pass because each uses a distinct IČO/fixture and respx per test; if any fail due to cross-test caching, add `clear_filings_cache()` in that file's autouse fixture — but the default 900s TTL keyed by IČO does not collide across the existing single-call tests.)
 
 > **Verification note for the implementer:** run the *whole* `tests/filings/` package (`python -m pytest tests/filings -q`) to confirm no cross-test cache bleed. The existing tests each call `list_filings` once per IČO and assert on the returned list, so caching does not change their outcomes.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/rejstrik/filings/justice.py tests/filings/test_filings_cache.py
@@ -1900,7 +1900,7 @@ git commit -m "feat(filings): short-TTL in-process cache for list_filings"
 
 > **Scope:** Workflow-only change; no Python code and no pytest changes. Per the spec, verification is a YAML sanity parse plus the standard command (which stays green since no source changed).
 
-- [ ] **Step 1: Rewrite the workflow to add issues:write and an on-failure github-script step**
+- [x] **Step 1: Rewrite the workflow to add issues:write and an on-failure github-script step**
 
 Replace the entire contents of `.github/workflows/canary.yml` with:
 
@@ -1976,17 +1976,17 @@ jobs:
             }
 ```
 
-- [ ] **Step 2: YAML sanity parse**
+- [x] **Step 2: YAML sanity parse**
 
 Run: `python -c "import yaml, pathlib; yaml.safe_load(pathlib.Path('.github/workflows/canary.yml').read_text()); print('yaml ok')"`
 Expected: `yaml ok`. (If PyYAML is not installed: `pip install pyyaml` first — this is a local check only, not a project dependency.)
 
-- [ ] **Step 3: Full verification**
+- [x] **Step 3: Full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green (unchanged Python).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add .github/workflows/canary.yml
@@ -2002,6 +2002,8 @@ git commit -m "ci(canary): open or update a tracking issue on failure"
 - Guarded by: `tests/test_version_sync.py` (four-location guard from Stage F)
 
 > Only run this task when actually cutting the v0.7.0 release. It is separated so the feature commits above can land and be reviewed without forcing a version bump.
+
+> **TODO (human operator):** Tasks 1–11 (G1–G4) are implemented, tested, and committed on `stage/g`. This task is intentionally left undone — the executing agent was instructed not to bump versions, merge, push, or tag. Run this task manually (or ask an agent to) only when actually cutting the v0.7.0 release.
 
 - [ ] **Step 1: Read the current version locations**
 
