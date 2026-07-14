@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import os
 import re
+import time
+from collections.abc import Callable
 
 import httpx
 from selectolax.parser import HTMLParser
@@ -15,9 +19,49 @@ _BASE_URL = "https://or.justice.cz"
 _NEW_BASE_URL = "https://verejnerejstriky.msp.gov.cz"
 _NEW_FILINGS_URL = _NEW_BASE_URL + "/api/sbirka-listin/subjekty/{ico}"
 _NEW_DOCUMENT_URL = _NEW_BASE_URL + "/dokumenty/sbirka-listin/{document_id}"
+_LEGACY_SEARCH_URL = _BASE_URL + "/ias/ui/rejstrik-$firma?ico={ico}"
+_LEGACY_DEEDS_URL = _BASE_URL + "/ias/ui/vypis-sl-firma?subjektId={subject_id}"
 
 _SUBJECT_ID_RE = re.compile(r"subjektId=(\d+)")
 _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
+
+_FILINGS_CACHE: dict[str, tuple[float, list[Filing]]] = {}
+
+
+def _filings_ttl_seconds() -> float:
+    try:
+        return float(os.environ.get("REJSTRIK_FILINGS_TTL_SECONDS", "900"))
+    except ValueError:
+        return 900.0
+
+
+def clear_filings_cache() -> None:
+    """Reset the in-process list_filings TTL cache (test/ops helper)."""
+    _FILINGS_CACHE.clear()
+
+
+def _max_year(title: str) -> int | None:
+    """Return the latest 4-digit year in *title* (the accounting period ends
+    in the later year), or None if no year is present."""
+    years = [int(m.group(0)) for m in _YEAR_RE.finditer(title)]
+    return max(years) if years else None
+
+
+class RegistryBlockedError(Exception):
+    """Raised when both the new and legacy Sbírka listin portals are unreachable."""
+
+
+class _BlockShaped(Exception):
+    """Internal: a new-portal response that looks like an edge/WAF block.
+
+    Block-shaped means fallback-eligible: HTTP 403/429/5xx, or a 2xx body that
+    is not parseable JSON (a challenge/interstitial page). ``reason`` names the
+    actual trigger so RegistryBlockedError messages stay honest.
+    """
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
 
 
 def parse_subject_id(html: str) -> str | None:
@@ -33,35 +77,37 @@ def parse_subject_id(html: str) -> str | None:
 
 def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
     """
-    Parse the Sbírka listin page and return a sorted list of Filing objects.
+    Parse the Sbírka listin page (table.list) and return a sorted list of
+    Filing objects.
+
+    Each row's detail link resolves to the *detail page* URL, not a direct
+    PDF link — the legacy portal issues short-lived download tokens that
+    must be resolved fresh (see parse_download_link / documents.source).
 
     Sorting: financial statements first, then by year descending (None last).
     """
     tree = HTMLParser(html)
     filings: list[Filing] = []
 
-    for row in tree.css("div.document-row"):
-        title_node = row.css_first("span.document-title")
-        link_node = row.css_first("a[href]")
-        if title_node is None or link_node is None:
+    for row in tree.css("table.list tbody tr"):
+        link_node = row.css_first('a[href*="vypis-sl-detail"]')
+        symbol_nodes = row.css("span.symbol")
+        if link_node is None or not symbol_nodes:
             continue
 
-        title = (title_node.text(strip=True) or "").strip()
         href = (link_node.attributes.get("href") or "").strip()
-        if not title or not href:
+        if not href:
             continue
 
-        # Resolve relative URLs
-        if href.startswith("/"):
-            pdf_url = base_url.rstrip("/") + href
-        elif href.startswith("http"):
-            pdf_url = href
-        else:
-            pdf_url = base_url.rstrip("/") + "/" + href
+        title = ", ".join(
+            (n.text(strip=True) or "").strip() for n in symbol_nodes
+        ).strip()
+        if not title:
+            continue
 
-        # Extract year from title
-        year_m = _YEAR_RE.search(title)
-        year = int(year_m.group(0)) if year_m else None
+        pdf_url = base_url.rstrip("/") + "/ias/ui/" + href.removeprefix("./")
+
+        year = _max_year(title)
 
         is_fin = classify_financial(title)
         filings.append(
@@ -78,6 +124,20 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
     # Sort: financial statements first, then by year descending (None sorts last)
     filings.sort(key=lambda f: (not f.is_financial_statement, -(f.year or 0)))
     return filings
+
+
+def parse_download_link(html: str, base_url: str = _BASE_URL) -> str | None:
+    """Return the absolute PDF download URL from a vypis-sl-detail page, or None."""
+    tree = HTMLParser(html)
+    node = tree.css_first('a[href*="/ias/content/download"]')
+    if node is None:
+        return None
+    href = (node.attributes.get("href") or "").strip()
+    if not href:
+        return None
+    if href.startswith("http"):
+        return href
+    return base_url.rstrip("/") + "/" + href.lstrip("/")
 
 
 def parse_filings_api(data: dict) -> list[Filing]:
@@ -100,8 +160,7 @@ def parse_filings_api(data: dict) -> list[Filing]:
         if not document_id:
             continue
 
-        year_m = _YEAR_RE.search(title)
-        year = int(year_m.group(0)) if year_m else None
+        year = _max_year(title)
         filings.append(
             Filing(
                 title=title,
@@ -115,23 +174,96 @@ def parse_filings_api(data: dict) -> list[Filing]:
     return filings
 
 
-def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
+def _fetch_legacy_filings(ico_padded: str, client: httpx.Client) -> list[Filing] | None:
+    """Try the legacy or.justice.cz fallback; return None if the subject can't be found."""
+    search_resp = client.get(_LEGACY_SEARCH_URL.format(ico=ico_padded))
+    search_resp.raise_for_status()
+    subject_id = parse_subject_id(search_resp.text)
+    if subject_id is None:
+        return None
+
+    deeds_resp = client.get(_LEGACY_DEEDS_URL.format(subject_id=subject_id))
+    deeds_resp.raise_for_status()
+    return parse_deeds(deeds_resp.text)
+
+
+def _fetch_new_filings(ico_stripped: str, client: httpx.Client) -> list[Filing]:
+    """Fetch from the new portal; raise _BlockShaped on a WAF/edge block shape.
+
+    Non-block failures (404, other 4xx) re-raise as httpx.HTTPStatusError so
+    they propagate unchanged. Timeouts/transport errors are not caught here and
+    propagate to the caller.
+    """
+    resp = client.get(_NEW_FILINGS_URL.format(ico=ico_stripped))
+    try:
+        resp.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        if status in (403, 429) or 500 <= status <= 599:
+            raise _BlockShaped(f"HTTP {status}") from exc
+        raise
+    try:
+        data = resp.json()
+    except json.JSONDecodeError as exc:
+        raise _BlockShaped("non-JSON response") from exc
+    return parse_filings_api(data)
+
+
+def list_filings(
+    ico: str,
+    client: httpx.Client | None = None,
+    *,
+    clock: Callable[[], float] = time.monotonic,
+) -> list[Filing]:
     """
     Fetch and return all Sbírka listin filings for a given IČO.
 
-    The public registry migrated from the old or.justice.cz HTML pages to the
-    verejnerejstriky.msp.gov.cz JSON API. The endpoint expects the numeric IČO
-    without leading zeroes.
+    Results are cached in-process per 8-padded IČO for
+    REJSTRIK_FILINGS_TTL_SECONDS (default 900; 0 disables) so a multi-year
+    analysis does not re-hit the registry once per tool call. In-memory only —
+    the stdio server is single-process and per-worker HTTP state is acceptable.
+
+    Tries the new verejnerejstriky.msp.gov.cz JSON API first (numeric IČO
+    without leading zeroes). On a block-shaped failure — HTTP 403, 429, any
+    5xx, or a 2xx body that is not JSON (an Azure Front Door challenge page) —
+    falls back to the legacy or.justice.cz HTML portal (IČO with leading
+    zeroes). Non-block failures (404, timeouts, transport errors) from the new
+    API propagate unchanged — they aren't evidence of a block.
     """
-    ico = ico.strip().zfill(8).lstrip("0") or "0"
+    ico_padded = ico.strip().zfill(8)
+    ico_stripped = ico_padded.lstrip("0") or "0"
+    ttl = _filings_ttl_seconds()
+    if ttl > 0:
+        cached = _FILINGS_CACHE.get(ico_padded)
+        if cached is not None and clock() - cached[0] < ttl:
+            return list(cached[1])
+
     own_client = client is None
     if own_client:
         client = make_client()
 
     try:
-        resp = client.get(_NEW_FILINGS_URL.format(ico=ico))
-        resp.raise_for_status()
-        return parse_filings_api(resp.json())
+        try:
+            result = _fetch_new_filings(ico_stripped, client)
+        except _BlockShaped as block:
+            try:
+                legacy_filings = _fetch_legacy_filings(ico_padded, client)
+            except httpx.HTTPError:
+                legacy_filings = None
+            if legacy_filings is None:
+                raise RegistryBlockedError(
+                    f"Sbírka listin unreachable for IČO {ico_padded}: "
+                    f"new portal (verejnerejstriky.msp.gov.cz) returned "
+                    f"{block.reason} and the legacy portal (or.justice.cz) has "
+                    f"no matching subject. The registry may be blocking "
+                    f"automated access. Check manually: "
+                    f"https://or.justice.cz/ias/ui/rejstrik-$firma?ico={ico_padded}"
+                ) from block
+            result = legacy_filings
     finally:
         if own_client:
             client.close()
+
+    if ttl > 0:
+        _FILINGS_CACHE[ico_padded] = (clock(), result)
+    return list(result)

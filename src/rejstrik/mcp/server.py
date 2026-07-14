@@ -8,16 +8,22 @@ from mcp.server.fastmcp import FastMCP
 from mcp.types import (
     BlobResourceContents,
     EmbeddedResource,
+    ImageContent,
     TextContent,
     ToolAnnotations,
 )
 from mcp_ui_server import UIResource, create_ui_resource
+from pydantic import BaseModel
 
+from rejstrik.analysis.normalize import NormalizedFinancials
+from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.report import CompanyFinancialReport
 from rejstrik.documents.answer import Answer
 from rejstrik.documents.ask import ask_filing as _ask_filing
 from rejstrik.documents.config import has_llm_key
 from rejstrik.documents.extract import extract_financials as _extract_financials
+from rejstrik.documents.pdftext import PageText, extract_pages_text, parse_page_range
+from rejstrik.documents.pdfimages import render_page_images
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
 from rejstrik.filings.models import Filing
@@ -34,17 +40,68 @@ from rejstrik.registry.statutory import (
 )
 from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
-from rejstrik.mcp.card import render_report_card
+from rejstrik.analysis.industry import industry_key_for_nace
+from rejstrik.analysis.valuation import (
+    ValuationAssumptions,
+    ValuationEstimate,
+    estimate_valuation as _estimate_valuation,
+)
+from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.service import (
     analyze_company_financials as _analyze_company_financials,
     analyze_statements as _analyze_statements,
+    count_pdf_pages,
     fetch_filing as _fetch_filing,
     resolve_statement_source,
 )
 
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
 
-_MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "15000000"))
+_MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "25000000"))
+
+_UI_URI = "ui://rejstrik/report"
+# ext-apps _meta UI declaration. VERIFY the exact key against the MCP Apps spec
+# (blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps) on the implementation
+# day — the ecosystem moves monthly. Override at runtime via REJSTRIK_APPS_CAPABILITY_KEY.
+_UI_META = {"mcp/ui": {"resourceUri": _UI_URI}}
+
+
+def _apps_capability(experimental: dict | None) -> bool:
+    if not experimental:
+        return False
+    key = os.environ.get("REJSTRIK_APPS_CAPABILITY_KEY", "mcp-apps")
+    return key in experimental
+
+
+def _host_supports_apps() -> bool:
+    try:
+        ctx = mcp.get_context()
+        experimental = ctx.session.client_params.capabilities.experimental
+    except Exception:
+        return False
+    return _apps_capability(experimental)
+
+
+def _card_ui_resource(report: CompanyFinancialReport) -> UIResource:
+    return create_ui_resource(
+        {
+            "uri": _UI_URI,
+            "content": {
+                "type": "rawHtml",
+                "htmlString": render_report_card(report),
+            },
+            "encoding": "text",
+        }
+    )
+
+
+def _render_card_output(
+    report: CompanyFinancialReport, *, apps_supported: bool
+) -> list[TextContent | UIResource]:
+    if apps_supported:
+        return [_card_ui_resource(report)]
+    return [TextContent(type="text", text=render_report_markdown(report))]
+
 
 EXPOSED_TOOL_NAMES = [
     "find_company",
@@ -61,6 +118,9 @@ EXPOSED_TOOL_NAMES = [
     "render_card",
     "get_subsidies",
     "get_contracts",
+    "read_filing_text",
+    "read_filing_page_images",
+    "estimate_valuation",
 ]
 
 
@@ -134,46 +194,107 @@ def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialRe
     return _analyze_company_financials(query, years=years)
 
 
-@mcp.tool(annotations=_ro("Analyze company card"))
-def analyze_company_card(query: str, years: int = 1) -> list[UIResource]:
-    """Full financial report as an interactive HTML card, over the last `years`
-    (1-5) years. Requires a server-side API key; without one, use get_filing +
-    analyze_financials + render_card."""
+@mcp.resource(_UI_URI, mime_type="text/html", meta=_UI_META)
+def report_card_ui() -> str:
+    """The financial report card's self-contained HTML shell (MCP Apps template)."""
+    return render_report_card(
+        CompanyFinancialReport(
+            statement=FinancialStatement(),
+            normalized=NormalizedFinancials(),
+            ratios=Ratios(),
+        )
+    )
+
+
+@mcp.tool(
+    annotations=_ro("Analyze company card"), meta=_UI_META, structured_output=False
+)
+def analyze_company_card(query: str, years: int = 1) -> list[TextContent | UIResource]:
+    """Full financial report as a card, over the last `years` (1-5) years. Hosts
+    that negotiate the MCP Apps capability get an interactive HTML card; others
+    get a compact markdown summary. Requires a server-side API key; without one,
+    use get_filing + analyze_financials + render_card."""
     _require_llm_key()
     report = _analyze_company_financials(query, years=years)
-    return [
-        create_ui_resource(
-            {
-                "uri": "ui://rejstrik/report",
-                "content": {
-                    "type": "rawHtml",
-                    "htmlString": render_report_card(report),
-                },
-                "encoding": "text",
-            }
-        )
-    ]
+    return _render_card_output(report, apps_supported=_host_supports_apps())
 
 
 @mcp.tool(annotations=_ro("Get filing PDF"), structured_output=False)
 def get_filing(
-    ico: str, year: int | None = None, filing_id: str | None = None
+    ico: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    embed: str = "auto",
 ) -> list[TextContent | EmbeddedResource]:
     """Download a financial statement PDF from Sbírka listin (latest, or by
     year / filing id from list_filings). Returns filing metadata with a local
-    file_path, plus the PDF itself as an embedded resource. Read the PDF with
-    your own capabilities, then pass extracted figures to analyze_financials —
-    no server-side API key needed."""
+    file_path and page_count, and — depending on `embed` — the PDF bytes.
+
+    embed:
+      - "auto" (default): embed only if the PDF fits the server's size cap.
+      - "never": metadata + file_path only. FILESYSTEM-CAPABLE HOSTS (Claude
+        Code, Codex, Desktop with fs access) SHOULD pass embed="never" and read
+        the PDF from file_path — filed statements are routinely 20-25 MB and the
+        path is strictly better than putting ~33 MB of base64 in context.
+      - "always": embed regardless (still hard-capped; an honest message is
+        returned instead of silently dropping an over-cap PDF).
+
+    Read the PDF yourself (or call read_filing_text for a page range), then pass
+    extracted figures to analyze_financials — no server-side API key needed."""
+    if embed not in ("auto", "always", "never"):
+        raise ValueError('embed must be "auto", "always", or "never"')
     doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
     parts: list[TextContent | EmbeddedResource] = [
         TextContent(type="text", text=doc.model_dump_json(indent=2))
     ]
-    if doc.size_bytes <= _MAX_EMBED_BYTES:
+    if embed == "never":
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"Not embedding by request (embed=never). "
+                    f"Read the PDF from file_path: {doc.file_path}"
+                ),
+            )
+        )
+        return parts
+
+    over_cap = doc.size_bytes > _MAX_EMBED_BYTES
+    if embed == "auto" and over_cap:
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"PDF is {doc.size_bytes} bytes — over the {_MAX_EMBED_BYTES}-byte "
+                    f"embed cap. Read it from file_path: {doc.file_path} "
+                    f"(or call read_filing_text for a page range)."
+                ),
+            )
+        )
+        return parts
+    if embed == "always" and over_cap:
+        parts.append(
+            TextContent(
+                type="text",
+                text=(
+                    f"PDF is {doc.size_bytes} bytes — too large to embed even with "
+                    f"embed=always (cap {_MAX_EMBED_BYTES} bytes). "
+                    f"Read it from file_path: {doc.file_path}"
+                ),
+            )
+        )
+        return parts
+
+    try:
+        uri = Path(doc.file_path).as_uri()
+    except ValueError:
+        uri = None
+    if uri is not None:
         parts.append(
             EmbeddedResource(
                 type="resource",
                 resource=BlobResourceContents(
-                    uri=Path(doc.file_path).as_uri(),
+                    uri=uri,
                     mimeType="application/pdf",
                     blob=base64.standard_b64encode(source.data).decode(),
                 ),
@@ -184,10 +305,81 @@ def get_filing(
             TextContent(
                 type="text",
                 text=(
-                    f"PDF is {doc.size_bytes} bytes — too large to embed. "
-                    f"Read it from file_path: {doc.file_path}"
+                    f"PDF at {doc.file_path} could not be embedded "
+                    f"(path is not absolute). Read it from that path."
                 ),
             )
+        )
+    return parts
+
+
+class FilingText(BaseModel):
+    ico: str
+    year: int | None = None
+    page_count: int
+    requested_pages: list[int]
+    pages: list[PageText]
+    message: str | None = None
+
+
+@mcp.tool(annotations=_ro("Read filing text"))
+def read_filing_text(
+    ico: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    pages: str = "1-10",
+) -> FilingText:
+    """Extract the embedded text layer of a statement PDF for a page range —
+    keyless, no LLM, no OCR. Page grammar: "3", "1-5", "1-3,7" (default "1-10").
+    At most 20 pages per call. Czech filings are often scanned images with no
+    text layer; pages without text are reported honestly (has_text=false) with a
+    note pointing to extract_financials or filesystem reading — never a silent
+    empty string."""
+    doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
+    page_count = doc.page_count or count_pdf_pages(source.data) or 0
+    requested, message = parse_page_range(pages, page_count=page_count)
+    page_texts = extract_pages_text(source.data, requested)
+    return FilingText(
+        ico=doc.ico,
+        year=doc.year,
+        page_count=page_count,
+        requested_pages=requested,
+        pages=page_texts,
+        message=message,
+    )
+
+
+@mcp.tool(annotations=_ro("Read filing page images"), structured_output=False)
+def read_filing_page_images(
+    ico: str,
+    year: int | None = None,
+    filing_id: str | None = None,
+    pages: str = "1-5",
+) -> list[TextContent | ImageContent]:
+    """Rasterize statement PDF pages to PNG images — keyless, no LLM, no OCR.
+    For SCANNED filings with no text layer (read_filing_text reports
+    has_text=false) on hosts WITHOUT filesystem access: this delivers legible
+    page images the host model can read directly. Page grammar: "3", "1-5",
+    "1-3,5" (default "1-5"). At most 5 pages per call (images are token-heavy);
+    request later ranges for the rest. Returns one metadata text block, then one
+    PNG image per rendered page."""
+    doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
+    page_count = doc.page_count or count_pdf_pages(source.data) or 0
+    requested, message = parse_page_range(pages, page_count=page_count, max_pages=5)
+    images = render_page_images(source.data, requested)
+    meta = {
+        "ico": doc.ico,
+        "year": doc.year,
+        "page_count": page_count,
+        "rendered_pages": [im.page for im in images],
+        "message": message,
+    }
+    parts: list[TextContent | ImageContent] = [
+        TextContent(type="text", text=json.dumps(meta, indent=2))
+    ]
+    for im in images:
+        parts.append(
+            ImageContent(type="image", data=im.png_base64, mimeType="image/png")
         )
     return parts
 
@@ -203,22 +395,45 @@ def analyze_financials(
     return _analyze_statements(statements, ico=ico)
 
 
-@mcp.tool(annotations=_ro("Render report card"))
-def render_card(report: CompanyFinancialReport) -> list[UIResource]:
-    """Render a CompanyFinancialReport (from analyze_financials) as an
-    interactive HTML card for MCP UI hosts."""
-    return [
-        create_ui_resource(
-            {
-                "uri": "ui://rejstrik/report",
-                "content": {
-                    "type": "rawHtml",
-                    "htmlString": render_report_card(report),
-                },
-                "encoding": "text",
-            }
-        )
-    ]
+@mcp.tool(annotations=_ro("Estimate indicative valuation"))
+def estimate_valuation(
+    statements: list[FinancialStatement],
+    assumptions: ValuationAssumptions | None = None,
+    industry_key: str | None = None,
+    ico: str | None = None,
+) -> ValuationEstimate:
+    """Indicative, deterministic valuation from statements YOU extracted: book
+    value, capitalized earnings, generic EV/EBIT and price/revenue multiples,
+    and — when an industry is known — a Damodaran Europe EV/EBITDA multiple
+    (EBITDA = operating profit + depreciation/amortization). Provide `ico` to let
+    the server map the company's CZ-NACE to a Damodaran industry, or pass
+    `industry_key` directly (you know the business better than a registry code).
+    Precedence: explicit `assumptions` > `industry_key` > NACE-derived > generic
+    defaults. Amounts are thousands of CZK as filed; book values are not market
+    values. NOT investment advice."""
+    resolved_key: str | None = None
+    reason: str | None = None
+    if assumptions is None:
+        if industry_key:
+            resolved_key = industry_key
+            reason = f"industry_key '{industry_key}' given by caller"
+        elif ico:
+            company = _find_company(ico)
+            resolved_key, reason = industry_key_for_nace(company.nace_codes)
+    return _estimate_valuation(
+        statements,
+        assumptions,
+        industry_key=resolved_key,
+        industry_reason=reason,
+    )
+
+
+@mcp.tool(annotations=_ro("Render report card"), meta=_UI_META, structured_output=False)
+def render_card(report: CompanyFinancialReport) -> list[TextContent | UIResource]:
+    """Render a CompanyFinancialReport (from analyze_financials) as a card. Hosts
+    that negotiate MCP Apps get interactive HTML; others get a compact markdown
+    summary suitable for Claude Code and other text-only hosts."""
+    return _render_card_output(report, apps_supported=_host_supports_apps())
 
 
 def _to_ico(value: str) -> str:
@@ -268,18 +483,30 @@ Follow these steps exactly:
 1. Call find_company("{company}") to resolve the IČO.
 2. Call list_filings(ico) and identify the financial statements for the
    {years} most recent year(s).
-3. For each year, call get_filing(ico, year=...). Read the returned PDF
-   (use the local file_path if you can read files, otherwise the embedded
-   resource).
+3. For each year, call get_filing(ico, year=...). If you can read local files
+   (Claude Code, Codex, Desktop with filesystem access), pass embed="never" and
+   read the PDF from the returned file_path — filed statements are routinely
+   20-25 MB and the path is strictly better than embedding. Otherwise use the
+   embedded resource, or call read_filing_text(ico, year=..., pages="1-10") to
+   pull the text layer in digestible slices. If read_filing_text reports
+   has_text=false (a scanned filing) and you cannot read local files, call
+   read_filing_page_images(ico, year=..., pages="1-5") to get the pages as PNGs.
 4. From each PDF, extract a FinancialStatement JSON object matching this
    schema (amounts in Czech statements are usually reported in thousands of CZK
    — keep them as printed and set currency to "CZK"; set period_year to the
-   statement year; cite source_page for every figure):
+   statement year; cite source_page for every figure). ALSO fill the `canonical`
+   object: each of its fields' descriptions names the exact Czech statutory line
+   that feeds it (e.g. total_assets ← "Aktiva celkem", net_profit ← "Výsledek
+   hospodaření za účetní období") — this is what makes the analysis reliable:
 {schema}
 5. Call analyze_financials(statements=[...], ico=ico) with ALL extracted
-   statements in one call to get ratios, red flags, and year-over-year trends.
-6. If your client renders MCP UI resources, also call render_card(report).
-7. Summarize: overall health, notable trends, every red flag with its
+   statements in one call to get ratios, red flags, the IN05 distress index,
+   and year-over-year trends.
+6. Optionally call estimate_valuation(statements=[...]) for an indicative
+   valuation range (book value, capitalized earnings, generic multiples) — it
+   is not investment advice.
+7. If your client renders MCP UI resources, also call render_card(report).
+8. Summarize: overall health, notable trends, every red flag with its
    severity, and page citations for key numbers."""
 
 

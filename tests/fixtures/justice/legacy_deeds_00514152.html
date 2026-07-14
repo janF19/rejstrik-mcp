@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="cs" class="ff ff124">
+	<head><script type="text/javascript" src="./wicket/resource/org.apache.wicket.resource.JQueryResourceReference/jquery/jquery-1.11.1.min-ver-8101D596B2B8FA35FE3A634EA342D7C3.js"></script>
+
+		<title>Veřejný rejstřík a Sbírka listin - Ministerstvo spravedlnosti České republiky</title>
+
+		<link rel="shortcut icon" href="./resource/images/favicon.ico" type="image/x-icon">
+
+		<!--
+		<link rel="stylesheet" href="./style.css" type="text/css" />
+		 -->
+
+		<link rel="stylesheet" href="./resource/css/reset.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/base.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/layout.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/drop-down-menu.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/columns.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/tables.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/forms.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/buttons.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/messages.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/icons.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/typo.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/search.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/vypis.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/tooltip.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/ias.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/ajax.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/intform.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/dynamic.css" media="screen">
+		<link rel="stylesheet" href="./resource/css/jquery-ui-1.8.17.custom.css" media="screen">
+
+		<link rel="stylesheet" href="./resource/css/print.css" media="print">
+
+		<script src="./resource/js/modernizr-latest.js"></script><!-- feature detection -->
+
+		<script>
+/*<![CDATA[*/
+
+			var APP = {
+				_ready : [],
+				_load : [],
+				run : function(fn,onload){var q=APP[onload?'_load':'_ready'];if(fn){if(q&&typeof q.push==='function'){q.push(fn);}else{fn();}}}
+			};
+		
+/*]]>*/
+</script>
+		<script>
+/*<![CDATA[*/
+
+			APP.Strings = {
+				invalidAjaxResponse : 'CHYBA - při zpracování požadavku došlo k interní chybě.'
+			};
+		
+/*]]>*/
+</script>
+
+		<script src="./resource/js/app-ias.js"></script>
+		<script src="./resource/js/app-tools.js"></script>
+		<script src="./resource/js/modules/drop-down-menu.js"></script>
+		<script src="./resource/js/modules/placeholder.js"></script>
+		<script src="./resource/js/modules/tooltip.js"></script>
+		<script src="./resource/js/modules/message-panel.js"></script>
+
+		<style type="text/css">
+/*<![CDATA[*/
+
+			/* CSS pre nove vypisy */
+			div.vr-hlavicka{font-weight:bold;}
+			.vr-child .vr-child div.vr-child {margin-left: 5mm}
+			.vr-child .vr-child div.vr-hlavicka {margin-left: 5mm}
+			.underline span {border-bottom: 1px solid black;}
+			.underline .nounderline {border-bottom-style: none}
+			.preformatted { white-space: pre-wrap; }
+			.iq_alert {
+				padding: 20px;
+				background-color: #f44336;
+				color: white;
+				text-align: center;
+			}
+		
+/*]]>*/
+</style>
+
+		<!--[if lte IE 6 ]>
+		<script src="./resource/js/supersleight-min.js"></script>
+		<![endif]-->
+		<style>
+/*<![CDATA[*/
+
+			@media print {
+				#chatbot {
+					display: none !important;
+				}
+			}
+		
+/*]]>*/
+</style>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-event-jquery.min-ver-7C4C4A31B92F211E7D61B1BF2BA81B39.js"></script>
+<script type="text/javascript" src="./wicket/resource/org.apache.wicket.ajax.AbstractDefaultAjaxBehavior/res/js/wicket-ajax-jquery.min-ver-116260811FE9679D5DDCC60F7AE641BD.js"></script>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9" /><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><link rel="stylesheet" type="text/css" href="./wicket/resource/cz.corpus.isror.ui.internet.InternetBasePage/basepage-ver-F0FB650D42CA79C149B4023B5F69BE5C.css" />
+<script type="text/javascript" src="./wicket/resource/cz.corpus.grools.function.JavaScriptFunction/lib-ver-500AA971F6707ED2FBC2DECD679E5755.js"></script>
+<script type="text/javascript" src="./wicket/resource/cz.corpus.isror.ui.internet.analytics.GoogleAnalyticsJs/google-analytics.js"></script>
+</head>
+<body>
+	<div id="page">
+        <div class="iq_alert">
+			<span><strong>V ověřovacím provozu byla spuštěna nová podoba obchodního rejstříku, sbírky listin a svěřenských fondů (přístupné jsou vyhledávací funkce pro nepřihlášeného uživatele). Můžete ji vyzkoušet <a href="https://verejnerejstriky.msp.gov.cz/">zde</a>.</strong></span>
+		</div>
+		<div id="page-h" class="noprint">
+			<a id="logo" href="./vypis-sl-firma?-1.ILinkListener-htmlContainer-logo&amp;subjektId=59981"></a>
+			<hr class="hidden">
+		</div>
+		<div id="page-c">
+			<div id="frag-rejstrik-switchComp-wholebead">
+				
+	<div class="section">
+		<div class="vypis-h">
+			<div class="inner">
+				<h1>Sbírka listin</h1>
+				<h2>Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale</h2>
+				<a class="vypis-print noprint" onclick="print(); return false;" href="#">Vytisknout</a>
+			</div>
+		</div>
+		<div class="section-c">
+			<div class="inner">
+				<p class="noprint">
+					
+				</p>
+				<table>
+					<colgroup>
+						<col width="200">
+						<col>
+					</colgroup>
+					<tbody>
+						
+	<tr>
+		<th class="title" colspan="2">Základní identifikační údaje</th>
+	</tr>
+	<tr class="subrow">
+		<th>Spisová značka:</th>
+		<td>
+<span style="white-space: nowrap;">AV 325 vedená u Krajského soudu v Českých Budějovicích</span>
+</td>
+	</tr>
+	<tr class="subrow">
+		<th>Obchodní jméno:</th>
+		<td>Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale</td>
+	</tr>
+	<tr class="subrow" id="id1">
+		<th>Identifikační číslo:</th>
+		<td><span>
+	<span class="nowrap">005<span style="margin-left: 0.5em"></span>14<span style="margin-left: 0.5em"></span>152</span>
+</span> <span class="noprint">(viz <a href="./rejstrik-$firma?ico=514152">obchodní rejstřík</a>)</span></td>
+	</tr>
+	<tr>
+		<th class="title" colspan="2">Adresa</th>
+	</tr>
+	<tr class="subrow">
+		<th>Sídlo společnosti:</th>
+		<td id="id2">
+	<div>
+	<span>
+		<span>K. Světlé 512/4, České Budějovice 3, 370 04  České Budějovice</span>
+		
+	</span>
+	
+	
+	
+	
+</div>
+</td>
+	</tr>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<hr class="print">
+
+				
+	
+	<div class="section">
+		<div class="section-h noprint">
+			<div class="inner">
+				<h2>Přehled listin</h2>
+			</div>
+		</div>
+
+		<div class="section-c">
+			<div class="inner">
+				<div id="id3">
+  
+</div>
+				<table class="list">
+					<colgroup>
+						<col>
+						<col>
+						<col width="120">
+						<col width="120">
+						<col width="120">
+						<col width="30">
+						<col width="30">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>Číslo listiny</th>
+							<th>Typ listiny</th>
+							<th>Vznik listiny</th>
+							<th>Došlo na soud</th>
+							<th>Založeno do SL</th>
+							<th colspan="2">Stránek</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><a href="./vypis-sl-detail?dokument=92007187&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL94/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva [2025]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>30.6.2026</td>
+							<td>8.7.2026</td>
+							<td class="center">39</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=87101138&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL93/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2024]</span>, <span class="symbol">výroční zpráva [2024]</span>, <span class="symbol">zpráva auditora [2024]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>30.6.2025</td>
+							<td>1.7.2025</td>
+							<td class="center">40</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=84468816&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL92/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>odvolání z funkce člena dozorčí rady</span></td>
+							<td>31.10.2024</td>
+							<td>6.12.2024</td>
+							<td>9.1.2025</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=84468815&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL91/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>jmenování člena dozorčí rady</span></td>
+							<td>31.8.2024</td>
+							<td>6.12.2024</td>
+							<td>9.1.2025</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=84468814&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL90/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>usnesení č. 26 DR</span></td>
+							<td>25.10.2024</td>
+							<td>6.12.2024</td>
+							<td>9.1.2025</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=82120018&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL89/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2023]</span>, <span class="symbol">výroční zpráva [2023]</span>, <span class="symbol">zpráva auditora [2023]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>27.6.2024</td>
+							<td>27.6.2024</td>
+							<td class="center">42</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=80395623&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL88/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">zakladatelské dokumenty</span>
+</span> <span>statut</span></td>
+							<td>20.2.2024</td>
+							<td>29.2.2024</td>
+							<td>29.2.2024</td>
+							<td class="center">10</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=77444791&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL87/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2022]</span>, <span class="symbol">výroční zpráva [2022]</span>, <span class="symbol">zpráva auditora [2022]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>30.6.2023</td>
+							<td>30.6.2023</td>
+							<td class="center">40</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=76319732&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL86/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>jmenovací dekret</span></td>
+							<td>19.8.2020</td>
+							<td>20.3.2023</td>
+							<td>26.4.2023</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=76319731&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL85/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>jmenování pana Havla</span></td>
+							<td>16.2.2023</td>
+							<td>20.3.2023</td>
+							<td>26.4.2023</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=76319730&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL84/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>usnesení z 143. zasedání DR</span></td>
+							<td>7.2.2023</td>
+							<td>20.3.2023</td>
+							<td>26.4.2023</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=76319729&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL83/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>odstoupení Ing. Procházky</span></td>
+							<td>13.1.2023</td>
+							<td>20.3.2023</td>
+							<td>26.4.2023</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=73761670&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL82/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>jmenování člena dozorčí rady</span></td>
+							<td></td>
+							<td>5.10.2022</td>
+							<td>24.10.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=73761669&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL81/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>zápis o výsledku voleb</span></td>
+							<td></td>
+							<td>5.10.2022</td>
+							<td>24.10.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=72506248&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL80/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>odvolání a jmenování do funkce 3x</span></td>
+							<td></td>
+							<td>22.6.2022</td>
+							<td>13.7.2022</td>
+							<td class="center">3</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=72319309&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL79/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2021]</span>, <span class="symbol">výroční zpráva [2021]</span>, <span class="symbol">zpráva auditora [2021]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>28.6.2022</td>
+							<td>28.6.2022</td>
+							<td class="center">41</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=71431072&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL78/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Rozhodnutí ředitele podniku - změna názvu některých pozic</span></td>
+							<td>17.12.2021</td>
+							<td>5.4.2022</td>
+							<td>26.4.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=71430877&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL77/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Odvolání z funkce člena dozorčí rady</span></td>
+							<td>13.1.2022</td>
+							<td>5.4.2022</td>
+							<td>26.4.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=71430847&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL76/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">rozhod. o statut. orgánu</span>
+</span> <span>Odvolání z pozice 3. zástupce ředitele podniku a jmenování na pozici 1. zástupce ředitele podniku</span></td>
+							<td>16.3.2022</td>
+							<td>5.4.2022</td>
+							<td>26.4.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=71430770&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL75/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">rozhod. o statut. orgánu</span>
+</span> <span>Jmenování 3. zástupcem ředitele podniku</span></td>
+							<td>16.3.2022</td>
+							<td>5.4.2022</td>
+							<td>26.4.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=71430733&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL74/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Rezignace na funkci člena dozorčí rady a člena výboru pro strategii</span></td>
+							<td>5.1.2022</td>
+							<td>5.4.2022</td>
+							<td>26.4.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=71430674&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL73/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">rozhod. o statut. orgánu</span>
+</span> <span>Odvolání z funkce 1. zástupce ředitele podniku</span></td>
+							<td>16.3.2022</td>
+							<td>5.4.2022</td>
+							<td>26.4.2022</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=67286610&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL72/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2020]</span>, <span class="symbol">výroční zpráva [2020]</span>, <span class="symbol">zpráva auditora [2020]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>9.7.2021</td>
+							<td>9.7.2021</td>
+							<td class="center">41</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=64661862&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL71/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Dodatek č.9 ke smlouvě o nájmu části podniku ze dne 31.7.2009</span></td>
+							<td>22.12.2020</td>
+							<td>7.1.2021</td>
+							<td>7.1.2021</td>
+							<td class="center">3</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=64661857&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL70/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Dohoda o ukončení smlouvy o nájmu části podniku ze dne 31.7.2009 a o vypořádání vzájemných práv a závazků</span></td>
+							<td></td>
+							<td>7.1.2021</td>
+							<td>7.1.2021</td>
+							<td class="center">9</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=62355488&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL69/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>STATUT</span></td>
+							<td></td>
+							<td>1.7.2020</td>
+							<td>2.7.2020</td>
+							<td class="center">11</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=62353621&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL68/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Dodatek č. 8</span></td>
+							<td></td>
+							<td>1.7.2020</td>
+							<td>2.7.2020</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=62353323&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL67/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2019]</span>, <span class="symbol">výroční zpráva [2019]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>30.6.2020</td>
+							<td>2.7.2020</td>
+							<td class="center">55</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=59565088&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL66/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování do funkce člena dozorčí rady</span></td>
+							<td>29.8.2019</td>
+							<td>30.9.2019</td>
+							<td>31.10.2019</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=59565038&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL65/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Odvolání z funkce členky dozorčí rady</span></td>
+							<td>29.8.2019</td>
+							<td>30.9.2019</td>
+							<td>31.10.2019</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=59111974&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL64/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Dodatek č.7 ke smlouvě o nájmu části podniku ze dne 31.7.2009</span></td>
+							<td></td>
+							<td>23.9.2019</td>
+							<td>24.9.2019</td>
+							<td class="center">33</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=58046228&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL63/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2018]</span>, <span class="symbol">výroční zpráva [2018]</span>, <span class="symbol">zpráva auditora [2018]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>28.6.2019</td>
+							<td>28.6.2019</td>
+							<td class="center">48</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=57954893&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL62/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování člena dozorčí rady</span></td>
+							<td>31.1.2019</td>
+							<td>24.5.2019</td>
+							<td>24.6.2019</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=55870041&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL61/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování do funkce člena dozorčí rady</span></td>
+							<td>9.11.2018</td>
+							<td>13.12.2018</td>
+							<td>9.1.2019</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=53606128&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL60/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování do funkce členky dozorčí rady</span></td>
+							<td>15.5.2018</td>
+							<td>21.6.2018</td>
+							<td>11.7.2018</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=53496878&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL59/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2017]</span>, <span class="symbol">výroční zpráva [2017]</span>, <span class="symbol">zpráva auditora [2017]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>29.6.2018</td>
+							<td>29.6.2018</td>
+							<td class="center">40</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=52405530&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL58/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Odvolání z funkce členů dozorčí rady</span></td>
+							<td>16.1.2018</td>
+							<td>12.3.2018</td>
+							<td>5.4.2018</td>
+							<td class="center">3</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=50656031&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL57/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Zápis sčítací komise o provedeném sčítání a výsledku voleb</span></td>
+							<td>14.9.2017</td>
+							<td>29.9.2017</td>
+							<td>2.11.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=49796446&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL56/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Pověření k jednání jménem podniku</span></td>
+							<td>17.7.2017</td>
+							<td>1.8.2017</td>
+							<td>23.8.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=49160922&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL55/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2016]</span>, <span class="symbol">výroční zpráva [2016]</span>, <span class="symbol">zpráva auditora [2016]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>28.6.2017</td>
+							<td>29.6.2017</td>
+							<td class="center">38</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=48740689&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL54/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování člena dozorčí rady</span></td>
+							<td>1.5.2017</td>
+							<td>9.5.2017</td>
+							<td>31.5.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=48740658&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL53/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">rozhod. o statut. orgánu</span>
+</span> <span>Jmenování do funkce ředitele</span></td>
+							<td>24.4.2017</td>
+							<td>9.5.2017</td>
+							<td>31.5.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=48740520&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL52/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Zrušení pověření řízením národního podniku</span></td>
+							<td>24.4.2017</td>
+							<td>9.5.2017</td>
+							<td>31.5.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=47670522&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL51/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Usnesení z 95. jednání dozorčí rady</span></td>
+							<td>30.3.2016</td>
+							<td>14.2.2017</td>
+							<td>8.3.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=47670490&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL50/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování 2. zástupce ředitele</span></td>
+							<td>31.1.2017</td>
+							<td>14.2.2017</td>
+							<td>8.3.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=47670468&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL49/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování 1. zástupce ředitele</span></td>
+							<td>31.1.2017</td>
+							<td>14.2.2017</td>
+							<td>8.3.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=47670427&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL48/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování ředitele</span></td>
+							<td>29.12.2016</td>
+							<td>14.2.2017</td>
+							<td>8.3.2017</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=46929961&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL47/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Dodatek č.6 ke smlouvě o nájmu části podniku</span></td>
+							<td>13.12.2016</td>
+							<td>5.1.2017</td>
+							<td>5.1.2017</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=45816266&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL46/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">zakladatelské dokumenty</span>
+</span> <span>Dodatek č.5 ke smlouvě o nájmu části podniku ze dne 31.7.2009</span></td>
+							<td>30.9.2016</td>
+							<td>19.10.2016</td>
+							<td>19.10.2016</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=44657559&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL45/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva [2015]</span>
+</span> <span>2015</span></td>
+							<td></td>
+							<td>25.7.2016</td>
+							<td>25.7.2016</td>
+							<td class="center">28</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=41618381&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL44/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování člena dozorčí rady</span></td>
+							<td>22.9.2015</td>
+							<td>23.10.2015</td>
+							<td>16.12.2015</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=39484438&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL43/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2014]</span>, <span class="symbol">výroční zpráva [2014]</span>, <span class="symbol">zpráva auditora [2014]</span>
+</span> <span>2014</span></td>
+							<td></td>
+							<td>30.6.2015</td>
+							<td>1.7.2015</td>
+							<td class="center">27</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=17737814&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL42/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Výrok auditora</span></td>
+							<td></td>
+							<td>30.6.2014</td>
+							<td>4.7.2014</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=17737813&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL41/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva [2013]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>30.6.2014</td>
+							<td>4.7.2014</td>
+							<td class="center">27</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=17737812&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL40/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">zpráva auditora [2013]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>30.6.2014</td>
+							<td>4.7.2014</td>
+							<td class="center">23</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=17116307&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL39/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka [2012]</span>, <span class="symbol">výroční zpráva [2012]</span>
+</span> <span></span></td>
+							<td></td>
+							<td>2.7.2013</td>
+							<td>2.7.2013</td>
+							<td class="center">50</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=16904740&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL38/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování člena dozorčí rady</span></td>
+							<td>22.2.2013</td>
+							<td>27.2.2013</td>
+							<td>27.2.2013</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=16904739&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL37/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Odvolání z členství v dozorčí radě</span></td>
+							<td>5.2.2013</td>
+							<td>27.2.2013</td>
+							<td>27.2.2013</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=16789272&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL36/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>ÚZ Statutu</span></td>
+							<td></td>
+							<td>5.12.2012</td>
+							<td>5.12.2012</td>
+							<td class="center">12</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=16767228&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL35/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Jmenování člena dozorčí rady</span></td>
+							<td>15.11.2012</td>
+							<td>21.11.2012</td>
+							<td>22.11.2012</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=16555212&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL34/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>Jmenování DR</span></td>
+							<td>11.7.2012</td>
+							<td></td>
+							<td>20.7.2012</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=16523940&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL33/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva</span>
+</span> <span>-r.2011</span></td>
+							<td></td>
+							<td></td>
+							<td>29.6.2012</td>
+							<td class="center">60</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=14439576&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL32/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>-Dodatek č.1 jednacího řádu DR</span></td>
+							<td>13.4.2012</td>
+							<td></td>
+							<td>24.4.2012</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=14439575&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL31/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Dodatek č.1 STATUTU</span></td>
+							<td>13.4.2012</td>
+							<td></td>
+							<td>24.4.2012</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=14439574&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL30/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Odvolání a jmenování DR</span></td>
+							<td>13.4.2012</td>
+							<td></td>
+							<td>24.4.2012</td>
+							<td class="center">7</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202680&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL29/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- jmenování členů doz.rady</span></td>
+							<td>20.12.2011</td>
+							<td></td>
+							<td>6.1.2012</td>
+							<td class="center">4</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202676&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL28/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva</span>
+</span> <span>r. 2010</span></td>
+							<td></td>
+							<td></td>
+							<td>16.6.2011</td>
+							<td class="center">42</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202673&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL27/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva</span>
+</span> <span>r. 2009</span></td>
+							<td></td>
+							<td></td>
+							<td>9.7.2010</td>
+							<td class="center">40</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202668&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL26/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>- Schválení účet.závěrky 2009</span></td>
+							<td>4.6.2010</td>
+							<td></td>
+							<td>16.6.2010</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202665&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL25/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Dod.č.1 ke smlouvě o nájmu</span></td>
+							<td>12.2.2010</td>
+							<td></td>
+							<td>16.6.2010</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202661&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL24/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Odvolání a jmenování DR</span></td>
+							<td>10.11.2009</td>
+							<td></td>
+							<td>13.1.2010</td>
+							<td class="center">5</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202658&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL23/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- smlouva o nájmu části podn.</span></td>
+							<td></td>
+							<td></td>
+							<td>31.7.2009</td>
+							<td class="center">59</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202653&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL22/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva</span>
+</span> <span>r. 2008</span></td>
+							<td></td>
+							<td></td>
+							<td>9.7.2009</td>
+							<td class="center">41</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202651&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL21/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">podpisové vzory</span>
+</span> <span></span></td>
+							<td></td>
+							<td></td>
+							<td>22.1.2009</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202647&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL20/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>odvolání z fce člena dor. rady</span></td>
+							<td></td>
+							<td></td>
+							<td>24.9.2008</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202645&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL19/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">výroční zpráva</span>
+</span> <span>-r.2007</span></td>
+							<td></td>
+							<td></td>
+							<td>2.7.2008</td>
+							<td class="center">22</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202642&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL18/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">zpráva auditora</span>
+</span> <span>-r.2007</span></td>
+							<td></td>
+							<td></td>
+							<td>2.7.2008</td>
+							<td class="center">4</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202639&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL17/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>-r.2007 - Příloha</span></td>
+							<td></td>
+							<td></td>
+							<td>2.7.2008</td>
+							<td class="center">14</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202636&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL16/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>-r.2007</span></td>
+							<td></td>
+							<td></td>
+							<td>2.7.2008</td>
+							<td class="center">3</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202631&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL15/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Statut</span></td>
+							<td>19.5.2008</td>
+							<td></td>
+							<td>23.5.2008</td>
+							<td class="center">10</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202628&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL14/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Jmenování čl.doz.rady</span></td>
+							<td>30.4.2008</td>
+							<td></td>
+							<td>22.5.2008</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202625&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL13/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">zpráva auditora</span>
+</span> <span></span></td>
+							<td></td>
+							<td></td>
+							<td>22.5.2007</td>
+							<td class="center">4</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202623&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL12/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>r. 2006</span></td>
+							<td></td>
+							<td></td>
+							<td>22.5.2007</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202621&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL11/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>r. 2006</span></td>
+							<td></td>
+							<td></td>
+							<td>22.5.2007</td>
+							<td class="center">2</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202618&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL10/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>r. 2006</span></td>
+							<td></td>
+							<td></td>
+							<td>22.5.2007</td>
+							<td class="center">12</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202615&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL9/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>-Rozhodnutí ředitele</span></td>
+							<td>31.10.2006</td>
+							<td></td>
+							<td>16.1.2007</td>
+							<td class="center">1</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202611&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL8/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>- r.2005-zpráva nez. auditora</span></td>
+							<td></td>
+							<td></td>
+							<td>3.8.2006</td>
+							<td class="center">16</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202608&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL7/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">ostatní</span>
+</span> <span>- Změna manažera +Podp.vzor</span></td>
+							<td>31.8.2005</td>
+							<td></td>
+							<td>21.12.2005</td>
+							<td class="center">3</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202603&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL6/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>za rok 2004</span></td>
+							<td>24.6.2005</td>
+							<td></td>
+							<td>27.7.2005</td>
+							<td class="center">16</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202601&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL5/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>-ověřená za rok 2002</span></td>
+							<td></td>
+							<td></td>
+							<td>2.2.2005</td>
+							<td class="center">25</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202600&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL4/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>-r.2003</span></td>
+							<td></td>
+							<td></td>
+							<td>14.9.2004</td>
+							<td class="center">20</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202597&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL3/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>-r.2002</span></td>
+							<td></td>
+							<td></td>
+							<td>18.11.2003</td>
+							<td class="center">7</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202595&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL2/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>-r.2001</span></td>
+							<td></td>
+							<td></td>
+							<td>8.10.2002</td>
+							<td class="center">45</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr><tr>
+							<td><a href="./vypis-sl-detail?dokument=12202593&amp;subjektId=59981&amp;spis=411891"><span>AV&nbsp;325/SL1/KSCB</span></a></td>
+							<td><span>
+	<span class="symbol">účetní závěrka</span>
+</span> <span>za rok 2000</span></td>
+							<td></td>
+							<td></td>
+							<td>8.8.2001</td>
+							<td class="center">42</td>
+							<td class="center"><span class="i-16 hint i-document" title="Dokument byl digitalizován." alt="Dokument byl digitalizován.">&nbsp;</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	
+
+			</div>
+		</div>
+		<div id="page-f" class="noprint">
+			<div id="page-f-links">
+				<ul class="links1">
+					<li><a href="./soudy">Rejstříkové soudy</a></li>
+					<li><a href="https://or.justice.cz/ias/ui/rejstrik">Obchodní rejstřík</a></li>
+					<li><a href="http://upadci.justice.cz/">Evidence úpadců</a></li>
+					<li><a href="https://isir.justice.cz/isir/common/index.do">Insolvenční rejstřík</a></li>
+					<li><a href="https://esf.justice.cz/ias/isesf/rejstrik">Svěřenské fondy</a></li>
+					<li><a href="https://esm.justice.cz/ias/issm/rejstrik">Skuteční majitelé</a></li>
+				</ul>
+				<ul class="links2">
+					<li><a href="./napoveda">Jak na to?</a></li>
+					<li><a href="./rejstrik-$firma">Veřejný rejstřík podle subjektů</a></li>
+					<li><a href="./rejstrik-$spolecnici">Veřejný rejstřík podle právnických osob v angažmá</a></li>
+					<li><a href="./rejstrik-$osoba">Veřejný rejstřík podle fyzických osob v angažmá</a></li>
+					<li><a href="http://www.businessinfo.cz/cs/clanky/obchodni-spolecnosti-zalozeni-vznik-opu-13164.html">Průvodce: Jak založit firmu / společnost</a></li>
+					<li><a href="http://www.komora.cz/hk-cr/inmp/lang_1/Default.aspx">Informační místa pro podnikatele</a></li>
+					<li><a href="./podani">Podání do veřejného rejstříku</a></li>
+					<li><a href="./vzorsmlouvy">Vzor společenské smlouvy pro založení s. r. o.</a></li>
+				</ul>
+				<ul class="links3">
+
+					<li><a href="./zr">Automatické aktualizace ze základních registrů</a></li>
+					<li><a href="./evypisy">Co s elektronickým výpisem</a></li>
+					<li><a href="http://www.businessinfo.cz/">Portál pro podnikatele: BusinessInfo.cz</a></li>
+					<li><a href="./podminky">Podmínky provozu</a></li>
+					<li><a href="/ias/ui/download/Informace_GDPR_ISVR-2.pdf">Ochrana osobních údajů</a></li>
+					<li><a href="./podpora">Technická podpora</a></li>
+				</ul>
+			</div>
+			<span id="footer-logo"></span>
+			<p class="center">
+				&copy; Ministerstvo spravedlnosti České republiky<br>
+				Verze aplikace: <span>15.6.2</span>
+			</p>
+		</div>
+	</div>
+	<script charset="utf-8" defer="" src="https://chatbot-mspcr-storage.predu.sk/52f8e636-2b74-42f6-a8c1-33e3f5e9e8c4/webchat/integration-script.js"></script>
+</body>
+</html>

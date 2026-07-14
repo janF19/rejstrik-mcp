@@ -21,6 +21,11 @@ def test_analyze_company_prompt_mentions_tools_and_schema():
         "period_year",
         "Budvar",
         "3",
+        "read_filing_text",
+        'embed="never"',
+        "canonical",
+        "Aktiva celkem",
+        "estimate_valuation",
     ):
         assert needle in text
 

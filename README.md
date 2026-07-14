@@ -1,6 +1,6 @@
 # rejstrik-mcp
 
-[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml)
+[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) <!-- PyPI badge hidden until first publish (Stage E T5/T6); restore this line: [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/) -->
 
 **Add the Czech business registry to your Claude in 30 seconds — no API key.
 It reads the actual filed PDFs with your own subscription.**
@@ -8,6 +8,11 @@ It reads the actual filed PDFs with your own subscription.**
 ```bash
 claude mcp add rejstrik -- uvx rejstrik-mcp
 ```
+
+## See it work
+
+Demo media is being recorded (see `scripts/record_demo.sh`, which needs
+asciinema + agg); meanwhile the walkthrough below shows the exact flow.
 
 Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
 your agent resolves the company (ARES), pulls the filed statement PDF from
@@ -55,9 +60,11 @@ subscription; the server does everything deterministic:
 |---|---|
 | `find_company` | Resolve a company by name or IČO (ARES) |
 | `list_filings` | List Sbírka listin documents, financial statements first |
-| `get_filing` | Download a statement PDF (latest, by year, or by id) — returns local path + embedded PDF |
-| `analyze_financials` | Your extracted figures in → ratios, red flags, year-over-year trends out (no LLM) |
-| `render_card` | The report as an interactive HTML card (MCP UI hosts) |
+| `get_filing` | Download a statement PDF (latest, by year, or by id) — returns local path + `page_count`; `embed` controls whether the PDF bytes are also returned (`"auto"` default, `"always"`, or `"never"`) |
+| `read_filing_text` | Keyless extraction of the PDF text layer for a page range (no LLM/OCR); pages without a text layer are reported honestly |
+| `analyze_financials` | Your extracted figures in → ratios, red flags, IN05 distress index, year-over-year trends out (no LLM) |
+| `estimate_valuation` | Your extracted figures in → indicative valuation range (book value, capitalized earnings, multiples), no LLM. Not investment advice |
+| `render_card` | The report as a card — an interactive HTML card for MCP Apps hosts, a markdown summary for text-only hosts like Claude Code |
 | `check_insolvency` | Insolvency register (ISIR) |
 | `get_statutory_bodies` | Directors / statutory bodies (ARES) |
 | `check_vat` | VAT registration + unreliable-payer flag (ARES + ADIS) |
@@ -65,7 +72,7 @@ subscription; the server does everything deterministic:
 | `get_contracts` | Public contracts involving the company (Registr smluv) |
 
 **Beneficial owners.** The public part of ESM (Evidence skutečných
-majitelů) closed on 2026-12-17 following an EU Court of Justice ruling, so
+majitelů) closed on 2025-12-17 following an EU Court of Justice ruling, so
 beneficial-owner lookups are intentionally not offered here — a documented
 scope decision, not a gap.
 
@@ -80,20 +87,13 @@ citations: `extract_financials`, `ask_filing`,
 `analyze_company_financials`, `analyze_company_card`. Without a key they
 politely point you back to the keyless flow.
 
-## See it work
-
-![3-year analysis of Budějovický Budvar](docs/media/budvar-3year.gif)
-
-*The interactive report card (MCP UI hosts):*
-
-![Report card](docs/media/report-card.png)
-
 ## How it works
 
 ```text
 core/      shared HTTP + text utilities
 registry/  ARES, ISIR (insolvency), ADIS (VAT), statutory bodies
 filings/   verejnerejstriky.msp.gov.cz Sbirka listin client
+           (falls back to legacy or.justice.cz when the new portal is blocked)
 documents/ native-PDF extraction + document Q&A
 analysis/  normalize -> ratios -> red flags -> trends (pure, no I/O)
 service/   orchestration (registry + filings + documents + analysis)
@@ -113,6 +113,25 @@ listin from `or.justice.cz` to a new Nuxt portal
 portal's API. Registry, filings, insolvency, statutory-body, VAT, and ADIS
 lookups are covered by fixtures/unit tests; live smoke testing verified the
 registry/document analysis path against Budejovicky Budvar with OpenAI.
+
+In July 2026 the new portal began returning Azure Front Door block responses
+— 403/429/5xx and 200-with-challenge-HTML interstitials — to automated
+clients. The filings client now treats all of these as block-shaped and falls
+back to the legacy `or.justice.cz` portal, so a single blocked edge does not
+break lookups. A `scripts/smoke.py` canary hits both portals directly and
+prints PASS/BLOCKED per endpoint, so this drift is caught before a release
+tag rather than in the field.
+
+### Industry valuation multiples data
+
+`src/rejstrik/analysis/data/industry_multiples.json` vendors **Damodaran
+Europe** industry EV/EBITDA multiples (source, source_url, as_of and region are
+recorded in the file). NACE is used only as a mapping key into Damodaran's
+industry taxonomy — no hand-tuned multiples. Regenerate (network, manual, never
+in CI) with:
+
+    pip install xlrd
+    python scripts/import_damodaran_multiples.py --as-of YYYY-MM-DD
 
 ## CI
 
@@ -164,8 +183,14 @@ Havel). See `LICENSES/cz-agents-mcp-LICENSE`.
 
 1. One-time: on pypi.org, add a *Trusted Publisher* for this GitHub repo
    (workflow `release.yml`, environment `pypi`).
-2. Bump the version in `pyproject.toml`, commit, tag `vX.Y.Z`, push the tag.
-   CI builds, publishes to PyPI, and attaches artifacts to the GitHub release.
+2. Bump `version` in **all four** places so they agree: `pyproject.toml`,
+   `server.json` (top-level **and** `packages[0].version`), `mcpb/manifest.json`,
+   and `src/rejstrik/__init__.py` (`__version__`). `tests/test_version_sync.py`
+   fails if any of them drift.
+3. If the release changes the published server, re-run the MCP registry
+   publisher flow with the updated `server.json`.
+4. Commit, tag `vX.Y.Z`, push the tag. CI builds, publishes to PyPI, and
+   attaches artifacts to the GitHub release.
 
 ## License
 

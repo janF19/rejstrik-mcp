@@ -27,6 +27,31 @@ STAGES: dict[str, dict] = {
     "c": {"spec": "2026-07-13-stage-c-mcp-apps-card-and-large-pdfs-design.md"},
     "d": {"spec": "2026-07-13-stage-d-analysis-depth-valuation-design.md"},
     # Stage E (distribution/demo) is deliberately manual — see its spec.
+    # Stages F and G share one spec; "scope" narrows the planner to a section.
+    "f": {
+        "spec": "2026-07-14-post-audit-hardening-and-features-design.md",
+        "scope": (
+            "Plan STAGE F ONLY (sections F1-F5). F6 is a human checklist: "
+            "carry it into the plan verbatim as HUMAN tasks, no code. Do not "
+            "plan anything from Stage G."
+        ),
+    },
+    "g": {
+        "spec": "2026-07-14-post-audit-hardening-and-features-design.md",
+        "scope": (
+            "Plan STAGE G ONLY (sections G1-G4). For G2, read the reference "
+            "implementation in ~/projects/obchodni-rejstrik-ai "
+            "(apps/api/services/industry_multiples.py, "
+            "apps/api/services/business_classification.py, "
+            "apps/api/scripts/import_damodaran_multiples.py) and port "
+            "NACE_DIVISION_MAP verbatim; if any deviation is genuinely "
+            "needed, isolate it in a 'Deviations for product-owner sign-off' "
+            "section of the plan rather than silently changing values. The "
+            "Damodaran importer script is manual tooling like smoke.py - "
+            "network-using, never run in tests or CI; tests read only the "
+            "committed JSON dataset."
+        ),
+    },
 }
 
 ALLOWED_TOOLS = ",".join(
@@ -76,6 +101,13 @@ def git(args: list[str], cwd: Path = REPO, check: bool = True) -> str:
     return result.stdout.strip()
 
 
+def base_branch() -> str:
+    """The branch autopilot integrates into — the main checkout's current
+    HEAD, not a hardcoded 'main'. Stage branches fork from and merge back
+    into whatever branch you launched autopilot on."""
+    return git(["rev-parse", "--abbrev-ref", "HEAD"])
+
+
 # ---------------------------------------------------------------- state
 
 
@@ -100,7 +132,7 @@ def branch_exists(stage: str) -> bool:
 def branch_merged(stage: str) -> bool:
     if not branch_exists(stage):
         return False
-    merged = git(["branch", "--merged", "main", "--format=%(refname:short)"])
+    merged = git(["branch", "--merged", base_branch(), "--format=%(refname:short)"])
     return f"stage/{stage}" in merged.splitlines()
 
 
@@ -150,7 +182,12 @@ def run_claude(
     )
     if result.returncode != 0:
         blob = (result.stdout + result.stderr).lower()
-        if "usage limit" in blob or "rate limit" in blob or "log in" in blob:
+        if (
+            "usage limit" in blob
+            or "rate limit" in blob
+            or "session limit" in blob
+            or "log in" in blob
+        ):
             sys.exit(
                 f"claude CLI unavailable (limits/auth) — see {log_path}. "
                 "Rerun autopilot later; it will resume where it stopped."
@@ -211,8 +248,10 @@ def run_checks(worktree: Path) -> tuple[bool, str]:
 
 def phase_plan(stage: str, opts: argparse.Namespace) -> Path | None:
     spec = SPECS / STAGES[stage]["spec"]
+    scope = STAGES[stage].get("scope", "")
     target = f"docs/superpowers/plans/{dt.date.today()}-stage-{stage}-implementation.md"
     prompt = f"""Read the design spec at {spec.relative_to(REPO).as_posix()} and CLAUDE.md.
+{scope}
 Use the superpowers:writing-plans skill if available (write a complete
 step-by-step implementation plan even if it is not). Save the plan to
 {target}. Requirements: executable by an engineer with zero extra
@@ -239,7 +278,16 @@ def phase_execute(stage: str, plan: Path, opts: argparse.Namespace) -> Path | No
         if branch_exists(stage):
             git(["worktree", "add", str(worktree), f"stage/{stage}"])
         else:
-            git(["worktree", "add", "-b", f"stage/{stage}", str(worktree), "main"])
+            git(
+                [
+                    "worktree",
+                    "add",
+                    "-b",
+                    f"stage/{stage}",
+                    str(worktree),
+                    base_branch(),
+                ]
+            )
     bootstrap_venv(worktree)
     base = f"""You are in a git worktree on branch stage/{stage} of rejstrik-mcp.
 Execute the implementation plan at {plan.relative_to(REPO).as_posix()} COMPLETELY.
@@ -303,7 +351,7 @@ def phase_merge(stage: str, worktree: Path, opts: argparse.Namespace) -> bool:
     git(["worktree", "remove", str(worktree), "--force"], check=False)
     git(["branch", "-d", f"stage/{stage}"], check=False)
     if opts.push:
-        git(["push", "origin", "main"])
+        git(["push", "origin", base_branch()])
     print(f"[stage {stage}] DONE")
     return True
 

@@ -23,11 +23,10 @@ def test_analyze_financials_two_years():
     assert any(t.metric == "revenue" and t.pct_change for t in report.trends)
 
 
-def test_render_card_returns_ui_resource():
+def test_render_card_returns_markdown_by_default():
     report = server.analyze_financials([_statement(2024, 1000.0)])
     resources = server.render_card(report)
-    assert str(resources[0].resource.uri) == "ui://rejstrik/report"
-    assert "Budvar" in resources[0].resource.text
+    assert "Budvar" in resources[0].text
 
 
 def test_new_tools_registered():

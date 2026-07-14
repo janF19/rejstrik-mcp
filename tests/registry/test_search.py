@@ -39,3 +39,13 @@ def test_find_company_empty_search_raises():
     ).mock(return_value=httpx.Response(200, json={"ekonomickeSubjekty": []}))
     with pytest.raises(CompanyNotFound):
         find_company("NoSuchCompanyXYZ")
+
+
+def test_parse_detail_sets_legal_form_name():
+    from rejstrik.registry.ares import parse_detail
+
+    company = parse_detail(
+        {"ico": "00514152", "obchodniJmeno": "Budějovický Budvar", "pravniForma": "302"}
+    )
+    assert company.legal_form == "302"
+    assert company.legal_form_name == "národní podnik"
