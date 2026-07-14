@@ -30,7 +30,7 @@
 - Consumes: `estimate_valuation(statements: list[FinancialStatement], assumptions: ValuationAssumptions | None = None) -> ValuationEstimate` (existing signature — unchanged).
 - Produces: same signature; now raises `ValueError` when `statements` is empty, matching the wording pattern used by `analyze_statements` in `service.py`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/analysis/test_valuation.py`:
 
@@ -42,12 +42,12 @@ def test_valuation_empty_statements_raises_valueerror():
         estimate_valuation([])
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `python -m pytest tests/analysis/test_valuation.py::test_valuation_empty_statements_raises_valueerror -v`
 Expected: FAIL with `IndexError: list index out of range` (from `ordered[0]`), not `ValueError`.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/rejstrik/analysis/valuation.py`, add the guard as the first statement inside `estimate_valuation`, immediately after the `assumptions = assumptions or ValuationAssumptions()` line:
 
@@ -65,17 +65,17 @@ def estimate_valuation(
     normalized = [normalize(s) for s in statements]
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `python -m pytest tests/analysis/test_valuation.py -v`
 Expected: PASS (new test plus the four existing valuation tests).
 
-- [ ] **Step 5: Run the full verification**
+- [x] **Step 5: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/rejstrik/analysis/valuation.py tests/analysis/test_valuation.py
@@ -95,7 +95,7 @@ git commit -m "fix(valuation): raise ValueError on empty statements"
 - Consumes: existing `_pyproject_version() -> str` helper in `tests/test_version_sync.py`; `rejstrik.__version__` (str).
 - Produces: a new test `test_package_dunder_version_matches_pyproject` asserting `rejstrik.__version__ == _pyproject_version()`.
 
-- [ ] **Step 1: Write the guard test**
+- [x] **Step 1: Write the guard test**
 
 Append to `tests/test_version_sync.py`:
 
@@ -106,19 +106,19 @@ def test_package_dunder_version_matches_pyproject() -> None:
     assert rejstrik.__version__ == _pyproject_version()
 ```
 
-- [ ] **Step 2: Run the test — it passes immediately (both are `0.6.0`)**
+- [x] **Step 2: Run the test — it passes immediately (both are `0.6.0`)**
 
 Run: `python -m pytest tests/test_version_sync.py::test_package_dunder_version_matches_pyproject -v`
 Expected: PASS. This is a drift *guard*, so it holds today; there is no behavior to change.
 
-- [ ] **Step 3: Prove the guard bites (red/green demonstration)**
+- [x] **Step 3: Prove the guard bites (red/green demonstration)**
 
 Temporarily edit `src/rejstrik/__init__.py` to `__version__ = "9.9.9"`, then run:
 `python -m pytest tests/test_version_sync.py::test_package_dunder_version_matches_pyproject -v`
 Expected: FAIL (`assert '9.9.9' == '0.6.0'`).
 Then **revert** `src/rejstrik/__init__.py` back to `__version__ = "0.6.0"` and re-run: PASS.
 
-- [ ] **Step 4: Update the README Releasing checklist to four files**
+- [x] **Step 4: Update the README Releasing checklist to four files**
 
 In `README.md`, replace the numbered step 2 (currently lines 171-173):
 
@@ -137,12 +137,12 @@ New:
    fails if any of them drift.
 ```
 
-- [ ] **Step 5: Run the full verification**
+- [x] **Step 5: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green (version_sync now has three tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tests/test_version_sync.py README.md
@@ -167,7 +167,7 @@ git commit -m "test(version): guard __init__.__version__ against drift; README s
 **Block-shaped triggers (fallback-eligible):** HTTP 403, HTTP 429, HTTP 5xx (500–599), and a 2xx response whose body fails to parse as JSON.
 **Propagate unchanged (no fallback):** HTTP 404 and any other non-block 4xx; connect/read timeouts and transport errors (`httpx.TimeoutException` / other `httpx.TransportError`).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `tests/filings/test_justice.py` (the file already imports `httpx`, `pytest`, `respx`, `RegistryBlockedError`, `list_filings`, and defines `SEARCH_HTML`, `DEEDS_HTML`, `_NEW_FILINGS_URL`, `_LEGACY_SEARCH_URL`, `_LEGACY_DEEDS_URL`):
 
@@ -259,12 +259,12 @@ def test_registry_blocked_message_names_non_json_trigger():
     assert "non-JSON response" in str(exc_info.value)
 ```
 
-- [ ] **Step 2: Run the new tests to verify they fail**
+- [x] **Step 2: Run the new tests to verify they fail**
 
 Run: `python -m pytest tests/filings/test_justice.py -k "429 or 503 or challenge or timeout or non_json" -v`
 Expected: the 429/503/challenge tests FAIL (currently only 403 triggers fallback, so a `JSONDecodeError`/`HTTPStatusError` propagates instead of returning filings); `non_json` FAILs (no `RegistryBlockedError`); `timeout` may already pass (timeouts already propagate) — that is fine, it locks the behavior in.
 
-- [ ] **Step 3: Add the `json` import**
+- [x] **Step 3: Add the `json` import**
 
 In `src/rejstrik/filings/justice.py`, add `import json` so the stdlib import block reads (ruff/isort keeps them alphabetical):
 
@@ -274,7 +274,7 @@ import logging
 import re
 ```
 
-- [ ] **Step 4: Add the internal block exception**
+- [x] **Step 4: Add the internal block exception**
 
 In `src/rejstrik/filings/justice.py`, immediately after the existing `RegistryBlockedError` class, add:
 
@@ -292,7 +292,7 @@ class _BlockShaped(Exception):
         self.reason = reason
 ```
 
-- [ ] **Step 5: Add the new-portal fetch helper**
+- [x] **Step 5: Add the new-portal fetch helper**
 
 In `src/rejstrik/filings/justice.py`, add this function directly above `list_filings` (after `_fetch_legacy_filings`):
 
@@ -319,7 +319,7 @@ def _fetch_new_filings(ico_stripped: str, client: httpx.Client) -> list[Filing]:
     return parse_filings_api(data)
 ```
 
-- [ ] **Step 6: Rewrite `list_filings` to use the helper and broadened fallback**
+- [x] **Step 6: Rewrite `list_filings` to use the helper and broadened fallback**
 
 Replace the entire body of `list_filings` (from the `try:` on line ~170 through the `finally:` block) — and update the docstring — so the function reads:
 
@@ -364,17 +364,17 @@ def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
             client.close()
 ```
 
-- [ ] **Step 7: Run the whole justice test module**
+- [x] **Step 7: Run the whole justice test module**
 
 Run: `python -m pytest tests/filings/test_justice.py -v`
 Expected: PASS — the five new tests plus the existing ones. In particular `test_list_filings_falls_back_to_legacy_portal_on_403` and `test_list_filings_does_not_fall_back_on_404` and `test_list_filings_raises_registry_blocked_when_both_portals_fail` still pass (403 stays a trigger; the block message still contains `verejnerejstriky.msp.gov.cz`, `or.justice.cz`, and the manual-check URL — it now reads "returned HTTP 403").
 
-- [ ] **Step 8: Run the full verification**
+- [x] **Step 8: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add src/rejstrik/filings/justice.py tests/filings/test_justice.py
@@ -393,7 +393,7 @@ git commit -m "fix(filings): fall back to legacy portal on 429/5xx/non-JSON bloc
 - Consumes: existing `_YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")`.
 - Produces: `_max_year(title: str) -> int | None` — returns the **latest** 4-digit year found in `title`, or `None`. Used by both `parse_deeds` and `parse_filings_api`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/filings/test_justice.py`:
 
@@ -424,12 +424,12 @@ def test_parse_filings_api_split_year_title_takes_max_year():
     assert filings[0].year == 2024
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `python -m pytest tests/filings/test_justice.py::test_parse_filings_api_split_year_title_takes_max_year -v`
 Expected: FAIL with `assert 2023 == 2024` (`_YEAR_RE.search` returns the first match).
 
-- [ ] **Step 3: Add the `_max_year` helper**
+- [x] **Step 3: Add the `_max_year` helper**
 
 In `src/rejstrik/filings/justice.py`, add directly below the `_YEAR_RE` definition (after line ~22):
 
@@ -441,7 +441,7 @@ def _max_year(title: str) -> int | None:
     return max(years) if years else None
 ```
 
-- [ ] **Step 4: Use `_max_year` in `parse_deeds`**
+- [x] **Step 4: Use `_max_year` in `parse_deeds`**
 
 In `parse_deeds`, replace:
 
@@ -456,7 +456,7 @@ with:
         year = _max_year(title)
 ```
 
-- [ ] **Step 5: Use `_max_year` in `parse_filings_api`**
+- [x] **Step 5: Use `_max_year` in `parse_filings_api`**
 
 In `parse_filings_api`, replace the identical two lines:
 
@@ -471,17 +471,17 @@ with:
         year = _max_year(title)
 ```
 
-- [ ] **Step 6: Run the justice tests**
+- [x] **Step 6: Run the justice tests**
 
 Run: `python -m pytest tests/filings/test_justice.py -v`
 Expected: PASS — the new split-year test plus all existing ones (the existing titles use bracketed `[2024]` only, so `_max_year` still returns 2024; no regression).
 
-- [ ] **Step 7: Run the full verification**
+- [x] **Step 7: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/rejstrik/filings/justice.py tests/filings/test_justice.py
@@ -498,7 +498,7 @@ git commit -m "fix(filings): take max year from split-year filing titles"
 **Interfaces:**
 - No public interface. `scripts/smoke.py` is manual tooling with no unit tests; `ruff check`/`pytest` do not cover `scripts/`, so verify with `py_compile`.
 
-- [ ] **Step 1: Add the `date` import**
+- [x] **Step 1: Add the `date` import**
 
 In `scripts/smoke.py`, add to the imports (top of file, after the module docstring, alphabetically before `import sys` in the stdlib block):
 
@@ -512,7 +512,7 @@ from datetime import date
 import sys
 ```
 
-- [ ] **Step 2: Derive `base_year` from the fetched filing**
+- [x] **Step 2: Derive `base_year` from the fetched filing**
 
 In `main()`, immediately after the `doc, _source = fetch_filing(company.ico)` call and its `print(...)` (around line 50), add:
 
@@ -520,7 +520,7 @@ In `main()`, immediately after the `doc, _source = fetch_filing(company.ico)` ca
     base_year = doc.year or (date.today().year - 1)
 ```
 
-- [ ] **Step 3: Replace the two hardcoded years**
+- [x] **Step 3: Replace the two hardcoded years**
 
 In the `statements = [...]` list, replace `period_year=2024,` (the first `FinancialStatement`) with:
 
@@ -534,17 +534,17 @@ and replace `period_year=2023,` (the second `FinancialStatement`) with:
             period_year=base_year - 1,
 ```
 
-- [ ] **Step 4: Verify the script still compiles**
+- [x] **Step 4: Verify the script still compiles**
 
 Run: `python -m py_compile scripts/smoke.py`
 Expected: no output, exit 0.
 
-- [ ] **Step 5: Run the full verification**
+- [x] **Step 5: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green (unchanged — `scripts/` is not linted or tested; this confirms nothing else broke).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/smoke.py
@@ -563,7 +563,7 @@ git commit -m "fix(smoke): derive period_year from filing instead of hardcoding"
 
 **Publish-status decision:** As of 2026-07-14 the package is not yet on PyPI (Stage E T5/T6 publish remains an open human task — see Task 8), so the PyPI badge renders "package not found". Comment it out with a restore note; keep the CI badge.
 
-- [ ] **Step 1: Comment out the PyPI badge**
+- [x] **Step 1: Comment out the PyPI badge**
 
 In `README.md`, replace line 3:
 
@@ -577,7 +577,7 @@ New:
 [![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) <!-- PyPI badge hidden until first publish (Stage E T5/T6); restore this line: [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/) -->
 ```
 
-- [ ] **Step 2: Replace the broken image embeds, keep the prose**
+- [x] **Step 2: Replace the broken image embeds, keep the prose**
 
 In `README.md`, replace the block from the `## See it work` heading through the "Reproduce the GIF" line (lines 12-20):
 
@@ -604,17 +604,17 @@ asciinema + agg); meanwhile the walkthrough below shows the exact flow.
 
 (The "Then ask: *…*" walkthrough paragraph immediately below is untouched — it stands on its own.)
 
-- [ ] **Step 3: Confirm no `docs/media` references remain**
+- [x] **Step 3: Confirm no `docs/media` references remain**
 
 Run: `grep -n "docs/media" README.md`
 Expected: no output (exit 1) — both broken embeds are gone.
 
-- [ ] **Step 4: Run the full verification**
+- [x] **Step 4: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green (docs-only change).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add README.md
@@ -631,7 +631,7 @@ git commit -m "docs(readme): drop broken demo embeds, hide PyPI badge until publ
 
 **Interfaces:** None (documentation only).
 
-- [ ] **Step 1: Mention the fallback in the "How it works" filings line**
+- [x] **Step 1: Mention the fallback in the "How it works" filings line**
 
 In `README.md`, inside the `## How it works` fenced `text` block, replace:
 
@@ -646,7 +646,7 @@ filings/   verejnerejstriky.msp.gov.cz Sbirka listin client
            (falls back to legacy or.justice.cz when the new portal is blocked)
 ```
 
-- [ ] **Step 2: Extend the drift note with the AFD block + fallback + canary story**
+- [x] **Step 2: Extend the drift note with the AFD block + fallback + canary story**
 
 In `README.md`, at the end of the `### A Note On Real-World Drift` paragraph, replace the final sentence:
 
@@ -672,12 +672,12 @@ prints PASS/BLOCKED per endpoint, so this drift is caught before a release
 tag rather than in the field.
 ```
 
-- [ ] **Step 3: Run the full verification**
+- [x] **Step 3: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green (docs-only change).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add README.md
@@ -698,33 +698,33 @@ git commit -m "docs(readme): document AFD block, legacy fallback, and canary"
 
 Do this task **only after Tasks 1–7 are all green.** All four locations currently read `0.6.0`.
 
-- [ ] **Step 1: Bump `pyproject.toml`**
+- [x] **Step 1: Bump `pyproject.toml`**
 
 Change `version = "0.6.0"` → `version = "0.6.1"`.
 
-- [ ] **Step 2: Bump `server.json` (both places)**
+- [x] **Step 2: Bump `server.json` (both places)**
 
 Change the top-level `"version": "0.6.0"` → `"0.6.1"` **and** `packages[0].version` `"0.6.0"` → `"0.6.1"`.
 
-- [ ] **Step 3: Bump `mcpb/manifest.json`**
+- [x] **Step 3: Bump `mcpb/manifest.json`**
 
 Change `"version": "0.6.0"` → `"0.6.1"`.
 
-- [ ] **Step 4: Bump `src/rejstrik/__init__.py`**
+- [x] **Step 4: Bump `src/rejstrik/__init__.py`**
 
 Change `__version__ = "0.6.0"` → `__version__ = "0.6.1"`.
 
-- [ ] **Step 5: Run the version-sync guard**
+- [x] **Step 5: Run the version-sync guard**
 
 Run: `python -m pytest tests/test_version_sync.py -v`
 Expected: PASS — all three tests (server.json, manifest.json, and the new `__version__` guard from Task 2) agree at `0.6.1`.
 
-- [ ] **Step 6: Run the full verification**
+- [x] **Step 6: Run the full verification**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected: all green.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add pyproject.toml server.json mcpb/manifest.json src/rejstrik/__init__.py
@@ -737,7 +737,7 @@ git commit -m "chore(release): bump version to 0.6.1"
 
 **Files:** None.
 
-- [ ] **Step 1: Confirm the acceptance criteria hold**
+- [x] **Step 1: Confirm the acceptance criteria hold**
 
 Run: `ruff check src/ tests/ && ruff format --check src/ tests/ && python -m pytest -q`
 Expected — the full suite is green and demonstrates every Stage F acceptance item:
@@ -746,7 +746,7 @@ Expected — the full suite is green and demonstrates every Stage F acceptance i
 - `test_version_sync.py` covers four locations (server.json, manifest.json, pyproject, `__version__`) — Task 2;
 - README shows no broken images — Task 6 (`grep -n "docs/media" README.md` returns nothing).
 
-- [ ] **Step 2: Optional pre-release live check (manual, not CI)**
+- [x] **Step 2: Optional pre-release live check (manual, not CI)**
 
 If cutting the v0.6.1 tag, run the live smoke/canary once (network required): `python scripts/smoke.py`
 Expected: `SMOKE OK` and both canary endpoints reported. This is not part of CI and not required to land the code.
