@@ -22,6 +22,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "platformdirs>=4",
     "pypdf>=5",
+    "pypdfium2>=4",
     "mcp>=1.2",
     "mcp-ui-server>=1.0",
 ]
