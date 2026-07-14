@@ -58,6 +58,10 @@ class CanonicalFigures(BaseModel):
         default=None,
         description="Peněžní tok z provozní činnosti (operating cash flow)",
     )
+    depreciation_amortization: Figure | None = Field(
+        default=None,
+        description="Úpravy hodnot v provozní oblasti (depreciation & amortization)",
+    )
 
 
 class FinancialStatement(BaseModel):

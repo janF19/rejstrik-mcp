@@ -1,0 +1,573 @@
+{
+  "source": "Damodaran Europe industry EV/EBITDA",
+  "source_url": "https://pages.stern.nyu.edu/~adamodar/pc/datasets/vebitdaEurope.xls",
+  "as_of": "2026-01-05",
+  "region": "Europe",
+  "metric": "EV/EBITDA for positive EBITDA firms",
+  "rows": [
+    {
+      "industry_key": "advertising",
+      "source_industry": "Advertising",
+      "firms": 83,
+      "ev_ebitda": 8.411678369856356
+    },
+    {
+      "industry_key": "aerospace_defense",
+      "source_industry": "Aerospace/Defense",
+      "firms": 67,
+      "ev_ebitda": 21.62451194936197
+    },
+    {
+      "industry_key": "air_transport",
+      "source_industry": "Air Transport",
+      "firms": 33,
+      "ev_ebitda": 7.648508070829411
+    },
+    {
+      "industry_key": "apparel",
+      "source_industry": "Apparel",
+      "firms": 109,
+      "ev_ebitda": 15.226275864915706
+    },
+    {
+      "industry_key": "auto_truck",
+      "source_industry": "Auto & Truck",
+      "firms": 31,
+      "ev_ebitda": 11.57007925962604
+    },
+    {
+      "industry_key": "auto_parts",
+      "source_industry": "Auto Parts",
+      "firms": 58,
+      "ev_ebitda": 5.810645344163822
+    },
+    {
+      "industry_key": "beverage_alcoholic",
+      "source_industry": "Beverage (Alcoholic)",
+      "firms": 52,
+      "ev_ebitda": 9.748909548188273
+    },
+    {
+      "industry_key": "beverage_soft",
+      "source_industry": "Beverage (Soft)",
+      "firms": 14,
+      "ev_ebitda": 12.383601667978333
+    },
+    {
+      "industry_key": "broadcasting",
+      "source_industry": "Broadcasting",
+      "firms": 18,
+      "ev_ebitda": 7.508811741110088
+    },
+    {
+      "industry_key": "brokerage_investment_banking",
+      "source_industry": "Brokerage & Investment Banking",
+      "firms": 69,
+      "ev_ebitda": 26.618957023274557
+    },
+    {
+      "industry_key": "building_materials",
+      "source_industry": "Building Materials",
+      "firms": 84,
+      "ev_ebitda": 14.336336128481847
+    },
+    {
+      "industry_key": "business_consumer_services",
+      "source_industry": "Business & Consumer Services",
+      "firms": 176,
+      "ev_ebitda": 12.81369735751866
+    },
+    {
+      "industry_key": "cable_tv",
+      "source_industry": "Cable TV",
+      "firms": 2,
+      "ev_ebitda": 8.47819349858653
+    },
+    {
+      "industry_key": "chemical_basic",
+      "source_industry": "Chemical (Basic)",
+      "firms": 58,
+      "ev_ebitda": 10.71387834203227
+    },
+    {
+      "industry_key": "chemical_diversified",
+      "source_industry": "Chemical (Diversified)",
+      "firms": 7,
+      "ev_ebitda": 9.340355372595145
+    },
+    {
+      "industry_key": "chemical_specialty",
+      "source_industry": "Chemical (Specialty)",
+      "firms": 92,
+      "ev_ebitda": 12.763824392777023
+    },
+    {
+      "industry_key": "coal_related_energy",
+      "source_industry": "Coal & Related Energy",
+      "firms": 15,
+      "ev_ebitda": 2.4918307497855725
+    },
+    {
+      "industry_key": "computer_services",
+      "source_industry": "Computer Services",
+      "firms": 210,
+      "ev_ebitda": 12.027567622469675
+    },
+    {
+      "industry_key": "computers_peripherals",
+      "source_industry": "Computers/Peripherals",
+      "firms": 38,
+      "ev_ebitda": 14.444990686308003
+    },
+    {
+      "industry_key": "construction_supplies",
+      "source_industry": "Construction Supplies",
+      "firms": 119,
+      "ev_ebitda": 11.013388616790092
+    },
+    {
+      "industry_key": "diversified",
+      "source_industry": "Diversified",
+      "firms": 72,
+      "ev_ebitda": 14.473617308298461
+    },
+    {
+      "industry_key": "drugs_biotechnology",
+      "source_industry": "Drugs (Biotechnology)",
+      "firms": 199,
+      "ev_ebitda": 16.169350451731706
+    },
+    {
+      "industry_key": "drugs_pharmaceutical",
+      "source_industry": "Drugs (Pharmaceutical)",
+      "firms": 115,
+      "ev_ebitda": 11.962194353849911
+    },
+    {
+      "industry_key": "education",
+      "source_industry": "Education",
+      "firms": 18,
+      "ev_ebitda": 10.450875443167593
+    },
+    {
+      "industry_key": "electrical_equipment",
+      "source_industry": "Electrical Equipment",
+      "firms": 146,
+      "ev_ebitda": 18.944518722078882
+    },
+    {
+      "industry_key": "electronics_consumer_office",
+      "source_industry": "Electronics (Consumer & Office)",
+      "firms": 17,
+      "ev_ebitda": 17.34864326355157
+    },
+    {
+      "industry_key": "electronics_general",
+      "source_industry": "Electronics (General)",
+      "firms": 142,
+      "ev_ebitda": 17.269244673373926
+    },
+    {
+      "industry_key": "engineering_construction",
+      "source_industry": "Engineering/Construction",
+      "firms": 160,
+      "ev_ebitda": 9.711346915639837
+    },
+    {
+      "industry_key": "entertainment",
+      "source_industry": "Entertainment",
+      "firms": 199,
+      "ev_ebitda": 22.564817133806724
+    },
+    {
+      "industry_key": "environmental_waste_services",
+      "source_industry": "Environmental & Waste Services",
+      "firms": 48,
+      "ev_ebitda": 10.3746830027146
+    },
+    {
+      "industry_key": "farming_agriculture",
+      "source_industry": "Farming/Agriculture",
+      "firms": 46,
+      "ev_ebitda": 12.313073079389834
+    },
+    {
+      "industry_key": "financial_svcs_non_bank_insurance",
+      "source_industry": "Financial Svcs. (Non-bank & Insurance)",
+      "firms": 146,
+      "ev_ebitda": 17.012540159424592
+    },
+    {
+      "industry_key": "food_processing",
+      "source_industry": "Food Processing",
+      "firms": 173,
+      "ev_ebitda": 12.43404956723879
+    },
+    {
+      "industry_key": "food_wholesalers",
+      "source_industry": "Food Wholesalers",
+      "firms": 11,
+      "ev_ebitda": 10.570942028323854
+    },
+    {
+      "industry_key": "furn_home_furnishings",
+      "source_industry": "Furn/Home Furnishings",
+      "firms": 53,
+      "ev_ebitda": 9.45266833743719
+    },
+    {
+      "industry_key": "green_renewable_energy",
+      "source_industry": "Green & Renewable Energy",
+      "firms": 60,
+      "ev_ebitda": 11.905945949018024
+    },
+    {
+      "industry_key": "healthcare_products",
+      "source_industry": "Healthcare Products",
+      "firms": 163,
+      "ev_ebitda": 16.997882694587695
+    },
+    {
+      "industry_key": "healthcare_support_services",
+      "source_industry": "Healthcare Support Services",
+      "firms": 47,
+      "ev_ebitda": 12.590145872597809
+    },
+    {
+      "industry_key": "heathcare_information_and_technology",
+      "source_industry": "Heathcare Information and Technology",
+      "firms": 89,
+      "ev_ebitda": 15.915988357635332
+    },
+    {
+      "industry_key": "homebuilding",
+      "source_industry": "Homebuilding",
+      "firms": 36,
+      "ev_ebitda": 10.602955922344666
+    },
+    {
+      "industry_key": "hospitals_healthcare_facilities",
+      "source_industry": "Hospitals/Healthcare Facilities",
+      "firms": 29,
+      "ev_ebitda": 10.226737182900944
+    },
+    {
+      "industry_key": "hotel_gaming",
+      "source_industry": "Hotel/Gaming",
+      "firms": 103,
+      "ev_ebitda": 10.91827728653995
+    },
+    {
+      "industry_key": "household_products",
+      "source_industry": "Household Products",
+      "firms": 65,
+      "ev_ebitda": 14.699810215137283
+    },
+    {
+      "industry_key": "information_services",
+      "source_industry": "Information Services",
+      "firms": 6,
+      "ev_ebitda": 5.3525165430118316
+    },
+    {
+      "industry_key": "insurance_general",
+      "source_industry": "Insurance (General)",
+      "firms": 34,
+      "ev_ebitda": 8.066615736868478
+    },
+    {
+      "industry_key": "insurance_life",
+      "source_industry": "Insurance (Life)",
+      "firms": 15,
+      "ev_ebitda": 8.548772951314643
+    },
+    {
+      "industry_key": "insurance_prop_cas",
+      "source_industry": "Insurance (Prop/Cas.)",
+      "firms": 19,
+      "ev_ebitda": 10.65864735643733
+    },
+    {
+      "industry_key": "investments_asset_management",
+      "source_industry": "Investments & Asset Management",
+      "firms": 338,
+      "ev_ebitda": 10.431910573456937
+    },
+    {
+      "industry_key": "machinery",
+      "source_industry": "Machinery",
+      "firms": 210,
+      "ev_ebitda": 14.980532406240457
+    },
+    {
+      "industry_key": "metals_mining",
+      "source_industry": "Metals & Mining",
+      "firms": 118,
+      "ev_ebitda": 8.775473366203418
+    },
+    {
+      "industry_key": "office_equipment_services",
+      "source_industry": "Office Equipment & Services",
+      "firms": 20,
+      "ev_ebitda": 7.963452347311005
+    },
+    {
+      "industry_key": "oil_gas_integrated",
+      "source_industry": "Oil/Gas (Integrated)",
+      "firms": 12,
+      "ev_ebitda": 5.938902078976677
+    },
+    {
+      "industry_key": "oil_gas_production_and_exploration",
+      "source_industry": "Oil/Gas (Production and Exploration)",
+      "firms": 83,
+      "ev_ebitda": 2.659760553058777
+    },
+    {
+      "industry_key": "oil_gas_distribution",
+      "source_industry": "Oil/Gas Distribution",
+      "firms": 30,
+      "ev_ebitda": 9.501763607759907
+    },
+    {
+      "industry_key": "oilfield_svcs_equip",
+      "source_industry": "Oilfield Svcs/Equip.",
+      "firms": 58,
+      "ev_ebitda": 5.695293120641159
+    },
+    {
+      "industry_key": "packaging_container",
+      "source_industry": "Packaging & Container",
+      "firms": 42,
+      "ev_ebitda": 8.344123102873311
+    },
+    {
+      "industry_key": "paper_forest_products",
+      "source_industry": "Paper/Forest Products",
+      "firms": 36,
+      "ev_ebitda": 11.126128752443352
+    },
+    {
+      "industry_key": "power",
+      "source_industry": "Power",
+      "firms": 69,
+      "ev_ebitda": 8.821247532499953
+    },
+    {
+      "industry_key": "precious_metals",
+      "source_industry": "Precious Metals",
+      "firms": 39,
+      "ev_ebitda": 7.129200551037636
+    },
+    {
+      "industry_key": "publishing_newspapers",
+      "source_industry": "Publishing & Newspapers",
+      "firms": 59,
+      "ev_ebitda": 7.520678799329446
+    },
+    {
+      "industry_key": "r_e_i_t",
+      "source_industry": "R.E.I.T.",
+      "firms": 138,
+      "ev_ebitda": 18.830894211370666
+    },
+    {
+      "industry_key": "real_estate_development",
+      "source_industry": "Real Estate (Development)",
+      "firms": 61,
+      "ev_ebitda": 13.007075463350319
+    },
+    {
+      "industry_key": "real_estate_general_diversified",
+      "source_industry": "Real Estate (General/Diversified)",
+      "firms": 45,
+      "ev_ebitda": 24.11145035903123
+    },
+    {
+      "industry_key": "real_estate_operations_services",
+      "source_industry": "Real Estate (Operations & Services)",
+      "firms": 219,
+      "ev_ebitda": 24.54995322387352
+    },
+    {
+      "industry_key": "recreation",
+      "source_industry": "Recreation",
+      "firms": 59,
+      "ev_ebitda": 13.51979473255652
+    },
+    {
+      "industry_key": "reinsurance",
+      "source_industry": "Reinsurance",
+      "firms": 4,
+      "ev_ebitda": 7.606058803850872
+    },
+    {
+      "industry_key": "restaurant_dining",
+      "source_industry": "Restaurant/Dining",
+      "firms": 38,
+      "ev_ebitda": 12.149672080153529
+    },
+    {
+      "industry_key": "retail_automotive",
+      "source_industry": "Retail (Automotive)",
+      "firms": 22,
+      "ev_ebitda": 12.355395677302417
+    },
+    {
+      "industry_key": "retail_building_supply",
+      "source_industry": "Retail (Building Supply)",
+      "firms": 26,
+      "ev_ebitda": 9.278993946166509
+    },
+    {
+      "industry_key": "retail_distributors",
+      "source_industry": "Retail (Distributors)",
+      "firms": 117,
+      "ev_ebitda": 11.636208179205001
+    },
+    {
+      "industry_key": "retail_general",
+      "source_industry": "Retail (General)",
+      "firms": 31,
+      "ev_ebitda": 23.641536693855443
+    },
+    {
+      "industry_key": "retail_grocery_and_food",
+      "source_industry": "Retail (Grocery and Food)",
+      "firms": 34,
+      "ev_ebitda": 9.732037742962355
+    },
+    {
+      "industry_key": "retail_reits",
+      "source_industry": "Retail (REITs)",
+      "firms": 28,
+      "ev_ebitda": 15.593395796672734
+    },
+    {
+      "industry_key": "retail_special_lines",
+      "source_industry": "Retail (Special Lines)",
+      "firms": 105,
+      "ev_ebitda": 14.0634266433686
+    },
+    {
+      "industry_key": "rubber_tires",
+      "source_industry": "Rubber& Tires",
+      "firms": 10,
+      "ev_ebitda": 6.057389333841595
+    },
+    {
+      "industry_key": "semiconductor",
+      "source_industry": "Semiconductor",
+      "firms": 36,
+      "ev_ebitda": 13.510910030017426
+    },
+    {
+      "industry_key": "semiconductor_equip",
+      "source_industry": "Semiconductor Equip",
+      "firms": 21,
+      "ev_ebitda": 27.93326041746913
+    },
+    {
+      "industry_key": "shipbuilding_marine",
+      "source_industry": "Shipbuilding & Marine",
+      "firms": 65,
+      "ev_ebitda": 6.6532869587882155
+    },
+    {
+      "industry_key": "shoe",
+      "source_industry": "Shoe",
+      "firms": 9,
+      "ev_ebitda": 18.177470202042755
+    },
+    {
+      "industry_key": "software_entertainment",
+      "source_industry": "Software (Entertainment)",
+      "firms": 51,
+      "ev_ebitda": 17.639602262849827
+    },
+    {
+      "industry_key": "software_internet",
+      "source_industry": "Software (Internet)",
+      "firms": 23,
+      "ev_ebitda": 9.33647480731999
+    },
+    {
+      "industry_key": "software_system_application",
+      "source_industry": "Software (System & Application)",
+      "firms": 290,
+      "ev_ebitda": 20.854830668930575
+    },
+    {
+      "industry_key": "steel",
+      "source_industry": "Steel",
+      "firms": 57,
+      "ev_ebitda": 8.26880882070412
+    },
+    {
+      "industry_key": "telecom_wireless",
+      "source_industry": "Telecom (Wireless)",
+      "firms": 11,
+      "ev_ebitda": 8.33248484848485
+    },
+    {
+      "industry_key": "telecom_equipment",
+      "source_industry": "Telecom. Equipment",
+      "firms": 50,
+      "ev_ebitda": 13.285394702958877
+    },
+    {
+      "industry_key": "telecom_services",
+      "source_industry": "Telecom. Services",
+      "firms": 62,
+      "ev_ebitda": 7.186808798814744
+    },
+    {
+      "industry_key": "tobacco",
+      "source_industry": "Tobacco",
+      "firms": 5,
+      "ev_ebitda": 9.440814165178725
+    },
+    {
+      "industry_key": "transportation",
+      "source_industry": "Transportation",
+      "firms": 56,
+      "ev_ebitda": 12.604445065420267
+    },
+    {
+      "industry_key": "transportation_railroads",
+      "source_industry": "Transportation (Railroads)",
+      "firms": 8,
+      "ev_ebitda": 6.965550704934329
+    },
+    {
+      "industry_key": "trucking",
+      "source_industry": "Trucking",
+      "firms": 7,
+      "ev_ebitda": 9.14722396993555
+    },
+    {
+      "industry_key": "utility_general",
+      "source_industry": "Utility (General)",
+      "firms": 18,
+      "ev_ebitda": 7.57794667987031
+    },
+    {
+      "industry_key": "utility_water",
+      "source_industry": "Utility (Water)",
+      "firms": 12,
+      "ev_ebitda": 14.661632007813663
+    },
+    {
+      "industry_key": "total_market",
+      "source_industry": "Total Market",
+      "firms": 6560,
+      "ev_ebitda": 10.732457089486473
+    },
+    {
+      "industry_key": "total_market_ex_financials",
+      "source_industry": "Total Market (without financials)",
+      "firms": 5757,
+      "ev_ebitda": 10.773111221164218
+    }
+  ]
+}

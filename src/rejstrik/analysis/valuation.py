@@ -2,6 +2,7 @@ from statistics import fmean, pstdev
 
 from pydantic import BaseModel, Field
 
+from rejstrik.analysis.industry_multiples import get_industry_multiple
 from rejstrik.analysis.normalize import normalize
 from rejstrik.documents.schema import FinancialStatement
 
@@ -12,6 +13,7 @@ _CAVEATS = [
     "Minority and marketability discounts are not applied.",
     "This is an indicative estimate, not investment advice.",
 ]
+_GENERIC_MULTIPLES_CAVEAT = "Multiples are generic defaults, not industry-calibrated."
 
 
 class ValuationAssumptions(BaseModel):
@@ -26,6 +28,9 @@ class ValuationEstimate(BaseModel):
     capitalized_earnings: float | None = None
     ev_ebit_multiple: float | None = None
     price_revenue_multiple: float | None = None
+    ebitda: float | None = None
+    ev_ebitda_multiple: float | None = None
+    industry_multiple_applied: str | None = None
     value_low: float | None = None
     value_high: float | None = None
     earnings_dispersion_flag: bool = False
@@ -42,6 +47,8 @@ def _mul(factor: float, value: float | None) -> float | None:
 def estimate_valuation(
     statements: list[FinancialStatement],
     assumptions: ValuationAssumptions | None = None,
+    industry_key: str | None = None,
+    industry_reason: str | None = None,
 ) -> ValuationEstimate:
     assumptions = assumptions or ValuationAssumptions()
     if not statements:
@@ -69,7 +76,38 @@ def estimate_valuation(
             cv = pstdev(earnings) / abs(mean)
             dispersion_flag = cv > assumptions.dispersion_threshold
 
-    methods = [v for v in (book_value, capitalized, ev, price) if v is not None]
+    caveats = list(_CAVEATS)
+    ebitda: float | None = None
+    ev_ebitda: float | None = None
+    industry_applied: str | None = None
+    if industry_key:
+        im = get_industry_multiple(industry_key)
+        reason = industry_reason or f"industry_key '{industry_key}'"
+        if (
+            latest.operating_profit is not None
+            and latest.depreciation_amortization is not None
+        ):
+            ebitda = latest.operating_profit + latest.depreciation_amortization
+            ev_ebitda = im.ev_ebitda * ebitda
+            industry_applied = im.industry_key
+            caveats = [c for c in caveats if c != _GENERIC_MULTIPLES_CAVEAT]
+            caveats.insert(
+                2,
+                f"Industry EV/EBITDA {im.ev_ebitda:.1f}x applied to EBITDA {ebitda:.0f} "
+                f"(chosen: {reason}); Damodaran industry '{im.source_industry}', "
+                f"{im.firms} firms, as of {im.as_of}. Source: {im.source_url}",
+            )
+        else:
+            caveats.insert(
+                2,
+                f"EBITDA multiple not applied for '{im.source_industry}': operating "
+                f"profit and/or depreciation & amortization missing. Kept the generic "
+                f"EV/EBIT multiple instead.",
+            )
+
+    methods = [
+        v for v in (book_value, capitalized, ev, price, ev_ebitda) if v is not None
+    ]
     value_low = min(methods) if methods else None
     value_high = max(methods) if methods else None
 
@@ -78,8 +116,12 @@ def estimate_valuation(
         capitalized_earnings=capitalized,
         ev_ebit_multiple=ev,
         price_revenue_multiple=price,
+        ebitda=ebitda,
+        ev_ebitda_multiple=ev_ebitda,
+        industry_multiple_applied=industry_applied,
         value_low=value_low,
         value_high=value_high,
         earnings_dispersion_flag=dispersion_flag,
         assumptions=assumptions,
+        caveats=caveats,
     )
