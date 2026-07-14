@@ -71,8 +71,19 @@ _FIELDS: tuple[str, ...] = (
     "depreciation_amortization",
 )
 
+# Conversion factors to the canonical unit (thousands of CZK). None/unknown
+# converts by 1.0 — Czech statutory statements are filed in whole thousands,
+# so "unknown" and "thousands" behave identically.
+_UNIT_TO_THOUSANDS: dict[str, float] = {
+    "czk": 0.001,
+    "thousands_czk": 1.0,
+    "millions_czk": 1000.0,
+}
+
 
 class NormalizedFinancials(BaseModel):
+    """Headline figures in thousands of CZK (converted per statement.unit)."""
+
     period_year: int | None = None
     total_assets: float | None = None
     equity: float | None = None
@@ -116,15 +127,16 @@ def normalize(statement: FinancialStatement) -> NormalizedFinancials:
         *statement.income_statement,
         *statement.cash_flow,
     ]
+    multiplier = _UNIT_TO_THOUSANDS.get(statement.unit or "thousands_czk", 1.0)
     canonical = statement.canonical
     values: dict[str, float] = {}
     for field in _FIELDS:
         if canonical is not None:
             fig = getattr(canonical, field)
             if fig is not None and fig.value is not None:
-                values[field] = fig.value
+                values[field] = fig.value * multiplier
                 continue
         value = _keyword_value(field, figures)
         if value is not None:
-            values[field] = value
+            values[field] = value * multiplier
     return NormalizedFinancials(period_year=statement.period_year, **values)

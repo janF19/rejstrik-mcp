@@ -1,3 +1,5 @@
+import pytest
+
 from rejstrik.analysis.normalize import NormalizedFinancials, normalize
 from rejstrik.documents.schema import CanonicalFigures, Figure, FinancialStatement
 
@@ -139,3 +141,41 @@ def test_normalize_extracts_depreciation_from_income_statement_label():
         income_statement=[Figure(label="Úpravy hodnot v provozní oblasti", value=17.0)],
     )
     assert normalize(stmt).depreciation_amortization == 17.0
+
+
+def test_normalize_converts_czk_to_thousands():
+    stmt = FinancialStatement(
+        unit="czk",
+        canonical=CanonicalFigures(
+            total_assets=Figure(label="Aktiva celkem", value=5_754_734_000.0),
+            revenue=Figure(label="Tržby", value=3_666_523_000.0),
+        ),
+    )
+    n = normalize(stmt)
+    assert n.total_assets == pytest.approx(5_754_734.0)
+    assert n.revenue == pytest.approx(3_666_523.0)
+
+
+def test_normalize_converts_millions_to_thousands():
+    stmt = FinancialStatement(
+        unit="millions_czk",
+        canonical=CanonicalFigures(revenue=Figure(label="Tržby", value=3_648.0)),
+    )
+    assert normalize(stmt).revenue == pytest.approx(3_648_000.0)
+
+
+def test_normalize_thousands_and_unknown_left_as_filed():
+    for unit in ("thousands_czk", None):
+        stmt = FinancialStatement(
+            unit=unit,
+            canonical=CanonicalFigures(revenue=Figure(label="Tržby", value=1000.0)),
+        )
+        assert normalize(stmt).revenue == 1000.0
+
+
+def test_normalize_converts_keyword_matched_figures_too():
+    stmt = FinancialStatement(
+        unit="czk",
+        balance_sheet=[Figure(label="Aktiva celkem", value=2_000_000.0)],
+    )
+    assert normalize(stmt).total_assets == pytest.approx(2_000.0)
