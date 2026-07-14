@@ -44,6 +44,11 @@ def estimate_valuation(
     assumptions: ValuationAssumptions | None = None,
 ) -> ValuationEstimate:
     assumptions = assumptions or ValuationAssumptions()
+    if not statements:
+        raise ValueError(
+            "statements must contain at least one FinancialStatement "
+            "(extract it from the PDF returned by get_filing)"
+        )
     normalized = [normalize(s) for s in statements]
     ordered = sorted(
         normalized, key=lambda n: (n.period_year is None, -(n.period_year or 0))

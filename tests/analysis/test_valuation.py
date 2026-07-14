@@ -66,3 +66,8 @@ def test_valuation_missing_inputs_stay_none():
     assert result.capitalized_earnings is None
     assert result.value_low is None
     assert result.value_high is None
+
+
+def test_valuation_empty_statements_raises_valueerror():
+    with pytest.raises(ValueError, match="at least one FinancialStatement"):
+        estimate_valuation([])
