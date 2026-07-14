@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
+import time
+from collections.abc import Callable
 
 import httpx
 from selectolax.parser import HTMLParser
@@ -21,6 +24,20 @@ _LEGACY_DEEDS_URL = _BASE_URL + "/ias/ui/vypis-sl-firma?subjektId={subject_id}"
 
 _SUBJECT_ID_RE = re.compile(r"subjektId=(\d+)")
 _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
+
+_FILINGS_CACHE: dict[str, tuple[float, list[Filing]]] = {}
+
+
+def _filings_ttl_seconds() -> float:
+    try:
+        return float(os.environ.get("REJSTRIK_FILINGS_TTL_SECONDS", "900"))
+    except ValueError:
+        return 900.0
+
+
+def clear_filings_cache() -> None:
+    """Reset the in-process list_filings TTL cache (test/ops helper)."""
+    _FILINGS_CACHE.clear()
 
 
 def _max_year(title: str) -> int | None:
@@ -192,9 +209,19 @@ def _fetch_new_filings(ico_stripped: str, client: httpx.Client) -> list[Filing]:
     return parse_filings_api(data)
 
 
-def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
+def list_filings(
+    ico: str,
+    client: httpx.Client | None = None,
+    *,
+    clock: Callable[[], float] = time.monotonic,
+) -> list[Filing]:
     """
     Fetch and return all Sbírka listin filings for a given IČO.
+
+    Results are cached in-process per 8-padded IČO for
+    REJSTRIK_FILINGS_TTL_SECONDS (default 900; 0 disables) so a multi-year
+    analysis does not re-hit the registry once per tool call. In-memory only —
+    the stdio server is single-process and per-worker HTTP state is acceptable.
 
     Tries the new verejnerejstriky.msp.gov.cz JSON API first (numeric IČO
     without leading zeroes). On a block-shaped failure — HTTP 403, 429, any
@@ -205,13 +232,19 @@ def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
     """
     ico_padded = ico.strip().zfill(8)
     ico_stripped = ico_padded.lstrip("0") or "0"
+    ttl = _filings_ttl_seconds()
+    if ttl > 0:
+        cached = _FILINGS_CACHE.get(ico_padded)
+        if cached is not None and clock() - cached[0] < ttl:
+            return list(cached[1])
+
     own_client = client is None
     if own_client:
         client = make_client()
 
     try:
         try:
-            return _fetch_new_filings(ico_stripped, client)
+            result = _fetch_new_filings(ico_stripped, client)
         except _BlockShaped as block:
             try:
                 legacy_filings = _fetch_legacy_filings(ico_padded, client)
@@ -226,7 +259,11 @@ def list_filings(ico: str, client: httpx.Client | None = None) -> list[Filing]:
                     f"automated access. Check manually: "
                     f"https://or.justice.cz/ias/ui/rejstrik-$firma?ico={ico_padded}"
                 ) from block
-            return legacy_filings
+            result = legacy_filings
     finally:
         if own_client:
             client.close()
+
+    if ttl > 0:
+        _FILINGS_CACHE[ico_padded] = (clock(), result)
+    return list(result)

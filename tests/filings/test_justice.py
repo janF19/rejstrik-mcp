@@ -15,11 +15,20 @@ import respx
 
 from rejstrik.filings.justice import (
     RegistryBlockedError,
+    clear_filings_cache,
     parse_download_link,
     parse_subject_id,
     parse_deeds,
     list_filings,
 )
+
+
+@pytest.fixture(autouse=True)
+def _clear_filings_cache():
+    clear_filings_cache()
+    yield
+    clear_filings_cache()
+
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "justice"
 SEARCH_HTML = (FIXTURES / "legacy_search_00514152.html").read_text(encoding="utf-8")
