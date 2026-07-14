@@ -36,3 +36,14 @@ def test_get_company_raises_on_404():
     ).mock(return_value=httpx.Response(404))
     with pytest.raises(CompanyNotFound):
         get_company("00000000")
+
+
+def test_parse_detail_extracts_nace_codes():
+    payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+    company = parse_detail(payload)
+    assert company.nace_codes == ["84110"]
+
+
+def test_parse_detail_missing_nace_defaults_empty():
+    company = parse_detail({"ico": "12345678", "obchodniJmeno": "X"})
+    assert company.nace_codes == []

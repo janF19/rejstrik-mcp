@@ -31,6 +31,7 @@ class Company(BaseModel):
     legal_form: str | None = None
     legal_form_name: str | None = None
     founded: str | None = None
+    nace_codes: list[str] = []
 
     @field_validator("ico")
     @classmethod

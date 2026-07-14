@@ -109,3 +109,33 @@ def test_fallback_maps_new_fields():
     assert n.cash == 25.0
     assert n.interest_expense == 12.0
     assert n.operating_cash_flow == 180.0
+
+
+def test_normalize_extracts_depreciation_amortization_from_canonical():
+    from rejstrik.documents.schema import (
+        CanonicalFigures,
+        Figure,
+        FinancialStatement,
+    )
+    from rejstrik.analysis.normalize import normalize
+
+    stmt = FinancialStatement(
+        period_year=2023,
+        canonical=CanonicalFigures(
+            depreciation_amortization=Figure(
+                label="Úpravy hodnot v provozní oblasti", value=42.0
+            )
+        ),
+    )
+    assert normalize(stmt).depreciation_amortization == 42.0
+
+
+def test_normalize_extracts_depreciation_from_income_statement_label():
+    from rejstrik.documents.schema import Figure, FinancialStatement
+    from rejstrik.analysis.normalize import normalize
+
+    stmt = FinancialStatement(
+        period_year=2023,
+        income_statement=[Figure(label="Úpravy hodnot v provozní oblasti", value=17.0)],
+    )
+    assert normalize(stmt).depreciation_amortization == 17.0

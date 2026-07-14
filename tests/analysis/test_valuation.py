@@ -71,3 +71,68 @@ def test_valuation_missing_inputs_stay_none():
 def test_valuation_empty_statements_raises_valueerror():
     with pytest.raises(ValueError, match="at least one FinancialStatement"):
         estimate_valuation([])
+
+
+def _stmt_da(year, *, equity=None, ebit=None, revenue=None, net_profit=None, da=None):
+    return FinancialStatement(
+        period_year=year,
+        canonical=CanonicalFigures(
+            equity=None
+            if equity is None
+            else Figure(label="Vlastní kapitál", value=equity),
+            operating_profit=None
+            if ebit is None
+            else Figure(label="Provozní VH", value=ebit),
+            revenue=None if revenue is None else Figure(label="Tržby", value=revenue),
+            net_profit=None
+            if net_profit is None
+            else Figure(label="VH za účetní období", value=net_profit),
+            depreciation_amortization=None
+            if da is None
+            else Figure(label="Úpravy hodnot v provozní oblasti", value=da),
+        ),
+    )
+
+
+def test_statements_only_output_unchanged_by_industry_feature():
+    result = estimate_valuation([_stmt_da(2023, equity=800.0, ebit=100.0)])
+    assert result.ev_ebitda_multiple is None
+    assert result.ebitda is None
+    assert result.industry_multiple_applied is None
+    assert result.caveats == [
+        "Figures are in thousands of CZK as filed.",
+        "Book values are not market values.",
+        "Multiples are generic defaults, not industry-calibrated.",
+        "Minority and marketability discounts are not applied.",
+        "This is an indicative estimate, not investment advice.",
+    ]
+
+
+def test_industry_key_applies_ev_ebitda_when_da_present():
+    from rejstrik.analysis.industry_multiples import get_industry_multiple
+
+    result = estimate_valuation(
+        [_stmt_da(2023, ebit=100.0, da=50.0)],
+        industry_key="total_market_ex_financials",
+        industry_reason="NACE 10 → food_processing",
+    )
+    im = get_industry_multiple("total_market_ex_financials")
+    assert result.ebitda == 150.0
+    assert result.ev_ebitda_multiple == pytest.approx(im.ev_ebitda * 150.0)
+    assert result.industry_multiple_applied == "total_market_ex_financials"
+    assert result.value_high == pytest.approx(im.ev_ebitda * 150.0)
+    provenance = " ".join(result.caveats)
+    assert "NACE 10" in provenance
+    assert im.source_url in provenance
+    assert str(im.firms) in provenance
+    assert "generic defaults" not in provenance
+
+
+def test_industry_key_without_da_does_not_apply_ebitda_multiple():
+    result = estimate_valuation(
+        [_stmt_da(2023, ebit=100.0)],  # no D&A
+        industry_key="machinery",
+    )
+    assert result.ev_ebitda_multiple is None
+    assert result.ev_ebit_multiple == 500.0  # generic EBIT multiple retained
+    assert any("EBITDA multiple not applied" in c for c in result.caveats)
