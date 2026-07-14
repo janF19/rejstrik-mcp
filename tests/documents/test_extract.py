@@ -35,3 +35,11 @@ def test_extract_instructions_mention_czech_statements_and_pages():
     low = EXTRACT_INSTRUCTIONS.lower()
     assert "rozvaha" in low
     assert "page" in low
+
+
+def test_extract_instructions_demand_verbatim_figures_and_unit():
+    low = EXTRACT_INSTRUCTIONS.lower()
+    assert "verbatim" in low
+    assert "`unit`" in EXTRACT_INSTRUCTIONS
+    assert "thousands_czk" in EXTRACT_INSTRUCTIONS
+    assert "tisících" in EXTRACT_INSTRUCTIONS

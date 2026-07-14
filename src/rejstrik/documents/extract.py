@@ -7,7 +7,10 @@ EXTRACT_INSTRUCTIONS = (
     "Extract the balance sheet (rozvaha), income statement (výkaz zisku a ztráty), "
     "cash flow if present, and the narrative notes (příloha). "
     "For every figure and note, record the source_page it was found on (1-indexed). "
-    "Use CZK unless the document states otherwise. "
+    "Record every figure verbatim as printed — never rescale or convert. "
+    "Statements declare their scale near the top of the rozvaha (usually "
+    "'v celých tisících Kč'); set the `unit` field to match: thousands_czk for "
+    "'v tisících Kč', czk for plain Kč, millions_czk for 'v milionech Kč'. "
     "If a value is not present, leave it null rather than guessing."
 )
 
