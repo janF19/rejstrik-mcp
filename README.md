@@ -168,9 +168,10 @@ Havel). See `LICENSES/cz-agents-mcp-LICENSE`.
 
 1. One-time: on pypi.org, add a *Trusted Publisher* for this GitHub repo
    (workflow `release.yml`, environment `pypi`).
-2. Bump `version` in **all three** metadata files so they agree:
-   `pyproject.toml`, `server.json` (top-level **and** `packages[0].version`),
-   and `mcpb/manifest.json`. `tests/test_version_sync.py` fails if they drift.
+2. Bump `version` in **all four** places so they agree: `pyproject.toml`,
+   `server.json` (top-level **and** `packages[0].version`), `mcpb/manifest.json`,
+   and `src/rejstrik/__init__.py` (`__version__`). `tests/test_version_sync.py`
+   fails if any of them drift.
 3. If the release changes the published server, re-run the MCP registry
    publisher flow with the updated `server.json`.
 4. Commit, tag `vX.Y.Z`, push the tag. CI builds, publishes to PyPI, and
