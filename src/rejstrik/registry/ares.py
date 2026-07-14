@@ -22,6 +22,7 @@ def parse_detail(payload: dict) -> Company:
         legal_form=legal_form,
         legal_form_name=legal_form_name(legal_form),
         founded=payload.get("datumVzniku"),
+        nace_codes=[str(code) for code in (payload.get("czNace") or [])],
     )
 
 
