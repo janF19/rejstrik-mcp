@@ -1,6 +1,6 @@
 # rejstrik-mcp
 
-[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/)
+[![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) <!-- PyPI badge hidden until first publish (Stage E T5/T6); restore this line: [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/) -->
 
 **Add the Czech business registry to your Claude in 30 seconds — no API key.
 It reads the actual filed PDFs with your own subscription.**
@@ -11,13 +11,8 @@ claude mcp add rejstrik -- uvx rejstrik-mcp
 
 ## See it work
 
-![Analyzing Budějovický Budvar's last 3 years of filings](docs/media/budvar-3year.gif)
-
-The `analyze_company_card` report rendered in Claude Desktop:
-
-![Report card in Claude Desktop](docs/media/report-card.png)
-
-Reproduce the GIF with `scripts/record_demo.sh` (needs asciinema + agg).
+Demo media is being recorded (see `scripts/record_demo.sh`, which needs
+asciinema + agg); meanwhile the walkthrough below shows the exact flow.
 
 Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
 your agent resolves the company (ARES), pulls the filed statement PDF from
