@@ -40,6 +40,7 @@ from rejstrik.registry.statutory import (
 )
 from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
 from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
+from rejstrik.analysis.industry import industry_key_for_nace
 from rejstrik.analysis.valuation import (
     ValuationAssumptions,
     ValuationEstimate,
@@ -398,13 +399,33 @@ def analyze_financials(
 def estimate_valuation(
     statements: list[FinancialStatement],
     assumptions: ValuationAssumptions | None = None,
+    industry_key: str | None = None,
+    ico: str | None = None,
 ) -> ValuationEstimate:
-    """Indicative, deterministic valuation from statements YOU extracted:
-    book value, capitalized earnings, and generic EV/EBIT and price/revenue
-    multiples, with an overall range and the assumptions used. Amounts are
-    thousands of CZK as filed. Multiples are generic, not industry-calibrated;
-    book values are not market values. This is NOT investment advice."""
-    return _estimate_valuation(statements, assumptions)
+    """Indicative, deterministic valuation from statements YOU extracted: book
+    value, capitalized earnings, generic EV/EBIT and price/revenue multiples,
+    and — when an industry is known — a Damodaran Europe EV/EBITDA multiple
+    (EBITDA = operating profit + depreciation/amortization). Provide `ico` to let
+    the server map the company's CZ-NACE to a Damodaran industry, or pass
+    `industry_key` directly (you know the business better than a registry code).
+    Precedence: explicit `assumptions` > `industry_key` > NACE-derived > generic
+    defaults. Amounts are thousands of CZK as filed; book values are not market
+    values. NOT investment advice."""
+    resolved_key: str | None = None
+    reason: str | None = None
+    if assumptions is None:
+        if industry_key:
+            resolved_key = industry_key
+            reason = f"industry_key '{industry_key}' given by caller"
+        elif ico:
+            company = _find_company(ico)
+            resolved_key, reason = industry_key_for_nace(company.nace_codes)
+    return _estimate_valuation(
+        statements,
+        assumptions,
+        industry_key=resolved_key,
+        industry_reason=reason,
+    )
 
 
 @mcp.tool(annotations=_ro("Render report card"), meta=_UI_META, structured_output=False)
