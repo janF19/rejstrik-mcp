@@ -93,6 +93,7 @@ politely point you back to the keyless flow.
 core/      shared HTTP + text utilities
 registry/  ARES, ISIR (insolvency), ADIS (VAT), statutory bodies
 filings/   verejnerejstriky.msp.gov.cz Sbirka listin client
+           (falls back to legacy or.justice.cz when the new portal is blocked)
 documents/ native-PDF extraction + document Q&A
 analysis/  normalize -> ratios -> red flags -> trends (pure, no I/O)
 service/   orchestration (registry + filings + documents + analysis)
@@ -112,6 +113,14 @@ listin from `or.justice.cz` to a new Nuxt portal
 portal's API. Registry, filings, insolvency, statutory-body, VAT, and ADIS
 lookups are covered by fixtures/unit tests; live smoke testing verified the
 registry/document analysis path against Budejovicky Budvar with OpenAI.
+
+In July 2026 the new portal began returning Azure Front Door block responses
+— 403/429/5xx and 200-with-challenge-HTML interstitials — to automated
+clients. The filings client now treats all of these as block-shaped and falls
+back to the legacy `or.justice.cz` portal, so a single blocked edge does not
+break lookups. A `scripts/smoke.py` canary hits both portals directly and
+prints PASS/BLOCKED per endpoint, so this drift is caught before a release
+tag rather than in the field.
 
 ## CI
 
