@@ -44,6 +44,14 @@ _FIELD_RULES: dict[str, dict[str, tuple[str, ...]]] = {
             "cash flow from operat",
         )
     },
+    "depreciation_amortization": {
+        "any": (
+            "upravy hodnot v provozni oblasti",
+            "odpisy",
+            "depreciation",
+            "amortization",
+        )
+    },
 }
 
 _FIELDS: tuple[str, ...] = (
@@ -60,6 +68,7 @@ _FIELDS: tuple[str, ...] = (
     "inventories",
     "receivables",
     "operating_cash_flow",
+    "depreciation_amortization",
 )
 
 
@@ -78,6 +87,7 @@ class NormalizedFinancials(BaseModel):
     inventories: float | None = None
     receivables: float | None = None
     operating_cash_flow: float | None = None
+    depreciation_amortization: float | None = None
 
 
 def _rule_matches(rule: dict[str, tuple[str, ...]], label: str) -> bool:
