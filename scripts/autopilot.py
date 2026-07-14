@@ -27,6 +27,31 @@ STAGES: dict[str, dict] = {
     "c": {"spec": "2026-07-13-stage-c-mcp-apps-card-and-large-pdfs-design.md"},
     "d": {"spec": "2026-07-13-stage-d-analysis-depth-valuation-design.md"},
     # Stage E (distribution/demo) is deliberately manual — see its spec.
+    # Stages F and G share one spec; "scope" narrows the planner to a section.
+    "f": {
+        "spec": "2026-07-14-post-audit-hardening-and-features-design.md",
+        "scope": (
+            "Plan STAGE F ONLY (sections F1-F5). F6 is a human checklist: "
+            "carry it into the plan verbatim as HUMAN tasks, no code. Do not "
+            "plan anything from Stage G."
+        ),
+    },
+    "g": {
+        "spec": "2026-07-14-post-audit-hardening-and-features-design.md",
+        "scope": (
+            "Plan STAGE G ONLY (sections G1-G4). For G2, read the reference "
+            "implementation in ~/projects/obchodni-rejstrik-ai "
+            "(apps/api/services/industry_multiples.py, "
+            "apps/api/services/business_classification.py, "
+            "apps/api/scripts/import_damodaran_multiples.py) and port "
+            "NACE_DIVISION_MAP verbatim; if any deviation is genuinely "
+            "needed, isolate it in a 'Deviations for product-owner sign-off' "
+            "section of the plan rather than silently changing values. The "
+            "Damodaran importer script is manual tooling like smoke.py - "
+            "network-using, never run in tests or CI; tests read only the "
+            "committed JSON dataset."
+        ),
+    },
 }
 
 ALLOWED_TOOLS = ",".join(
@@ -223,8 +248,10 @@ def run_checks(worktree: Path) -> tuple[bool, str]:
 
 def phase_plan(stage: str, opts: argparse.Namespace) -> Path | None:
     spec = SPECS / STAGES[stage]["spec"]
+    scope = STAGES[stage].get("scope", "")
     target = f"docs/superpowers/plans/{dt.date.today()}-stage-{stage}-implementation.md"
     prompt = f"""Read the design spec at {spec.relative_to(REPO).as_posix()} and CLAUDE.md.
+{scope}
 Use the superpowers:writing-plans skill if available (write a complete
 step-by-step implementation plan even if it is not). Save the plan to
 {target}. Requirements: executable by an engineer with zero extra
