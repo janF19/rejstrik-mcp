@@ -23,6 +23,13 @@ _SUBJECT_ID_RE = re.compile(r"subjektId=(\d+)")
 _YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
 
+def _max_year(title: str) -> int | None:
+    """Return the latest 4-digit year in *title* (the accounting period ends
+    in the later year), or None if no year is present."""
+    years = [int(m.group(0)) for m in _YEAR_RE.finditer(title)]
+    return max(years) if years else None
+
+
 class RegistryBlockedError(Exception):
     """Raised when both the new and legacy Sbírka listin portals are unreachable."""
 
@@ -83,8 +90,7 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
 
         pdf_url = base_url.rstrip("/") + "/ias/ui/" + href.removeprefix("./")
 
-        year_m = _YEAR_RE.search(title)
-        year = int(year_m.group(0)) if year_m else None
+        year = _max_year(title)
 
         is_fin = classify_financial(title)
         filings.append(
@@ -137,8 +143,7 @@ def parse_filings_api(data: dict) -> list[Filing]:
         if not document_id:
             continue
 
-        year_m = _YEAR_RE.search(title)
-        year = int(year_m.group(0)) if year_m else None
+        year = _max_year(title)
         filings.append(
             Filing(
                 title=title,
