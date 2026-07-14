@@ -5,9 +5,9 @@ import pypdf  # noqa: F401  — must be importable (declared dependency)
 _PYPROJECT = Path(__file__).resolve().parent.parent / "pyproject.toml"
 
 
-def test_pyproject_bumped_to_v0_6_0():
+def test_pyproject_bumped_to_v0_6_1():
     text = _PYPROJECT.read_text(encoding="utf-8")
-    assert 'version = "0.6.0"' in text
+    assert 'version = "0.6.1"' in text
 
 
 def test_pyproject_declares_pypdf():
