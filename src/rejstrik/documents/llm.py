@@ -94,7 +94,7 @@ class OpenAIDocumentLLM:
     def extract(self, source: PdfSource, schema: type[T], instructions: str) -> T:
         resp = self._client.responses.create(
             model=self.model,
-            max_output_tokens=4096,
+            max_output_tokens=16000,
             input=[
                 {
                     "role": "user",

@@ -57,7 +57,7 @@ def test_openai_extract_sends_pdf_and_schema():
     ]
     call = client.responses.calls[0]
     assert call["model"] == "gpt-test"
-    assert call["max_output_tokens"] == 4096
+    assert call["max_output_tokens"] == 16000
     assert call["text"]["format"]["type"] == "json_schema"
     assert call["text"]["format"]["name"] == "FinancialStatement"
     content = call["input"][0]["content"]
