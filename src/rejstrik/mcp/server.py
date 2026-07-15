@@ -58,7 +58,7 @@ from rejstrik.service import (
 
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
 # FastMCP has no version kwarg; without this, serverInfo.version reports the MCP
-# SDK version instead of ours. Pin it to the package version so hosts show 0.7.0.
+# SDK version instead of ours. Pin it to the package version so hosts show the package version.
 mcp._mcp_server.version = __version__
 
 _MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "25000000"))

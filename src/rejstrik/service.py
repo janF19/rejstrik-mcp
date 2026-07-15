@@ -226,7 +226,8 @@ def analyze_statements(
                 message=(
                     "Headline figures shift ~1000x between years — the "
                     "statements were likely read at different scales (CZK vs "
-                    "thousands of CZK). Year-over-year changes are suppressed; "
+                    "thousands of CZK). Comparisons across the affected years "
+                    "and the multi-year growth rate may be suppressed; "
                     "check each statement's unit field and re-extract."
                 ),
             )
