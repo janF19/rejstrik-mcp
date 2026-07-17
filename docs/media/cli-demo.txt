@@ -1,0 +1,14 @@
+# rejstrik-mcp — keyless CLI demo transcript
+# Captured live against ARES + verejnerejstriky.msp.gov.cz, no API key set.
+# This is the same lookup an MCP agent performs before reading the PDF itself.
+
+$ rejstrik find "Budejovicky Budvar"
+00514152  Budějovický Budvar, národní podnik, Budweiser Budvar, National Corporation, Budweiser Budvar, Entreprise Nationale  K. Světlé 512/4, České Budějovice 3, 37004 České Budějovice
+
+$ rejstrik filings 00514152 --financial-only
+[FS] 2025  výroční zpráva [2025]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/116712388
+[FS] 2024  účetní závěrka [2024], výroční zpráva [2024], zpráva auditora [2024]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/107465869
+[FS] 2023  účetní závěrka [2023], výroční zpráva [2023], zpráva auditora [2023]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/98779203
+[FS] 2022  účetní závěrka [2022], výroční zpráva [2022], zpráva auditora [2022]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/90625470
+[FS] 2021  účetní závěrka [2021], výroční zpráva [2021], zpráva auditora [2021]  https://verejnerejstriky.msp.gov.cz/dokumenty/sbirka-listin/81685477
+... (31 filed financial statements total, 2000-2025)

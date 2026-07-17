@@ -11,8 +11,11 @@ claude mcp add rejstrik -- uvx rejstrik-mcp
 
 ## See it work
 
-Demo media is being recorded (see `scripts/record_demo.sh`, which needs
-asciinema + agg); meanwhile the walkthrough below shows the exact flow.
+[`docs/media/cli-demo.txt`](docs/media/cli-demo.txt) is a real, keyless
+transcript — no API key set — resolving a company via ARES and listing its
+filed financial statements straight from Sbírka listin. A rendered GIF of
+the full multi-year `analyze` flow and a Claude Desktop screenshot are
+still pending a manual capture (see `docs/media/README.md`).
 
 Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
 your agent resolves the company (ARES), pulls the filed statement PDF from
