@@ -64,9 +64,10 @@ mcp._mcp_server.version = __version__
 _MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "25000000"))
 
 _UI_URI = "ui://rejstrik/report"
-# ext-apps _meta UI declaration. VERIFY the exact key against the MCP Apps spec
-# (blog.modelcontextprotocol.io/posts/2026-01-26-mcp-apps) on the implementation
-# day — the ecosystem moves monthly. Override at runtime via REJSTRIK_APPS_CAPABILITY_KEY.
+# ext-apps _meta UI declaration. The "mcp/ui" meta key is spec-defined and fixed;
+# the separate experimental-capability flag name the host must advertise is
+# overridable at runtime via REJSTRIK_APPS_CAPABILITY_KEY (default "mcp-apps",
+# see _apps_capability). Last reviewed against the MCP Apps spec 2026-07-17.
 _UI_META = {"mcp/ui": {"resourceUri": _UI_URI}}
 
 
