@@ -1,5 +1,9 @@
 name: filings-portal-canary
 
+# On failure, this workflow auto-opens (or comments on) a tracking issue
+# labeled `portal-canary` via the "Open or update tracking issue on failure"
+# step below (G4 behavior) — no manual triage needed.
+
 on:
   schedule:
     - cron: "0 6 * * 1"
