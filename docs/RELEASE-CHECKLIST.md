@@ -37,8 +37,8 @@ e.g. in Claude Desktop's `claude_desktop_config.json`:
 ```
 
 Restart the client and confirm the tool list loads (you should see tools
-such as `find_company`, `list_filings`, `analyze_company`,
-`analyze_company_card`, etc.).
+such as `find_company`, `list_filings`, `get_filing`, `analyze_financials`,
+`analyze_company_financials`, `analyze_company_card`, etc.).
 
 ---
 
@@ -58,22 +58,32 @@ Confirm both return real data with no API key set. **These two commands
 Caveat discovered during Task 5 of this release: the CLI's `analyze`
 subcommand is **not** keyless — it calls `extract_financials`, which goes
 through `Anthropic messages.parse` server-side, so it will prompt for (or
-fail without) an API key even though the *MCP tool* `analyze_company` is
-keyless when the calling agent (Claude Desktop/Code) reads the filed PDF
-itself and passes the content back. Don't be surprised when `rejstrik
-analyze` asks for a key — that is expected, not a regression.
+fail without) an API key. This is also true of the MCP tools
+`analyze_company_financials` and `analyze_company_card` — both call
+`_require_llm_key()` (see `src/rejstrik/mcp/server.py`) and need a
+server-side key. Don't be surprised when any of these ask for a key —
+that is expected, not a regression.
 
-To validate the actually-keyless path and the card rendering, do this
-through the MCP client instead of the bare CLI:
+The genuinely keyless path — matching the "agent reads the PDF itself"
+model from `CLAUDE.md` — is the `get_filing` + `analyze_financials` tool
+pair (`analyze_financials` is the "Analyze extracted financials" tool,
+`src/rejstrik/mcp/server.py` around line 392): the calling agent fetches
+the filed PDF via `get_filing`, extracts the statement itself, and passes
+the structured data to `analyze_financials` for ratios/trends — no
+server-side key involved. To validate this and the card rendering:
 
-1. In Claude Desktop/Code (registered per step 2), ask it to analyze the
-   same company via the `analyze_company_card` tool.
+1. In Claude Desktop/Code (registered per step 2), ask it to look up the
+   same company, fetch its filing via `get_filing`, and analyze it via
+   `analyze_financials` (not `analyze_company_card`/`analyze_company_financials`,
+   which require a key).
 2. Confirm the model is able to read the filed PDF itself (no server-side
    key needed) and that filings + analysis come back.
-3. Confirm the report card UI actually renders (see capability note below
-   — if the host doesn't advertise the experimental capability under the
-   expected key, the card silently won't render and you'll only get plain
-   tool output).
+3. To exercise the report card UI specifically, you will need a
+   server-side key set and call `analyze_company_card` — the card only
+   renders through that keyed tool. Confirm it renders (see capability
+   note below — if the host doesn't advertise the experimental capability
+   under the expected key, the card silently won't render and you'll only
+   get plain tool output).
 
 ---
 
