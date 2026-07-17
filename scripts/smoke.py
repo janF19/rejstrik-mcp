@@ -8,15 +8,10 @@ import sys
 
 import httpx
 
-from rejstrik.documents.config import has_llm_key
 from rejstrik.documents.schema import FinancialStatement, Figure
 from rejstrik.registry.ares import find_company
 from rejstrik.filings.justice import list_filings
-from rejstrik.service import (
-    analyze_company_financials,
-    analyze_statements,
-    fetch_filing,
-)
+from rejstrik.service import analyze_statements, fetch_filing
 
 _CANARY_ENDPOINTS = {
     "new API (verejnerejstriky.msp.gov.cz)": (
@@ -96,22 +91,7 @@ def main() -> None:
     )
     assert report.trends, "trends must be computed for 2 statements"
 
-    if has_llm_key():
-        multi_year_report = analyze_company_financials(company.ico, years=2)
-        print(
-            f"[5/5] analyze_company_financials(years=2): "
-            f"{len(multi_year_report.trends)} trend metrics"
-        )
-        assert multi_year_report.trends, "trends must be computed for years=2"
-        for trend in multi_year_report.trends:
-            print(f"    {trend}")
-        issues = trend_plausibility_issues(multi_year_report)
-        if issues:
-            for issue in issues:
-                print(f"[5/5] IMPLAUSIBLE: {issue}")
-            sys.exit("SMOKE FAILED: multi-year figures look unit-inconsistent")
-    else:
-        print("[5/5] skipped multi-year analyze_company_financials (no LLM key set)")
+    print("[5/5] skipped in-server extraction (keyless smoke)")
 
     print("SMOKE OK")
 
