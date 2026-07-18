@@ -17,8 +17,6 @@ from rejstrik.analysis.trends import (
     suspected_unit_mismatch,
 )
 from rejstrik.documents.cache import save_filing_pdf
-from rejstrik.documents.extract import extract_financials
-from rejstrik.documents.llm import DocumentLLM
 from rejstrik.documents.pick import pick_financial_filing
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.documents.source import PdfSource, load_pdf
@@ -118,45 +116,6 @@ def resolve_statement_source(
             f"No matching financial statement in Sbírka listin for {company.ico}.{hint}"
         )
     return company, filing, load_pdf(filing, client=client)
-
-
-def analyze_company_financials(
-    query: str,
-    *,
-    years: int = 1,
-    llm: DocumentLLM | None = None,
-    insolvency_check: Callable[[str], InsolvencyStatus] | None = None,
-    vat_check: Callable[[str], VatStatus] | None = None,
-) -> CompanyFinancialReport:
-    years = max(1, min(years, 5))
-    company = find_company(query)
-    all_filings = list_filings(company.ico)
-    statements_filings = [f for f in all_filings if f.is_financial_statement][:years]
-    if not statements_filings:
-        available_years = sorted(
-            {f.year for f in all_filings if f.is_financial_statement and f.year},
-            reverse=True,
-        )
-        hint = (
-            f" Available years: {available_years}."
-            if available_years
-            else " No financial statements filed."
-        )
-        raise NoStatementFound(
-            f"No financial statement in Sbírka listin for {company.ico}.{hint}"
-        )
-    statements = [
-        extract_financials(load_pdf(filing), llm=llm) for filing in statements_filings
-    ]
-    report = analyze_statements(
-        statements,
-        ico=company.ico,
-        insolvency_check=insolvency_check,
-        vat_check=vat_check,
-    )
-    report.company_name = report.company_name or company.name
-    report.source_filing_title = statements_filings[0].title
-    return report
 
 
 def analyze_statements(
