@@ -261,8 +261,8 @@ def read_filing_text(
     keyless, no LLM, no OCR. Page grammar: "3", "1-5", "1-3,7" (default "1-10").
     At most 20 pages per call. Czech filings are often scanned images with no
     text layer; pages without text are reported honestly (has_text=false) with a
-    note pointing to extract_financials or filesystem reading — never a silent
-    empty string."""
+    note pointing to read_filing_page_images or filesystem reading — never a
+    silent empty string."""
     doc, source = _fetch_filing(ico, year=year, filing_id=filing_id)
     page_count = doc.page_count or count_pdf_pages(source.data) or 0
     requested, message = parse_page_range(pages, page_count=page_count)

@@ -1,9 +1,10 @@
-# v0.7.1 Release Checklist (for Jan)
+# v0.8.0 Release Checklist (for Jan)
 
-This is the human-side checklist for shipping v0.7.1. The agent has already
-built the local sanity artifacts in `dist/` (not committed — `dist/` is
-gitignored). Work through the steps below in order; each has a HUMAN GATE
-unless noted otherwise.
+This is the human-side checklist for shipping v0.8.0 — the first published
+release (v0.7.1 was never tagged/pushed). The agent has already built the
+local sanity artifacts in `dist/` (not committed — `dist/` is gitignored).
+Work through the steps below in order; each has a HUMAN GATE unless noted
+otherwise.
 
 ---
 
@@ -12,7 +13,7 @@ unless noted otherwise.
 ```bash
 python3 -m venv /tmp/rejstrik-release-check
 source /tmp/rejstrik-release-check/bin/activate
-pip install dist/rejstrik_mcp-0.7.1-*.whl
+pip install dist/rejstrik_mcp-0.8.0-*.whl
 rejstrik-mcp
 ```
 
@@ -36,13 +37,13 @@ e.g. in Claude Desktop's `claude_desktop_config.json`:
 }
 ```
 
-Restart the client and confirm the tool list loads (you should see tools
-such as `find_company`, `list_filings`, `get_filing`, `analyze_financials`,
-`analyze_company_financials`, `analyze_company_card`, etc.).
+Restart the client and confirm the tool list loads — exactly 13 tools,
+including `find_company`, `list_filings`, `get_filing`,
+`analyze_financials`, `render_card`, etc. No key-gated tools remain.
 
 ---
 
-## 3. Run a real keyless query — with an important caveat
+## 3. Run a real keyless query, end to end
 
 Run a keyless lookup + filings query against a known Czech company, e.g.
 via the CLI:
@@ -52,38 +53,21 @@ rejstrik find "Budějovický Budvar"
 rejstrik filings <ICO-from-above> --financial-only
 ```
 
-Confirm both return real data with no API key set. **These two commands
-(`find` and `filings`) are the only genuinely keyless CLI paths.**
+Confirm both return real data with no API key set — the CLI is entirely
+data-only now (no `extract`/`analyze` subcommands to worry about).
 
-Caveat discovered during Task 5 of this release: the CLI's `analyze`
-subcommand is **not** keyless — it calls `extract_financials`, which goes
-through `Anthropic messages.parse` server-side, so it will prompt for (or
-fail without) an API key. This is also true of the MCP tools
-`analyze_company_financials` and `analyze_company_card` — both call
-`_require_llm_key()` (see `src/rejstrik/mcp/server.py`) and need a
-server-side key. Don't be surprised when any of these ask for a key —
-that is expected, not a regression.
+To validate the full card verification flow, drive it through the MCP
+server in Claude Desktop/Code (registered per step 2):
 
-The genuinely keyless path — matching the "agent reads the PDF itself"
-model from `CLAUDE.md` — is the `get_filing` + `analyze_financials` tool
-pair (`analyze_financials` is the "Analyze extracted financials" tool,
-`src/rejstrik/mcp/server.py` around line 392): the calling agent fetches
-the filed PDF via `get_filing`, extracts the statement itself, and passes
-the structured data to `analyze_financials` for ratios/trends — no
-server-side key involved. To validate this and the card rendering:
-
-1. In Claude Desktop/Code (registered per step 2), ask it to look up the
-   same company, fetch its filing via `get_filing`, and analyze it via
-   `analyze_financials` (not `analyze_company_card`/`analyze_company_financials`,
-   which require a key).
-2. Confirm the model is able to read the filed PDF itself (no server-side
-   key needed) and that filings + analysis come back.
-3. To exercise the report card UI specifically, you will need a
-   server-side key set and call `analyze_company_card` — the card only
-   renders through that keyed tool. Confirm it renders (see capability
-   note below — if the host doesn't advertise the experimental capability
-   under the expected key, the card silently won't render and you'll only
-   get plain tool output).
+1. `get_filing` — fetch the filed statement PDF for the company.
+2. Agent extraction — the calling agent (Claude itself) reads the PDF and
+   produces the structured `FinancialStatement` figures. No server-side
+   key involved anywhere in this step.
+3. `analyze_financials` — pass the extracted figures in; confirm ratios,
+   red flags, and year-over-year trends come back.
+4. `render_card` — pass the report in; confirm it renders as an
+   interactive HTML card (MCP Apps hosts) or a markdown summary
+   (text-only hosts like Claude Code).
 
 ---
 
@@ -91,7 +75,7 @@ server-side key involved. To validate this and the card rendering:
 
 `src/rejstrik/mcp/server.py` gates the report-card UI resource on an
 experimental capability flag the host must advertise. Default key is
-`"mcp-apps"` (see `_apps_capability` in `server.py`, around line 74).
+`"mcp-apps"` (see `_apps_capability` in `server.py`).
 
 If your Claude Desktop/Code build negotiates a different experimental
 capability key for MCP Apps/UI support, set:
@@ -107,22 +91,16 @@ it can be documented for other users:
 
 ---
 
-## 5. Also pending: manual media captures (from Task 5 / `docs/media/README.md`)
+## 5. Also pending: manual media capture
 
-Two demo assets in `docs/media/` are still marked "STILL MISSING — human
-capture pending":
+One demo asset in `docs/media/` is still pending a human capture:
 
-- `budvar-3year.gif` — asciinema→agg recording of
-  `rejstrik analyze "Budejovicky Budvar" --years 3`. This **requires an
-  API key** (see the `analyze` caveat in step 3 above). Generate with
-  `scripts/record_demo.sh`, keep it under 15s and 5MB.
-- `report-card.png` — manual screenshot of `analyze_company_card`
-  rendered in Claude Desktop. Capture this while doing step 3 above (it
-  doubles as your MCP Apps regression proof).
+- `report-card.png` — manual screenshot of `render_card`'s output
+  rendered in Claude Desktop (also serves as MCP Apps regression proof).
+  Capture this while doing step 3 above.
 
-Both are blocking the README's "See it work" section from being fully
-populated; there's no agent-side way to produce them (live LLM key /
-live screenshot).
+The keyless CLI transcript (`cli-demo.txt`) is already captured and
+present; see `docs/media/README.md`.
 
 ---
 
@@ -130,14 +108,14 @@ live screenshot).
 
 **Only proceed once steps 1–4 above report "install + card OK".**
 
-### Task 8: Tag and release v0.7.1
+### Task 8: Tag and release v0.8.0
 
 Only after the smoke script printed `SMOKE OK` and you're ready to go:
 
 ```bash
 git push origin main
-git tag v0.7.1
-git push origin v0.7.1
+git tag v0.8.0
+git push origin v0.8.0
 ```
 
 Watch `.github/workflows/release.yml` — the tag push triggers it: build →
@@ -152,7 +130,7 @@ Then verify PyPI:
 pip index versions rejstrik-mcp
 ```
 
-Confirm it shows `0.7.1` (or check the PyPI project page directly).
+Confirm it shows `0.8.0` (or check the PyPI project page directly).
 
 ### Task 9: Publish the MCP registry entry
 
@@ -160,7 +138,7 @@ Only after Task 8 succeeds — the entry references the published PyPI
 version.
 
 1. Agent-verifiable: `grep -n "version\|identifier" server.json` should
-   show top-level `version`, `packages[0].version` = `0.7.1`, and
+   show top-level `version`, `packages[0].version` = `0.8.0`, and
    `packages[0].identifier` = `rejstrik-mcp`.
 2. Human step: publish `io.github.janf19/rejstrik-mcp` via the MCP
    publisher CLI / registry flow using the updated `server.json`.
@@ -180,7 +158,8 @@ manual regardless).
 ## Definition of done
 
 All of the above complete: clean install verified, MCP registration
-verified, keyless `find`/`filings` + MCP-tool-level `analyze_company_card`
-verified (with the `analyze` CLI caveat understood), capability key noted,
-media captures recorded, tag pushed, PyPI live, registry entry published,
-and listings submitted.
+verified, keyless `find`/`filings` and the full
+`get_filing → agent extraction → analyze_financials → render_card` card
+flow verified, capability key noted, the report-card screenshot
+captured, tag pushed, PyPI live, registry entry published, and listings
+submitted.

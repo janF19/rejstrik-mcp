@@ -13,9 +13,9 @@ claude mcp add rejstrik -- uvx rejstrik-mcp
 
 [`docs/media/cli-demo.txt`](docs/media/cli-demo.txt) is a real, keyless
 transcript — no API key set — resolving a company via ARES and listing its
-filed financial statements straight from Sbírka listin. A rendered GIF of
-the full multi-year `analyze` flow and a Claude Desktop screenshot are
-still pending a manual capture (see `docs/media/README.md`).
+filed financial statements straight from Sbírka listin. A Claude Desktop
+screenshot of the rendered report card is still pending a manual capture
+(see `docs/media/README.md`).
 
 Then ask: *"What happened to Budějovický Budvar's finances last year?"* —
 your agent resolves the company (ARES), pulls the filed statement PDF from
@@ -54,10 +54,10 @@ args = ["rejstrik-mcp"]
 **Any HTTP host:** `uvx rejstrik-mcp --http` serves streamable HTTP on
 `http://127.0.0.1:8000/mcp`.
 
-## Two modes, one server
+## The tools
 
-**Keyless (default).** Your agent does the reading with your existing
-subscription; the server does everything deterministic:
+Your agent does the reading with your existing subscription; the server
+does everything deterministic:
 
 | Tool | What it does |
 |---|---|
@@ -82,13 +82,6 @@ scope decision, not a gap.
 Use the built-in **`analyze-company`** prompt (shows up as a slash command
 in Claude) to run the whole loop — find → fetch PDFs → extract → analyze →
 card — including multi-year trends.
-
-**Keyed power mode (optional).** Set `ANTHROPIC_API_KEY` or
-`OPENAI_API_KEY` where the server runs and four more tools activate, doing
-the PDF reading server-side with schema-locked extraction and page
-citations: `extract_financials`, `ask_filing`,
-`analyze_company_financials`, `analyze_company_card`. Without a key they
-politely point you back to the keyless flow.
 
 ## How it works
 
@@ -115,7 +108,7 @@ listin from `or.justice.cz` to a new Nuxt portal
 (`verejnerejstriky.msp.gov.cz`). The filings client was re-pointed at the new
 portal's API. Registry, filings, insolvency, statutory-body, VAT, and ADIS
 lookups are covered by fixtures/unit tests; live smoke testing verified the
-registry/document analysis path against Budejovicky Budvar with OpenAI.
+registry/document analysis path against Budejovicky Budvar.
 
 In July 2026 the new portal began returning Azure Front Door block responses
 — 403/429/5xx and 200-with-challenge-HTML interstitials — to automated
