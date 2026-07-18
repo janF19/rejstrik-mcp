@@ -18,6 +18,12 @@ def test_find_prints_company():
     assert "Test s.r.o." in result.stdout
 
 
+def test_extract_and_analyze_commands_absent():
+    command_names = {c.name or c.callback.__name__ for c in app.registered_commands}
+    assert "extract" not in command_names
+    assert "analyze" not in command_names
+
+
 def test_filings_financial_only_filters():
     filings = [
         Filing(

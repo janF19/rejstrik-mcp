@@ -1,14 +1,12 @@
 import typer
 
 from rejstrik.documents.ask import ask_filing
-from rejstrik.documents.extract import extract_financials
 from rejstrik.filings.justice import list_filings
 from rejstrik.registry.ares import CompanyNotFound, find_company
 from rejstrik.registry.contracts import get_contracts
 from rejstrik.registry.subsidies import get_subsidies
 from rejstrik.service import (
     NoStatementFound,
-    analyze_company_financials,
     resolve_statement_source,
 )
 
@@ -75,18 +73,6 @@ def _load_latest_statement(ico: str):
 
 
 @app.command()
-def extract(ico: str) -> None:
-    """Extract structured financials from the latest financial statement."""
-    company, source = _load_latest_statement(ico)
-    fs = extract_financials(source)
-    typer.echo(f"{company.name}  ({fs.period_year or '----'})")
-    for fig in [*fs.balance_sheet, *fs.income_statement]:
-        page = f"(p.{fig.source_page})" if fig.source_page else ""
-        value = fig.value if fig.value is not None else "-"
-        typer.echo(f"  {fig.label}: {value}  {page}".rstrip())
-
-
-@app.command()
 def ask(ico: str, question: str) -> None:
     """Ask a free-form question about the latest financial statement, with citations."""
     _company, source = _load_latest_statement(ico)
@@ -97,22 +83,3 @@ def ask(ico: str, question: str) -> None:
         for c in answer.citations:
             page = f"(p.{c.page})" if c.page else ""
             typer.echo(f"  - {c.cited_text} {page}".rstrip())
-
-
-@app.command()
-def analyze(query: str, years: int = typer.Option(1, "--years", min=1, max=5)) -> None:
-    """Full financial analysis for a company (optionally multi-year)."""
-    report = analyze_company_financials(query, years=years)
-    typer.echo(
-        f"{report.company_name}  ({report.period_year or '----'})  [{report.ico}]"
-    )
-    typer.echo("Ratios:")
-    for name, value in report.ratios.model_dump().items():
-        shown = f"{value:.3f}" if value is not None else "-"
-        typer.echo(f"  {name}: {shown}")
-    if report.red_flags:
-        typer.echo("Red flags:")
-        for flag in report.red_flags:
-            typer.echo(f"  [{flag.severity.upper()}] {flag.message}")
-    else:
-        typer.echo("No red flags detected.")

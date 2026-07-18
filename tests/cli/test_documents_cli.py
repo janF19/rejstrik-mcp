@@ -4,7 +4,6 @@ from typer.testing import CliRunner
 
 from rejstrik.cli.main import app
 from rejstrik.documents.answer import Answer, Citation
-from rejstrik.documents.schema import FinancialStatement, Figure
 from rejstrik.documents.source import PdfSource
 from rejstrik.filings.models import Filing
 from rejstrik.registry.models import Company
@@ -20,27 +19,6 @@ FILINGS = [
     )
 ]
 SRC = PdfSource(data=b"%PDF x", sha256="x", filename="f.pdf")
-
-
-def test_extract_cli_prints_figures_with_pages():
-    company = Company(ico="00006947", name="Test s.r.o.")
-    filing = FILINGS[0]
-    fs = FinancialStatement(
-        company_name="Test s.r.o.",
-        period_year=2023,
-        balance_sheet=[Figure(label="Total assets", value=1000.0, source_page=12)],
-    )
-    with (
-        patch(
-            "rejstrik.cli.main.resolve_statement_source",
-            return_value=(company, filing, SRC),
-        ),
-        patch("rejstrik.cli.main.extract_financials", return_value=fs),
-    ):
-        result = runner.invoke(app, ["extract", "00006947"])
-    assert result.exit_code == 0
-    assert "Total assets" in result.stdout
-    assert "12" in result.stdout
 
 
 def test_ask_cli_prints_answer_and_sources():
