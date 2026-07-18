@@ -502,10 +502,14 @@ Follow these steps exactly:
    has_text=false (a scanned filing) and you cannot read local files, call
    read_filing_page_images(ico, year=..., pages="1-5") to get the pages as PNGs.
 4. From each PDF, extract a FinancialStatement JSON object matching this
-   schema (record figures verbatim as printed and set the `unit` field to the
-   scale the statement declares — usually 'v celých tisících Kč' →
-   thousands_czk; set currency to "CZK"; set period_year to the statement
-   year; cite source_page for every figure). ALSO fill the `canonical`
+   schema. Cover the balance sheet (rozvaha), income statement (výkaz zisku a ztráty),
+   cash flow if present, and the narrative notes (příloha). Record every
+   figure verbatim as printed — never rescale or convert. Statements
+   declare their scale near the top of the rozvaha (usually 'v celých
+   tisících Kč'); set the `unit` field to match: thousands_czk for 'v tisících Kč', czk for plain Kč, millions_czk for 'v milionech Kč'.
+   Set currency to "CZK"; set period_year to the statement year; cite
+   source_page for every figure (1-indexed). If a value is not present,
+   leave it null rather than guessing. ALSO fill the `canonical`
    object: each of its fields' descriptions names the exact Czech statutory line
    that feeds it (e.g. total_assets ← "Aktiva celkem", net_profit ← "Výsledek
    hospodaření za účetní období") — this is what makes the analysis reliable:

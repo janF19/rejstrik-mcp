@@ -40,3 +40,15 @@ def test_server_reports_package_version():
     from rejstrik.mcp.server import mcp
 
     assert mcp._mcp_server.version == __version__
+
+
+def test_analyze_company_prompt_carries_extraction_guidance():
+    prompt = server.analyze_company_prompt("Test Company", years=2)
+
+    assert "rozvaha" in prompt
+    assert "výkaz zisku a ztráty" in prompt
+    assert "příloha" in prompt
+    assert "never rescale or convert" in prompt
+    assert "millions_czk for 'v milionech Kč'" in prompt
+    assert "czk for plain Kč" in prompt
+    assert "null rather than guessing" in prompt
