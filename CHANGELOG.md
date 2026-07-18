@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.8.0 — Keyless-only
+
+- The server is now keyless-only. Removed the keyed MCP tools
+  (`extract_financials`, `ask_filing`, `analyze_company_financials`,
+  `analyze_company_card`), the CLI subcommands that wrapped them (`extract`,
+  `analyze`, `ask`), and the server-side LLM machinery that backed them
+  (`documents/llm.py`, `documents/extract.py`, `documents/ask.py`,
+  `documents/answer.py`, `documents/config.py`).
+- Dropped the `anthropic`, `openai`, and `python-dotenv` dependencies — no
+  API key is needed or accepted anywhere in the server.
+- Extraction guidance previously baked into the server-side LLM prompts has
+  been relocated into the `analyze_company` prompt, so client-side
+  extraction by the calling agent keeps the same quality bar the keyed path
+  used to provide.
+- The report card now renders exclusively through the keyless `render_card`
+  tool.
+- Note: 0.7.1 was never published — its tag was never pushed, so this
+  release supersedes it directly from 0.7.0.
+
 ## 0.7.0 — Stages F+G: hardening + scanned filings, Damodaran valuation, filings cache
 
 - Filings fallback now triggers on any block-shaped response from the new
