@@ -19,10 +19,6 @@ from rejstrik import __version__
 from rejstrik.analysis.normalize import NormalizedFinancials
 from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.report import CompanyFinancialReport
-from rejstrik.documents.answer import Answer
-from rejstrik.documents.ask import ask_filing as _ask_filing
-from rejstrik.documents.config import has_llm_key
-from rejstrik.documents.extract import extract_financials as _extract_financials
 from rejstrik.documents.pdftext import PageText, extract_pages_text, parse_page_range
 from rejstrik.documents.pdfimages import render_page_images
 from rejstrik.documents.schema import FinancialStatement
@@ -49,11 +45,9 @@ from rejstrik.analysis.valuation import (
 )
 from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.service import (
-    analyze_company_financials as _analyze_company_financials,
     analyze_statements as _analyze_statements,
     count_pdf_pages,
     fetch_filing as _fetch_filing,
-    resolve_statement_source,
 )
 
 mcp = FastMCP("rejstrik", stateless_http=True, json_response=True)
@@ -111,13 +105,9 @@ def _render_card_output(
 EXPOSED_TOOL_NAMES = [
     "find_company",
     "list_filings",
-    "extract_financials",
-    "ask_filing",
-    "analyze_company_financials",
     "check_insolvency",
     "get_statutory_bodies",
     "check_vat",
-    "analyze_company_card",
     "get_filing",
     "analyze_financials",
     "render_card",
@@ -133,23 +123,6 @@ def _ro(title: str) -> ToolAnnotations:
     return ToolAnnotations(title=title, readOnlyHint=True, openWorldHint=True)
 
 
-class MissingApiKey(Exception):
-    pass
-
-
-_KEYLESS_HINT = (
-    "This tool runs a model inside the server and needs ANTHROPIC_API_KEY or "
-    "OPENAI_API_KEY set where rejstrik-mcp runs. Keyless alternative: call "
-    "get_filing to fetch the statement PDF, read it yourself, then pass the "
-    "extracted figures to analyze_financials (and render_card for the UI card)."
-)
-
-
-def _require_llm_key() -> None:
-    if not has_llm_key():
-        raise MissingApiKey(_KEYLESS_HINT)
-
-
 @mcp.tool(annotations=_ro("Find Czech company"))
 def find_company(query: str) -> Company:
     """Resolve a Czech company by name or IČO via the ARES registry."""
@@ -162,43 +135,6 @@ def list_filings(ico: str) -> list[Filing]:
     return _list_filings(ico)
 
 
-@mcp.tool(annotations=_ro("Extract financial statement"))
-def extract_financials(
-    ico: str, year: int | None = None, filing_id: str | None = None
-) -> FinancialStatement:
-    """Extract structured financials from a statement PDF (latest, or by year /
-    filing id). Requires a server-side API key; without one, use get_filing +
-    analyze_financials."""
-    _require_llm_key()
-    _company, _filing, source = resolve_statement_source(
-        ico, year=year, filing_id=filing_id
-    )
-    return _extract_financials(source)
-
-
-@mcp.tool(annotations=_ro("Ask about a filing"))
-def ask_filing(
-    ico: str, question: str, year: int | None = None, filing_id: str | None = None
-) -> Answer:
-    """Answer a question about a statement with page citations (latest, or by
-    year / filing id). Requires a server-side API key; without one, use
-    get_filing + analyze_financials."""
-    _require_llm_key()
-    _company, _filing, source = resolve_statement_source(
-        ico, year=year, filing_id=filing_id
-    )
-    return _ask_filing(source, question)
-
-
-@mcp.tool(annotations=_ro("Analyze company financials"))
-def analyze_company_financials(query: str, years: int = 1) -> CompanyFinancialReport:
-    """Full financial report for a company over the last `years` (1-5) years,
-    with year-over-year trends when years > 1. Requires a server-side API key;
-    without one, use get_filing + analyze_financials."""
-    _require_llm_key()
-    return _analyze_company_financials(query, years=years)
-
-
 @mcp.resource(_UI_URI, mime_type="text/html", meta=_UI_META)
 def report_card_ui() -> str:
     """The financial report card's self-contained HTML shell (MCP Apps template)."""
@@ -209,19 +145,6 @@ def report_card_ui() -> str:
             ratios=Ratios(),
         )
     )
-
-
-@mcp.tool(
-    annotations=_ro("Analyze company card"), meta=_UI_META, structured_output=False
-)
-def analyze_company_card(query: str, years: int = 1) -> list[TextContent | UIResource]:
-    """Full financial report as a card, over the last `years` (1-5) years. Hosts
-    that negotiate the MCP Apps capability get an interactive HTML card; others
-    get a compact markdown summary. Requires a server-side API key; without one,
-    use get_filing + analyze_financials + render_card."""
-    _require_llm_key()
-    report = _analyze_company_financials(query, years=years)
-    return _render_card_output(report, apps_supported=_host_supports_apps())
 
 
 @mcp.tool(annotations=_ro("Get filing PDF"), structured_output=False)

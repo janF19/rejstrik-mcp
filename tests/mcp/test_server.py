@@ -7,13 +7,9 @@ def test_exposed_tool_names():
     assert server.EXPOSED_TOOL_NAMES == [
         "find_company",
         "list_filings",
-        "extract_financials",
-        "ask_filing",
-        "analyze_company_financials",
         "check_insolvency",
         "get_statutory_bodies",
         "check_vat",
-        "analyze_company_card",
         "get_filing",
         "analyze_financials",
         "render_card",
@@ -23,6 +19,7 @@ def test_exposed_tool_names():
         "read_filing_page_images",
         "estimate_valuation",
     ]
+    assert len(server.EXPOSED_TOOL_NAMES) == 13
 
 
 def test_tools_registered_on_server():
