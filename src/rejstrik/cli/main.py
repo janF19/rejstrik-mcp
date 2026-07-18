@@ -1,14 +1,9 @@
 import typer
 
-from rejstrik.documents.ask import ask_filing
 from rejstrik.filings.justice import list_filings
 from rejstrik.registry.ares import CompanyNotFound, find_company
 from rejstrik.registry.contracts import get_contracts
 from rejstrik.registry.subsidies import get_subsidies
-from rejstrik.service import (
-    NoStatementFound,
-    resolve_statement_source,
-)
 
 app = typer.Typer(help="Czech registry MCP that reads the documents — CLI")
 
@@ -60,26 +55,3 @@ def contracts(ico: str) -> None:
     typer.echo(f"{report.count} contracts  total: {report.total_value}")
     for c in report.contracts:
         typer.echo(f"  {c.subject or '?'}: {c.value}")
-
-
-def _load_latest_statement(ico: str):
-    """Resolve a company to its latest financial-statement PDF via the service layer."""
-    try:
-        company, _filing, source = resolve_statement_source(ico)
-    except NoStatementFound as exc:
-        typer.echo(str(exc), err=True)
-        raise typer.Exit(1)
-    return company, source
-
-
-@app.command()
-def ask(ico: str, question: str) -> None:
-    """Ask a free-form question about the latest financial statement, with citations."""
-    _company, source = _load_latest_statement(ico)
-    answer = ask_filing(source, question)
-    typer.echo(answer.text)
-    if answer.citations:
-        typer.echo("\nSources:")
-        for c in answer.citations:
-            page = f"(p.{c.page})" if c.page else ""
-            typer.echo(f"  - {c.cited_text} {page}".rstrip())

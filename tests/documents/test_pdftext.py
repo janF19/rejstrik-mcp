@@ -73,4 +73,4 @@ def test_extract_is_honest_about_no_text_layer():
     assert result[0].has_text is False
     assert result[0].text == ""
     assert result[0].note is not None
-    assert "extract_financials" in result[0].note
+    assert "file_path" in result[0].note
