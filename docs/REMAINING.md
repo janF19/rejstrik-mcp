@@ -34,22 +34,23 @@ value: a PR to an "Awesome MCP Servers" GitHub list adding rejstrik-mcp
 under finance/government. Others (host marketplaces, an r/mcp announce
 post) as desired.
 
-## 3. Claude Desktop card check (optional — settles the widget question)
+## 3. Claude Desktop card check (optional — confirms upstream status)
 
-Install via the `.mcpb` from the GitHub release or the JSON config, ask
-about a company, then have it call `render_card`.
+The server is aligned to MCP Apps SEP-1865: it advertises capability
+`io.modelcontextprotocol/ui`, declares `_meta.ui.resourceUri`, and emits the
+UI resource at `text/html;profile=mcp-app`. Markdown is the default and always
+renders.
 
-- **Interactive card renders** → done; grab a screenshot as
-  `docs/media/report-card.png` (the last missing demo asset).
-- **Plain text instead** → the host is negotiating a different capability
-  key than `mcp-apps`. Note the host + version and set
-  `REJSTRIK_APPS_CAPABILITY_KEY` to the key it actually sends.
+Interactive rendering is blocked **upstream**, not in this repo: as of
+[ext-apps#671](https://github.com/modelcontextprotocol/ext-apps/issues/671)
+(open, May 2026) Claude Desktop and claude.ai negotiate the capability and
+fetch the resource but do not render the iframe. When a host ships rendering,
+install via the `.mcpb` and ask about a company, then call `render_card`:
 
-Note: the interactive-card path has never been verified in a live MCP
-Apps host — the server gates on the `mcp-apps` capability but returns an
-`mcp-ui` `rawHtml` resource, and whether Claude Desktop renders that
-combination is unproven until someone tries it. Markdown output in Claude
-Code is correct-by-design, not a bug.
+- **Interactive card renders** → capture `docs/media/report-card.png`.
+- **Plain text / widget placeholder** → confirms #671; markdown is used.
+  If the host advertises the capability under a different key, note the host +
+  version and set `REJSTRIK_APPS_CAPABILITY_KEY` accordingly.
 
 ---
 

@@ -28,8 +28,11 @@ descriptions inside the server are in English.)*
   násobky EV/EBITDA dle Damodarana). Není investiční doporučení.
 - **Prověrky:** insolvenční rejstřík (ISIR), spolehlivost plátce DPH
   (ADIS), státní dotace (IS ReD), smlouvy z Registru smluv.
-- **Report card:** shrnutí jako interaktivní HTML karta (hosté s MCP
-  Apps) nebo přehledný markdown (textoví hosté jako Claude Code).
+- **Report card:** shrnutí jako přehledný markdown (výchozí, funguje
+  všude — Claude Code, Desktop, …). Interaktivní HTML karta je
+  implementovaná dle MCP Apps (SEP-1865), ale klienti ji zatím
+  nevykreslují (upstream [ext-apps#671](https://github.com/modelcontextprotocol/ext-apps/issues/671)),
+  takže se automaticky použije markdown.
 
 Žádná OCR pipeline, žádná vektorová databáze, žádný serverový AI klíč —
 čtení dokumentů dělá model, kterým se ptáte.
