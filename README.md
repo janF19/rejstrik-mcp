@@ -6,6 +6,8 @@
 jakéhokoli API klíče. Účetní závěrky ze Sbírky listin čte váš vlastní
 model v rámci vašeho předplatného.**
 
+![Ukázka: Claude najde firmu, přečte její účetní závěrku a spočítá finanční poměrové ukazatele](docs/media/robe-analyze.gif)
+
 ```bash
 claude mcp add rejstrik -- uvx rejstrik-mcp
 ```

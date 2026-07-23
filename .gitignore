@@ -10,3 +10,4 @@ uv.lock
 .DS_Store
 dist/
 *.mcpb
+docs/media/*.cast
