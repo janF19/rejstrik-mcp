@@ -23,7 +23,8 @@ REPORT = CompanyFinancialReport(
 
 
 def test_apps_capability_detects_key():
-    assert server._apps_capability({"mcp-apps": {}}) is True
+    assert server._apps_capability({"io.modelcontextprotocol/ui": {}}) is True
+    assert server._apps_capability({"mcp-apps": {}}) is False
     assert server._apps_capability({}) is False
     assert server._apps_capability(None) is False
 
@@ -52,3 +53,12 @@ def test_card_resource_registered():
     resources = asyncio.run(server.mcp.list_resources())
     uris = {str(r.uri) for r in resources}
     assert "ui://rejstrik/report" in uris
+
+
+def test_ui_meta_uses_spec_key():
+    assert server._UI_META == {"ui": {"resourceUri": "ui://rejstrik/report"}}
+
+
+def test_card_ui_resource_uses_app_profile_mimetype():
+    out = server._render_card_output(REPORT, apps_supported=True)
+    assert out[0].resource.mimeType == "text/html;profile=mcp-app"

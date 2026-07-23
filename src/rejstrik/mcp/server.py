@@ -58,17 +58,19 @@ mcp._mcp_server.version = __version__
 _MAX_EMBED_BYTES = int(os.environ.get("REJSTRIK_MAX_EMBED_BYTES", "25000000"))
 
 _UI_URI = "ui://rejstrik/report"
-# ext-apps _meta UI declaration. The "mcp/ui" meta key is spec-defined and fixed;
-# the separate experimental-capability flag name the host must advertise is
-# overridable at runtime via REJSTRIK_APPS_CAPABILITY_KEY (default "mcp-apps",
-# see _apps_capability). Last reviewed against the MCP Apps spec 2026-07-17.
-_UI_META = {"mcp/ui": {"resourceUri": _UI_URI}}
+# SEP-1865 (MCP Apps, 2026-01-26) _meta UI declaration. The host reads
+# _meta.ui.resourceUri, so the top-level meta key is "ui". The capability the
+# host must advertise is "io.modelcontextprotocol/ui" (see _apps_capability),
+# runtime-overridable via REJSTRIK_APPS_CAPABILITY_KEY. Interactive rendering is
+# gated upstream: Claude negotiates the capability but does not yet render the
+# iframe (ext-apps#671), so markdown remains the default output.
+_UI_META = {"ui": {"resourceUri": _UI_URI}}
 
 
 def _apps_capability(experimental: dict | None) -> bool:
     if not experimental:
         return False
-    key = os.environ.get("REJSTRIK_APPS_CAPABILITY_KEY", "mcp-apps")
+    key = os.environ.get("REJSTRIK_APPS_CAPABILITY_KEY", "io.modelcontextprotocol/ui")
     return key in experimental
 
 
@@ -82,7 +84,7 @@ def _host_supports_apps() -> bool:
 
 
 def _card_ui_resource(report: CompanyFinancialReport) -> UIResource:
-    return create_ui_resource(
+    resource = create_ui_resource(
         {
             "uri": _UI_URI,
             "content": {
@@ -92,6 +94,9 @@ def _card_ui_resource(report: CompanyFinancialReport) -> UIResource:
             "encoding": "text",
         }
     )
+    # create_ui_resource emits text/html; SEP-1865 requires the mcp-app profile.
+    resource.resource.mimeType = "text/html;profile=mcp-app"
+    return resource
 
 
 def _render_card_output(
@@ -135,7 +140,7 @@ def list_filings(ico: str) -> list[Filing]:
     return _list_filings(ico)
 
 
-@mcp.resource(_UI_URI, mime_type="text/html", meta=_UI_META)
+@mcp.resource(_UI_URI, mime_type="text/html;profile=mcp-app", meta=_UI_META)
 def report_card_ui() -> str:
     """The financial report card's self-contained HTML shell (MCP Apps template)."""
     return render_report_card(
