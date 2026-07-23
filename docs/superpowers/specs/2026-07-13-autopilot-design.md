@@ -1,5 +1,7 @@
 # Autopilot: Unattended Stage Pipeline (Opus plans → Sonnet executes → verify → merge)
 
+> **Note (2026-07-24):** `scripts/autopilot.py` has been removed from the repo. This document is retained as a record of the process only.
+
 **Date:** 2026-07-13
 **Status:** Approved design, implemented in `scripts/autopilot.py`
 **Parent:** `2026-07-13-roadmap-overview.md`
