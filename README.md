@@ -202,20 +202,6 @@ rejstrik-mcp
 python scripts/smoke.py   # vyžaduje síť — před vydáním, ne v CI
 ```
 
-### Autopilot (bezobslužné vykonávání roadmapy)
-
-Etapy roadmapy z července 2026 (`docs/superpowers/specs/2026-07-13-*.md`)
-lze pouštět bezobslužně: Opus napíše implementační plán etapy, Sonnet ho
-vykoná v izolovaném git worktree a skript ověří (ruff + pytest) a merguje
-jen při zelené. Stav se odvozuje z gitu, takže lze skript kdykoli
-zastavit a znovu spustit. Vyžaduje přihlášené Claude Code CLI; viz
-`docs/superpowers/specs/2026-07-13-autopilot-design.md`.
-
-```bash
-python scripts/autopilot.py --dry-run   # ukáže, co by se stalo
-python scripts/autopilot.py             # doběhne zbývající etapy
-```
-
 ## Poděkování / attribution
 
 Klienti pro insolvenci (ISIR), DPH/nespolehlivé plátce (ADIS) a
