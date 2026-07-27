@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.9.0 — Single adjusted-multiple valuation
+
+- **Breaking:** `estimate_valuation` now returns a single point estimate
+  (one primary method: EV/EBITDA multiples for going concerns, net assets as
+  fallback) instead of a five-method min/max range. Removed from
+  `ValuationEstimate`: `capitalized_earnings`, `ev_ebit_multiple`,
+  `price_revenue_multiple`. Removed from `ValuationAssumptions`:
+  `capitalization_rate`, `ebit_multiple`, `revenue_multiple`. Those three
+  constants (12%, 5x, 0.5x) were arbitrary and produced a 5x-wide range.
+- New shape: `point_estimate`, `value_low`/`value_high` (a
+  confidence-derived band), `confidence` (high/medium/low), `base_multiple`/
+  `final_multiple`, `adjustment_factors` (named factor chain: country,
+  private_liquidity, size, profitability, growth, cash_conversion, quality,
+  data_confidence), and `ebitda`/`ebitda_basis` (recency-weighted EBITDA
+  normalization).
+- The multiple is a Damodaran Europe sector EV/EBITDA figure adjusted for a
+  Czech private SME via the named factor chain, clamped to 3x–18x.
+- Classification confidence is now derived from how the industry was
+  determined: caller-supplied `industry_key` gives high confidence,
+  `ico`-derived CZ-NACE gives medium, neither gives low.
+
 ## 0.8.0 — Keyless-only
 
 - The server is now keyless-only. Removed the keyed MCP tools

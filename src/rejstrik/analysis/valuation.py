@@ -32,6 +32,7 @@ class ValuationEstimate(BaseModel):
     value_low: float | None = None
     value_high: float | None = None
     primary_method: str = "insufficient_data"
+    # Data sufficiency / sector fit, not industry-classification certainty.
     confidence: str = "low"
     book_value: float | None = None
     ebitda: float | None = None
@@ -149,17 +150,18 @@ def estimate_valuation(
     )
 
     caveats = list(_BASE_CAVEATS)
-    caveats.insert(
-        1,
-        f"Base EV/EBITDA {adjusted.base_multiple:.2f}x for "
-        f"'{adjusted.source_industry}' adjusted to {adjusted.final_multiple:.2f}x "
-        f"for a Czech private company. Damodaran {base.region}, {base.firms} firms, "
-        f"as of {base.as_of}. Source: {base.source_url}",
-    )
-    if industry_reason:
-        caveats.insert(2, f"Industry chosen: {industry_reason}.")
 
     if representative is not None and representative > 0:
+        multiple_caveats = list(_BASE_CAVEATS)
+        multiple_caveats.insert(
+            1,
+            f"Base EV/EBITDA {adjusted.base_multiple:.2f}x for "
+            f"'{adjusted.source_industry}' adjusted to {adjusted.final_multiple:.2f}x "
+            f"for a Czech private company. Damodaran {base.region}, {base.firms} firms, "
+            f"as of {base.as_of}. Source: {base.source_url}",
+        )
+        if industry_reason:
+            multiple_caveats.insert(2, f"Industry chosen: {industry_reason}.")
         multiple = (
             assumptions.ebitda_multiple
             if assumptions.ebitda_multiple is not None
@@ -201,7 +203,7 @@ def estimate_valuation(
             earnings_dispersion_flag=dispersion_flag,
             as_of_year=latest.period_year,
             assumptions=assumptions,
-            caveats=caveats,
+            caveats=multiple_caveats,
         )
 
     if net_assets is not None and net_assets > 0:
