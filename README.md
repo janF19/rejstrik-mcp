@@ -67,8 +67,8 @@ orgány, přehled přijatých dotací a smluv z Registru smluv.
 
 > **„Odhadni orientační hodnotu firmy XYZ s.r.o."**
 
-Vrátí rozpětí podle účetní hodnoty, kapitalizovaných zisků a oborového
-násobku (s uvedeným zdrojem dat) — vždy s upozorněním, že nejde o
+Vrátí bodový odhad hodnoty s pásmem spolehlivosti, použitý násobek
+(základ z Damodaran Europe + jmenované korekce) a upozornění, že nejde o
 investiční doporučení.
 
 > **Vestavěný prompt `analyze-company`** (v Claude se nabízí jako slash
@@ -124,7 +124,7 @@ deterministické:
 | `read_filing_text` | Textová vrstva PDF po stránkách, bez LLM/OCR; stránky bez textové vrstvy poctivě ohlásí |
 | `read_filing_page_images` | Stránky PDF jako PNG obrázky — pro skenované závěrky bez textové vrstvy |
 | `analyze_financials` | Vaše vytěžené hodnoty → poměrové ukazatele, red flags, index IN05, meziroční trendy (bez LLM) |
-| `estimate_valuation` | Vaše vytěžené hodnoty → orientační rozpětí hodnoty (účetní hodnota, kapitalizované zisky, násobky), bez LLM. Není investiční doporučení |
+| `estimate_valuation` | Vaše vytěžené hodnoty → orientační hodnota firmy: sektorový násobek EV/EBITDA (Damodaran Europe) upravený na český soukromý podnik, bodový odhad s pásmem spolehlivosti a výpisem všech korekcí. Bez LLM. Není investiční doporučení |
 | `render_card` | Report jako karta — interaktivní HTML pro hosty s MCP Apps, markdown pro textové hosty jako Claude Code |
 | `check_insolvency` | Insolvenční rejstřík (ISIR) |
 | `get_statutory_bodies` | Statutární orgány (ARES) |
