@@ -41,13 +41,18 @@ The server is aligned to MCP Apps SEP-1865: it advertises capability
 UI resource at `text/html;profile=mcp-app`. Markdown is the default and always
 renders.
 
+The markdown/HTML card screenshot is captured: `docs/media/report-card.png`
+(rendered by `scripts/render_showcase_card.py` from a real
+`analyze_financials` + `estimate_valuation` run and now the README hero).
+Only the *interactive host rendering* check below remains blocked.
+
 Interactive rendering is blocked **upstream**, not in this repo: as of
 [ext-apps#671](https://github.com/modelcontextprotocol/ext-apps/issues/671)
 (open, May 2026) Claude Desktop and claude.ai negotiate the capability and
 fetch the resource but do not render the iframe. When a host ships rendering,
 install via the `.mcpb` and ask about a company, then call `render_card`:
 
-- **Interactive card renders** → capture `docs/media/report-card.png`.
+- **Interactive card renders** → confirms the upstream fix landed.
 - **Plain text / widget placeholder** → confirms #671; markdown is used.
   If the host advertises the capability under a different key, note the host +
   version and set `REJSTRIK_APPS_CAPABILITY_KEY` accordingly.
