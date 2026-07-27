@@ -339,30 +339,39 @@ def estimate_valuation(
     industry_key: str | None = None,
     ico: str | None = None,
 ) -> ValuationEstimate:
-    """Indicative, deterministic valuation from statements YOU extracted: book
-    value, capitalized earnings, generic EV/EBIT and price/revenue multiples,
-    and — when an industry is known — a Damodaran Europe EV/EBITDA multiple
-    (EBITDA = operating profit + depreciation/amortization). Provide `ico` to let
-    the server map the company's CZ-NACE to a Damodaran industry, or pass
-    `industry_key` directly (you know the business better than a registry code).
-    Precedence: explicit `assumptions` > `industry_key` > NACE-derived > generic
-    defaults. Set each statement's unit field ("czk" | "thousands_czk" | "millions_czk")
-    and pass figures verbatim as printed; results are in thousands of CZK.
+    """Indicative, deterministic enterprise value from statements YOU extracted.
+
+    One primary method: EV/EBITDA (EBITDA = operating profit + depreciation),
+    where the multiple is a Damodaran Europe sector figure adjusted for a Czech
+    private company (country, liquidity, profitability, growth and cash-
+    conversion factors, clamped to 3-18x). Companies with non-positive EBITDA
+    fall back to net assets. Returns a point estimate with a confidence band,
+    plus every factor applied.
+
+    Classify the industry yourself from what the filing says the company does —
+    you read it, and that beats a registry code. Pass `industry_key`. Failing
+    that, pass `ico` to map CZ-NACE to a sector at lower confidence. Set each
+    statement's unit field ("czk" | "thousands_czk" | "millions_czk") and pass
+    figures verbatim as printed; results are in thousands of CZK.
+
     Book values are not market values. NOT investment advice."""
     resolved_key: str | None = None
     reason: str | None = None
-    if assumptions is None:
-        if industry_key:
-            resolved_key = industry_key
-            reason = f"industry_key '{industry_key}' given by caller"
-        elif ico:
-            company = _find_company(ico)
-            resolved_key, reason = industry_key_for_nace(company.nace_codes)
+    confidence = "low"
+    if industry_key:
+        resolved_key = industry_key
+        reason = f"industry_key '{industry_key}' given by caller"
+        confidence = "high"
+    elif ico:
+        company = _find_company(ico)
+        resolved_key, reason = industry_key_for_nace(company.nace_codes)
+        confidence = "medium"
     return _estimate_valuation(
         statements,
         assumptions,
         industry_key=resolved_key,
         industry_reason=reason,
+        classification_confidence=confidence,
     )
 
 
