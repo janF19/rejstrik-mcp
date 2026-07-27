@@ -136,6 +136,15 @@ Guard against EBITDA-driven absurdity: if the EBITDA valuation exceeds
 1.25× a revenue anchor, blend `0.70×anchor + 0.30×ebitda_value`. Applies
 only when a sales-anchor multiple is available; otherwise inert.
 
+### 4a. Confidence band
+
+`value_low/value_high` come from the overall confidence label:
+`high → ±15%`, `medium → ±25%`, `low → ±40%`, applied to the point estimate.
+
+(Upstream defines this `_CONFIDENCE_BAND` but never reads it — its multiples
+range collapses to the point. Using it here is a deliberate improvement, not
+a port discrepancy.)
+
 ### 5. Asset fallback
 
 EBITDA missing or non-positive → net assets (`total_assets −
