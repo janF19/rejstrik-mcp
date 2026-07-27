@@ -44,6 +44,32 @@ def _mul(factor: float, value: float | None) -> float | None:
     return factor * value
 
 
+def normalize_ebitda(series: list[float]) -> tuple[float | None, str | None]:
+    """Recency-weighted representative EBITDA over positive years.
+
+    `series` is ordered newest first. Damps a single outlier year without
+    discarding history."""
+    positives = [v for v in (series or []) if isinstance(v, (int, float)) and v > 0]
+    if not positives:
+        return None, None
+    if len(positives) >= 2:
+        latest, prior = positives[0], positives[1]
+        return (2 * latest + prior) / 3, "recency-weighted"
+    return positives[0], "latest-year"
+
+
+def ebitda_stable(series: list[float]) -> bool:
+    """True when positive EBITDA years vary by less than 35% of their mean."""
+    positives = [v for v in (series or []) if isinstance(v, (int, float)) and v > 0]
+    if len(positives) < 2:
+        return False
+    mean = sum(positives) / len(positives)
+    if mean <= 0:
+        return False
+    variance = sum((v - mean) ** 2 for v in positives) / len(positives)
+    return (variance**0.5) / mean < 0.35
+
+
 def estimate_valuation(
     statements: list[FinancialStatement],
     assumptions: ValuationAssumptions | None = None,

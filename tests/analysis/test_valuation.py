@@ -3,7 +3,9 @@ import pytest
 from rejstrik.analysis.valuation import (
     ValuationAssumptions,
     ValuationEstimate,
+    ebitda_stable,
     estimate_valuation,
+    normalize_ebitda,
 )
 from rejstrik.documents.schema import CanonicalFigures, Figure, FinancialStatement
 
@@ -136,3 +138,36 @@ def test_industry_key_without_da_does_not_apply_ebitda_multiple():
     assert result.ev_ebitda_multiple is None
     assert result.ev_ebit_multiple == 500.0  # generic EBIT multiple retained
     assert any("EBITDA multiple not applied" in c for c in result.caveats)
+
+
+def test_normalize_ebitda_recency_weighted():
+    # newest first: (2*300 + 150) / 3
+    assert normalize_ebitda([300.0, 150.0]) == (250.0, "recency-weighted")
+
+
+def test_normalize_ebitda_single_year():
+    assert normalize_ebitda([300.0]) == (300.0, "latest-year")
+
+
+def test_normalize_ebitda_skips_non_positive_years():
+    assert normalize_ebitda([300.0, -20.0, 150.0]) == (250.0, "recency-weighted")
+
+
+def test_normalize_ebitda_all_negative_returns_none():
+    assert normalize_ebitda([-50.0, -20.0]) == (None, None)
+
+
+def test_normalize_ebitda_empty_returns_none():
+    assert normalize_ebitda([]) == (None, None)
+
+
+def test_ebitda_stable_true_for_flat_series():
+    assert ebitda_stable([100.0, 100.0]) is True
+
+
+def test_ebitda_stable_false_for_volatile_series():
+    assert ebitda_stable([300.0, 50.0]) is False
+
+
+def test_ebitda_stable_false_for_single_year():
+    assert ebitda_stable([100.0]) is False
