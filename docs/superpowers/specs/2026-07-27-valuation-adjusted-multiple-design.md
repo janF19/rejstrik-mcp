@@ -78,22 +78,32 @@ The clamp is what prevents the 18.94× outlier from propagating.
 financialsAI classifies with an LLM. This server cannot: it is keyless by
 design, and that is its differentiator.
 
-NACE alone is not a safe substitute. ARES returns `['471', '261', '952']`
-for ROBE — **471 is non-specialised retail**, listed first. A NACE-first
-mapping would value a lighting manufacturer as a shop.
+It does not need to. `analysis/industry.py::industry_key_for_nace` already
+maps CZ-NACE to a Damodaran key, and its precedence rule (manufacturing
+divisions 10–33 beat retail 45–47) is sound: ARES returns
+`['471', '261', '952']` for ROBE and the mapper correctly yields
+`electronics_general` (17.27×), not the retail code listed first.
 
-So classification stays where the intelligence already is: **the calling
-agent**. It read the PDF; it knows what the company does. `estimate_valuation`
-already accepts `industry_key` and `industry_reason` — the signature does not
-change, only its importance.
-
-Confidence follows the source of the key:
+So there are two usable classification sources, and the existing precedence
+— explicit `industry_key` over NACE-derived — is already right. What changes
+is only that the resulting key now feeds the adjustment chain, and that the
+*source* of the key sets `data_confidence`:
 
 | Source | Confidence | `data_confidence` |
 |---|---|---|
-| Agent-supplied `industry_key` + `industry_reason` | high | 1.00 |
-| Agent-supplied key, no reason | medium | 0.95 |
+| Agent-supplied `industry_key` | high | 1.00 |
+| NACE-derived via `ico` | medium | 0.95 |
 | Fallback `total_market_ex_financials` | low | 0.85 |
+
+The agent still outranks NACE because it read the filing: NACE 26 gives ROBE
+the generic `electronics_general`, while an agent that knows the company
+makes stage lighting can pass `electrical_equipment`. Both are defensible;
+the agent's is better-informed, so it wins and carries full confidence.
+
+Signatures are unchanged. The analysis-level
+`estimate_valuation(statements, assumptions, industry_key, industry_reason)`
+and the MCP-level `estimate_valuation(statements, assumptions, industry_key,
+ico)` both keep their parameters.
 
 The tool description must tell the agent to classify from the filing's
 actual business description, not from NACE.
@@ -153,11 +163,14 @@ EBITDA = 903,044 + 62,144 = 965,188 tis. CZK. EBITDA margin 24.8% → 1.10;
 OCF/EBITDA 0.38 → 0.90; growth unknown (one filed year) → 0.95. Chain =
 0.742, i.e. −26% off the listed multiple.
 
-| Agent's classification | Base | Final | Point estimate |
-|---|---|---|---|
-| `electrical_equipment` | 18.94× | 14.05× | **13.6 bn CZK** |
-| `electronics_general` | 17.27× | 12.81× | 12.4 bn CZK |
-| `machinery` | 14.98× | 11.11× | 10.7 bn CZK |
+| Classification | Source | Base | Final | Point estimate |
+|---|---|---|---|---|
+| `electrical_equipment` | agent (stage lighting) | 18.94× | 14.05× | **13.6 bn CZK** |
+| `electronics_general` | NACE 26 via `ico` | 17.27× | 12.17× | 11.7 bn CZK |
+| `machinery` | agent | 14.98× | 11.11× | 10.7 bn CZK |
+
+The NACE row carries `data_confidence = 0.95`, so its chain is 0.705 rather
+than 0.742 — a lower-confidence input is discounted, by construction.
 
 Sector choice still moves the answer by ~25%, which is why
 `industry_reason` is recorded and surfaced rather than hidden.
