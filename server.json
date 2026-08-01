@@ -1,13 +1,13 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
-  "name": "io.github.janf19/rejstrik-mcp",
+  "name": "io.github.janF19/rejstrik-mcp",
   "description": "Czech company registry MCP that reads filed PDF financial statements — keyless, agent-native.",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "rejstrik-mcp",
-      "version": "0.9.1",
+      "version": "0.9.2",
       "transport": { "type": "stdio" }
     }
   ]

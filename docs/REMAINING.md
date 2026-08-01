@@ -17,10 +17,10 @@ brew install mcp-publisher   # or grab the binary from
 mcp-publisher login github   # opens GitHub device-flow auth — this is why
                              # only the repo owner can do it
 mcp-publisher publish        # reads ./server.json and publishes
-                             # io.github.janf19/rejstrik-mcp
+                             # io.github.janF19/rejstrik-mcp
 ```
 
-The `io.github.janf19/*` namespace is verified through the GitHub login,
+The `io.github.janF19/*` namespace is verified through the GitHub login,
 so it must be the owner's account. Verify afterwards:
 
 ```bash

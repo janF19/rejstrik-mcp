@@ -2,9 +2,9 @@
   "manifest_version": "0.2",
   "name": "rejstrik-mcp",
   "display_name": "Czech Registry (rejstřík)",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Czech company registry that reads the filed PDF financial statements. No API key needed.",
-  "author": { "name": "janf19" },
+  "author": { "name": "janF19" },
   "server": {
     "type": "binary",
     "entry_point": "",

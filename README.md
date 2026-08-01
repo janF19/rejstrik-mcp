@@ -1,5 +1,7 @@
 # rejstrik-mcp
 
+<!-- mcp-name: io.github.janF19/rejstrik-mcp -->
+
 [![CI](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/janF19/rejstrik-mcp/actions/workflows/ci.yml) [![PyPI](https://img.shields.io/pypi/v/rejstrik-mcp)](https://pypi.org/project/rejstrik-mcp/)
 
 **Připojte český obchodní rejstřík ke svému Claude za 30 sekund — bez

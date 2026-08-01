@@ -7,7 +7,7 @@ are current as of v0.8.0 (published to PyPI 2026-07-18).
 **Canonical links** (paste as needed):
 - Repo: https://github.com/janF19/rejstrik-mcp
 - PyPI: https://pypi.org/project/rejstrik-mcp/
-- Registry name: `io.github.janf19/rejstrik-mcp`
+- Registry name: `io.github.janF19/rejstrik-mcp`
 - License: MIT
 - Install: `claude mcp add rejstrik -- uvx rejstrik-mcp`
 
@@ -94,7 +94,7 @@ project.
 
 ## Suggested submission targets
 
-- Official MCP registry (`io.github.janf19/rejstrik-mcp` — publish via
+- Official MCP registry (`io.github.janF19/rejstrik-mcp` — publish via
   `mcp-publisher`; see the release checklist)
 - Awesome MCP Servers lists (GitHub) — open a PR adding the repo under a
   finance/government category

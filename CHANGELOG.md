@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.2 — Fix MCP registry publish (namespace case, README ownership marker)
+
+- **Fix:** the registry namespace was declared as `io.github.janf19/rejstrik-mcp`
+  (lowercase) in `server.json`, `pyproject.toml`, and `mcpb/manifest.json`, but
+  the GitHub account is `janF19` (capital F). The registry only grants publish
+  rights on `io.github.janF19/*`, so publishing 0.9.1 failed with a 403.
+  Corrected the casing everywhere.
+- The registry also validates PyPI package ownership by requiring the exact
+  line `mcp-name: io.github.janF19/rejstrik-mcp` to appear in the package's
+  PyPI README. Added it as an HTML comment near the top of `README.md`. This
+  can only take effect from a new PyPI upload, hence the version bump.
+- No functional or output changes from 0.9.1.
+
 ## 0.9.1 — Fix broken install on mcp SDK 2.0
 
 - **Fix:** `pyproject.toml` declared `mcp>=1.2` with no upper bound. The `mcp`
