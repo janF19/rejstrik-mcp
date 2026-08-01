@@ -1,3 +1,5 @@
+from itertools import pairwise
+
 from pydantic import BaseModel
 
 from rejstrik.analysis.normalize import NormalizedFinancials
@@ -87,7 +89,7 @@ def compute_trend_series(
     """Full year-by-year series per metric. Input is oldest-first."""
     mismatch = any(
         suspected_unit_mismatch(newer, older)
-        for older, newer in zip(chronological, chronological[1:])
+        for older, newer in pairwise(chronological)
     )
     items: list[TrendSeriesItem] = []
     for metric in _METRICS:

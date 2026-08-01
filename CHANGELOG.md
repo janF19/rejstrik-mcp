@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.1 — Fix broken install on mcp SDK 2.0
+
+- **Fix:** `pyproject.toml` declared `mcp>=1.2` with no upper bound. The `mcp`
+  SDK's 2.0.0 release removed `mcp.server.fastmcp`, which this server imports
+  directly — any fresh install (including 0.9.0 from PyPI and `uvx
+  rejstrik-mcp`) pulled in 2.0.0 and failed at import time with
+  `ModuleNotFoundError: No module named 'mcp.server.fastmcp'`. Pinned to
+  `mcp>=1.2,<2` until the server is ported to the 2.0 API.
+- `server.json` updated to the `2025-09-29` schema (`registryType` replaces
+  the removed `registry_type` field); this is what caused the MCP registry
+  publish to reject 0.9.0 with a 422.
+- No functional or output changes from 0.9.0.
+
 ## 0.9.0 — Single adjusted-multiple valuation
 
 - **Breaking:** `estimate_valuation` now returns a single point estimate

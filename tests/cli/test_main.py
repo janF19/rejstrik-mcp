@@ -3,8 +3,8 @@ from unittest.mock import patch
 from typer.testing import CliRunner
 
 from rejstrik.cli.main import app
-from rejstrik.registry.models import Company
 from rejstrik.filings.models import Filing
+from rejstrik.registry.models import Company
 
 runner = CliRunner()
 

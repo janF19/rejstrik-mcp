@@ -16,37 +16,50 @@ from mcp_ui_server import UIResource, create_ui_resource
 from pydantic import BaseModel
 
 from rejstrik import __version__
+from rejstrik.analysis.industry import industry_key_for_nace
 from rejstrik.analysis.normalize import NormalizedFinancials
 from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.report import CompanyFinancialReport
-from rejstrik.documents.pdftext import PageText, extract_pages_text, parse_page_range
+from rejstrik.analysis.valuation import (
+    ValuationAssumptions,
+    ValuationEstimate,
+)
+from rejstrik.analysis.valuation import (
+    estimate_valuation as _estimate_valuation,
+)
 from rejstrik.documents.pdfimages import render_page_images
+from rejstrik.documents.pdftext import PageText, extract_pages_text, parse_page_range
 from rejstrik.documents.schema import FinancialStatement
 from rejstrik.filings.justice import list_filings as _list_filings
 from rejstrik.filings.models import Filing
+from rejstrik.mcp.card import render_report_card, render_report_markdown
 from rejstrik.registry.ares import find_company as _find_company
-from rejstrik.registry.contracts import ContractReport, get_contracts as _get_contracts
+from rejstrik.registry.contracts import ContractReport
+from rejstrik.registry.contracts import get_contracts as _get_contracts
 from rejstrik.registry.isir import (
     InsolvencyStatus,
+)
+from rejstrik.registry.isir import (
     check_insolvency as _check_insolvency,
 )
 from rejstrik.registry.models import Company
 from rejstrik.registry.statutory import (
     Officer,
+)
+from rejstrik.registry.statutory import (
     get_statutory_bodies as _get_statutory_bodies,
 )
-from rejstrik.registry.subsidies import SubsidyReport, get_subsidies as _get_subsidies
-from rejstrik.registry.vat import VatStatus, check_vat as _check_vat
-from rejstrik.analysis.industry import industry_key_for_nace
-from rejstrik.analysis.valuation import (
-    ValuationAssumptions,
-    ValuationEstimate,
-    estimate_valuation as _estimate_valuation,
-)
-from rejstrik.mcp.card import render_report_card, render_report_markdown
+from rejstrik.registry.subsidies import SubsidyReport
+from rejstrik.registry.subsidies import get_subsidies as _get_subsidies
+from rejstrik.registry.vat import VatStatus
+from rejstrik.registry.vat import check_vat as _check_vat
 from rejstrik.service import (
     analyze_statements as _analyze_statements,
+)
+from rejstrik.service import (
     count_pdf_pages,
+)
+from rejstrik.service import (
     fetch_filing as _fetch_filing,
 )
 
@@ -78,7 +91,7 @@ def _host_supports_apps() -> bool:
     try:
         ctx = mcp.get_context()
         experimental = ctx.session.client_params.capabilities.experimental
-    except Exception:
+    except Exception:  # noqa: BLE001 — no request context outside a live session
         return False
     return _apps_capability(experimental)
 

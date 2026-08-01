@@ -1,7 +1,7 @@
 import asyncio
 
 from rejstrik.analysis.report import CompanyFinancialReport
-from rejstrik.documents.schema import FinancialStatement, Figure
+from rejstrik.documents.schema import Figure, FinancialStatement
 from rejstrik.mcp import server
 
 

@@ -5,15 +5,15 @@ from rejstrik.analysis.normalize import NormalizedFinancials
 
 
 def _full(**overrides) -> NormalizedFinancials:
-    base = dict(
-        total_assets=1000.0,
-        total_liabilities=500.0,
-        operating_profit=100.0,
-        interest_expense=20.0,
-        revenue=2000.0,
-        current_assets=600.0,
-        current_liabilities=300.0,
-    )
+    base = {
+        "total_assets": 1000.0,
+        "total_liabilities": 500.0,
+        "operating_profit": 100.0,
+        "interest_expense": 20.0,
+        "revenue": 2000.0,
+        "current_assets": 600.0,
+        "current_liabilities": 300.0,
+    }
     base.update(overrides)
     return NormalizedFinancials(**base)
 

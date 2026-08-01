@@ -3,7 +3,7 @@ from rejstrik.analysis.ratios import Ratios
 from rejstrik.analysis.redflags import RedFlag
 from rejstrik.analysis.report import CompanyFinancialReport, YearlyFigures
 from rejstrik.analysis.trends import TrendItem
-from rejstrik.documents.schema import FinancialStatement, Figure
+from rejstrik.documents.schema import Figure, FinancialStatement
 from rejstrik.registry.contracts import ContractReport
 from rejstrik.registry.subsidies import SubsidyReport
 from rejstrik.service import analyze_statements

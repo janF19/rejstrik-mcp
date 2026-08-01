@@ -23,8 +23,8 @@ from rejstrik.documents.source import PdfSource, load_pdf
 from rejstrik.filings.justice import list_filings
 from rejstrik.filings.models import Filing
 from rejstrik.registry.ares import find_company
-from rejstrik.registry.isir import InsolvencyStatus, check_insolvency
 from rejstrik.registry.contracts import ContractReport
+from rejstrik.registry.isir import InsolvencyStatus, check_insolvency
 from rejstrik.registry.models import Company
 from rejstrik.registry.subsidies import SubsidyReport
 from rejstrik.registry.vat import VatStatus, check_vat

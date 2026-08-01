@@ -5,7 +5,7 @@ import httpx
 import pytest
 import respx
 
-from rejstrik.registry.ares import search_by_name, find_company, CompanyNotFound
+from rejstrik.registry.ares import CompanyNotFound, find_company, search_by_name
 
 FX = Path(__file__).parent.parent / "fixtures" / "ares"
 

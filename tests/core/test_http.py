@@ -1,7 +1,7 @@
 import httpx
 import respx
 
-from rejstrik.core.http import make_client, USER_AGENT
+from rejstrik.core.http import USER_AGENT, make_client
 
 
 def test_client_has_user_agent_and_redirects():

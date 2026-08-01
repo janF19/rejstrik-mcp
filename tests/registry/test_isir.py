@@ -3,7 +3,7 @@ from pathlib import Path
 import httpx
 import respx
 
-from rejstrik.registry.isir import check_insolvency, parse_insolvency, InsolvencyStatus
+from rejstrik.registry.isir import InsolvencyStatus, check_insolvency, parse_insolvency
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "isir" / "clean_00006947.xml"
 

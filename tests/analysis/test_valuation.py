@@ -6,7 +6,7 @@ from rejstrik.analysis.valuation import (
     estimate_valuation,
     normalize_ebitda,
 )
-from rejstrik.documents.schema import CanonicalFigures, FinancialStatement, Figure
+from rejstrik.documents.schema import CanonicalFigures, Figure, FinancialStatement
 
 
 def _fig(label, value):

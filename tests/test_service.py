@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-import rejstrik.service as service
+from rejstrik import service
 from rejstrik.documents.source import PdfSource
 from rejstrik.filings.models import Filing
 from rejstrik.registry.models import Company
@@ -35,9 +35,9 @@ def test_resolve_raises_when_no_statement():
     with (
         patch.object(service, "find_company", return_value=COMPANY),
         patch.object(service, "list_filings", return_value=[]),
+        pytest.raises(service.NoStatementFound),
     ):
-        with pytest.raises(service.NoStatementFound):
-            service.resolve_statement_source("Test")
+        service.resolve_statement_source("Test")
 
 
 def _wire_source(monkeypatch, filings):

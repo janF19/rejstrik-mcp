@@ -1,6 +1,7 @@
+import hashlib
+
 from rejstrik.documents.cache import cache_dir, save_filing_pdf
 from rejstrik.documents.source import PdfSource
-import hashlib
 
 
 def _source(data: bytes = b"%PDF-1.4 fake") -> PdfSource:

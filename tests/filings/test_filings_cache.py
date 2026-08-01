@@ -41,7 +41,7 @@ def test_second_call_within_ttl_hits_network_once(monkeypatch):
         return_value=httpx.Response(200, json=_API_JSON)
     )
     now = [1000.0]
-    clock = lambda: now[0]  # noqa: E731
+    clock = lambda: now[0]
 
     first = list_filings("00514152", clock=clock)
     now[0] += 60.0  # still within TTL
@@ -58,7 +58,7 @@ def test_call_after_ttl_expiry_refetches(monkeypatch):
         return_value=httpx.Response(200, json=_API_JSON)
     )
     now = [1000.0]
-    clock = lambda: now[0]  # noqa: E731
+    clock = lambda: now[0]
 
     list_filings("00514152", clock=clock)
     now[0] += 901.0  # past TTL

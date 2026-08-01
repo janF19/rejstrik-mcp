@@ -1,4 +1,4 @@
-import rejstrik.service as service
+from rejstrik import service
 from rejstrik.documents.schema import Figure, FinancialStatement
 from rejstrik.registry.isir import InsolvencyStatus
 from rejstrik.registry.vat import VatStatus

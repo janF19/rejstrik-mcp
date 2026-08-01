@@ -15,6 +15,8 @@ from selectolax.parser import HTMLParser
 from rejstrik.core.http import make_client
 from rejstrik.filings.models import Filing, classify_financial
 
+logger = logging.getLogger(__name__)
+
 _BASE_URL = "https://or.justice.cz"
 _NEW_BASE_URL = "https://verejnerejstriky.msp.gov.cz"
 _NEW_FILINGS_URL = _NEW_BASE_URL + "/api/sbirka-listin/subjekty/{ico}"
@@ -117,7 +119,7 @@ def parse_deeds(html: str, base_url: str = _BASE_URL) -> list[Filing]:
         )
 
     if not filings and len(html) > 1024:
-        logging.warning(
+        logger.warning(
             "parse_deeds: no documents found — selectors may need updating for real justice.cz HTML"
         )
 

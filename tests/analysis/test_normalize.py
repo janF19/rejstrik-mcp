@@ -114,12 +114,12 @@ def test_fallback_maps_new_fields():
 
 
 def test_normalize_extracts_depreciation_amortization_from_canonical():
+    from rejstrik.analysis.normalize import normalize
     from rejstrik.documents.schema import (
         CanonicalFigures,
         Figure,
         FinancialStatement,
     )
-    from rejstrik.analysis.normalize import normalize
 
     stmt = FinancialStatement(
         period_year=2023,
@@ -133,8 +133,8 @@ def test_normalize_extracts_depreciation_amortization_from_canonical():
 
 
 def test_normalize_extracts_depreciation_from_income_statement_label():
-    from rejstrik.documents.schema import Figure, FinancialStatement
     from rejstrik.analysis.normalize import normalize
+    from rejstrik.documents.schema import Figure, FinancialStatement
 
     stmt = FinancialStatement(
         period_year=2023,

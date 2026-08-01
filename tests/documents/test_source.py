@@ -4,7 +4,7 @@ from pathlib import Path
 import httpx
 import respx
 
-from rejstrik.documents.source import load_pdf, PdfSource
+from rejstrik.documents.source import PdfSource, load_pdf
 from rejstrik.filings.models import Filing
 
 PDF_BYTES = b"%PDF-1.4 fake pdf bytes"

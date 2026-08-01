@@ -1,6 +1,6 @@
 import pytest
 
-from rejstrik.documents.schema import FinancialStatement, Figure
+from rejstrik.documents.schema import Figure, FinancialStatement
 from rejstrik.registry.isir import InsolvencyStatus
 from rejstrik.registry.vat import VatStatus
 from rejstrik.service import analyze_statements
@@ -65,8 +65,8 @@ def test_analyze_statements_empty_raises():
 
 
 def test_analyze_statements_public_money_flag():
-    from rejstrik.registry.subsidies import SubsidyReport
     from rejstrik.registry.contracts import ContractReport
+    from rejstrik.registry.subsidies import SubsidyReport
 
     stmt = _statement(2024, 1000.0)  # revenue 1000 via income_statement helper
     report = analyze_statements(

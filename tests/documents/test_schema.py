@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from rejstrik.documents.schema import Figure, NoteItem, FinancialStatement
+from rejstrik.documents.schema import Figure, FinancialStatement, NoteItem
 
 
 def test_figure_optional_fields():

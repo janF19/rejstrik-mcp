@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 
 import httpx
+import pytest
 import respx
 
-from rejstrik.registry.ares import parse_detail, get_company, CompanyNotFound
-import pytest
+from rejstrik.registry.ares import CompanyNotFound, get_company, parse_detail
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "ares" / "detail_00006947.json"
 
